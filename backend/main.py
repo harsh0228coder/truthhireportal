@@ -84,7 +84,11 @@ os.makedirs("static/resumes", exist_ok=True)
 # Allow Frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["http://localhost:3000",
+    "https://truthhire.in",        # Main Domain
+    "https://www.truthhire.in",    # WWW Version
+    "https://truthhire-portal.vercel.app" # Vercel default (backup)
+    ], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
