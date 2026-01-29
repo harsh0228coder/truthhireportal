@@ -92,7 +92,7 @@ export default function RecruiterDashboard() {
 
   const initializeDashboard = async (token: string) => {
     try {
-      const meRes = await fetch(`http://localhost:8000/recruiters/me`, {
+      const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -126,7 +126,7 @@ export default function RecruiterDashboard() {
   // --- API FUNCTIONS ---
   const fetchJobs = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/recruiters/${id}/jobs`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/${id}/jobs`);
       if (response.ok) {
         const data = await response.json();
         setJobs(data);
@@ -138,7 +138,7 @@ export default function RecruiterDashboard() {
 
   const fetchAnalytics = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/recruiters/${id}/analytics`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/${id}/analytics`);
       if (response.ok) {
         const data = await response.json();
         setAnalytics(data);
@@ -150,7 +150,7 @@ export default function RecruiterDashboard() {
 
   const fetchProfile = async (id: string) => {
     try {
-        const response = await fetch(`http://localhost:8000/recruiters/${id}/profile`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/${id}/profile`);
         if (response.ok) {
             const data = await response.json();
             setProfileData(data);
@@ -164,7 +164,7 @@ export default function RecruiterDashboard() {
     if(!recruiterId) return;
     setIsSavingProfile(true);
     try {
-        const response = await fetch(`http://localhost:8000/recruiters/${recruiterId}/profile`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/${recruiterId}/profile`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ export default function RecruiterDashboard() {
     setApplicants([]); 
     setSelectedCandidate(null); 
     try {
-      const response = await fetch(`http://localhost:8000/recruiters/jobs/${jobId}/applicants`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/jobs/${jobId}/applicants`);
       if (response.ok) {
         const data = await response.json();
         setApplicants(data);
@@ -215,7 +215,7 @@ export default function RecruiterDashboard() {
     const toastId = toast.loading("Deleting job...");
     
     try {
-      const response = await fetch(`http://localhost:8000/recruiters/jobs/${deleteJobModal.jobId}`, { 
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/jobs/${deleteJobModal.jobId}`, { 
           method: "DELETE",
           headers: getAuthHeader()
       });
@@ -253,7 +253,7 @@ export default function RecruiterDashboard() {
     const toastId = toast.loading("Removing candidate...");
     
     try {
-        const response = await fetch(`http://localhost:8000/applications/${deleteCandidateModal.appId}`, { 
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${deleteCandidateModal.appId}`, { 
             method: "DELETE",
             headers: getAuthHeader()
         });
@@ -301,7 +301,7 @@ export default function RecruiterDashboard() {
   const updateApplicantStatus = async (applicantId: number, status: string, feedback: string | null = null) => {
     const toastId = toast.loading("Updating status...");
     try {
-      const response = await fetch(`http://localhost:8000/recruiters/applicants/${applicantId}/status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/applicants/${applicantId}/status`, {
         method: "PUT",
         headers: { 
             "Content-Type": "application/json",

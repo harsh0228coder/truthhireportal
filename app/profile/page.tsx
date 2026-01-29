@@ -97,7 +97,7 @@ export default function ProfilePage() {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token');
-      const res = await fetch(`http://localhost:8000/candidate/me`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -131,7 +131,7 @@ export default function ProfilePage() {
         const formData = new FormData();
         formData.append("file", file);
 
-        const response = await fetch(`http://localhost:8000/users/${user.id}/resume`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${user.id}/resume`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
             body: formData,
@@ -200,7 +200,7 @@ export default function ProfilePage() {
 
   const getProfileImageUrl = (filename: string) => {
     if (!filename) return null;
-    return filename.startsWith("http") ? filename : `http://localhost:8000/static/profile_images/${filename}`;
+    return filename.startsWith("http") ? filename : `${process.env.NEXT_PUBLIC_API_URL}/static/profile_images/${filename}`;
   };
 
   const getEducationList = (user: any) => {
@@ -522,7 +522,7 @@ export default function ProfilePage() {
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <a href={`http://localhost:8000/static/resumes/${user.resume_filename}`} target="_blank" className="flex-1 text-center bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2">
+                            <a href={`${process.env.NEXT_PUBLIC_API_URL}/static/resumes/${user.resume_filename}`} target="_blank" className="flex-1 text-center bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2">
                                 <Download size={14} /> Download
                             </a>
                             <button onClick={() => fileInputRef.current?.click()} className="flex-1 text-center bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2">

@@ -144,7 +144,7 @@ function JobsPageContent() {
             // 2. Fetch Saved Jobs (If User Logged In)
             const token = localStorage.getItem('token');
             if (token) {
-                const res = await fetch('http://localhost:8000/users/me/saved-ids', {
+                const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/users/me/saved-ids', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -302,7 +302,7 @@ function JobsPageContent() {
         const endpoint = isCurrentlySaved ? 'unsave' : 'save';
         const method = isCurrentlySaved ? 'DELETE' : 'POST';
         
-        const res = await fetch(`http://localhost:8000/jobs/${jobId}/${endpoint}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/${endpoint}`, {
             method: method,
             headers: { 
                 'Authorization': `Bearer ${token}`

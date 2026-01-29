@@ -60,7 +60,7 @@ export default function StudentDashboard() {
     setRefreshing(true);
 
     try {
-      const res = await fetch(`http://localhost:8000/users/${id}/dashboard`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}/dashboard`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {

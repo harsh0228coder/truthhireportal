@@ -603,7 +603,7 @@ def send_application_email(hr_email: str, job_title: str, candidate_data: dict, 
     
     # 2. Generate Magic Links (Strategy B)
     # REPLACE THIS with your actual domain when deploying
-    base_url = "http://localhost:8000"  # OR "http://localhost:8000" for local testing
+    base_url = "${process.env.NEXT_PUBLIC_API_URL}"  # OR "${process.env.NEXT_PUBLIC_API_URL}" for local testing
     dummy_token = "secure_token_123" # In production, generate a real hash
     
     magic_actions_html = ""
@@ -1543,7 +1543,7 @@ def get_current_candidate(
         # Build resume URL
         resume_url = None
         if user.resume_filename:
-            resume_url = f"http://localhost:8000/static/resumes/{user.resume_filename}"
+            resume_url = f"${process.env.NEXT_PUBLIC_API_URL}/static/resumes/{user.resume_filename}"
             
         return {
             "id": user.id,
@@ -2570,7 +2570,7 @@ def get_user_profile(user_id: int, db: Session = Depends(get_db)):
     
     resume_url = None
     if user.resume_filename:
-        resume_url = f"http://localhost:8000/static/resumes/{user.resume_filename}"
+        resume_url = f"${process.env.NEXT_PUBLIC_API_URL}/static/resumes/{user.resume_filename}"
 
     return {
         "id": user.id,
@@ -3090,7 +3090,7 @@ def get_job_applicants(job_id: int, db: Session = Depends(get_db)):
             "applicant_email": user.email,
             "headline": user.headline or "No headline",
             "phone": user.phone or "Hidden",
-            "resume_url": f"http://localhost:8000/static/resumes/{user.resume_filename}" if user.resume_filename else None,
+            "resume_url": f"${process.env.NEXT_PUBLIC_API_URL}/static/resumes/{user.resume_filename}" if user.resume_filename else None,
             "applied_at": app.applied_at,
             "status": app.status,
             "metrics": {

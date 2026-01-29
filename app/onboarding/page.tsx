@@ -322,7 +322,7 @@ export default function OnboardingPage() {
     if (!token) {
         router.push('/login');
     } else {
-        fetch('http://localhost:8000/candidate/me', { headers: { Authorization: `Bearer ${token}` } })
+        fetch('${process.env.NEXT_PUBLIC_API_URL}/candidate/me', { headers: { Authorization: `Bearer ${token}` } })
             .then(res => res.json())
             .then(data => setUserId(data.id))
             .catch(() => router.push('/login'));
@@ -406,7 +406,7 @@ export default function OnboardingPage() {
 
     try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:8000/users/${userId}/profile`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/profile`, {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json', 

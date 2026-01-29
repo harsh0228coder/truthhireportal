@@ -90,7 +90,7 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId }: any) => {
 
     setIsSubmitting(true);
     try {
-        await fetch('http://localhost:8000/feedback/ai-analysis', {
+        await fetch('${process.env.NEXT_PUBLIC_API_URL}/feedback/ai-analysis', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -381,7 +381,7 @@ export default function JobDetailPage() {
     const loadData = async () => {
         try {
             // Start both requests concurrently
-            const jobPromise = fetch(`http://localhost:8000/jobs/${params.id}`).then(res => res.ok ? res.json() : null);
+            const jobPromise = fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}`).then(res => res.ok ? res.json() : null);
             const allJobsPromise = fetchJobs(); // Assuming this is fast enough, otherwise create a dedicated /jobs/similar endpoint
 
             const [jobData, allJobs] = await Promise.all([jobPromise, allJobsPromise]);
@@ -395,13 +395,13 @@ export default function JobDetailPage() {
                 // Track view only once per session
                 if (!hasViewedRef.current) {
                     hasViewedRef.current = true;
-                    fetch(`http://localhost:8000/jobs/${params.id}/view`, { method: 'POST' }).catch(() => {});
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}/view`, { method: 'POST' }).catch(() => {});
                 }
                 
                 // Track view only once per session
                 if (!hasViewedRef.current) {
                     hasViewedRef.current = true;
-                    fetch(`http://localhost:8000/jobs/${params.id}/view`, { method: 'POST' }).catch(() => {});
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}/view`, { method: 'POST' }).catch(() => {});
                 }
 
                 // Process similar jobs in memory (since we have allJobs)
@@ -427,14 +427,14 @@ export default function JobDetailPage() {
 
     // 2. FETCH USER CONTEXT (Independent)
     if (isSignedIn && token) {
-      fetch(`http://localhost:8000/candidate/me`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data?.resume_filename) setUserResume(data.resume_filename);
         });
       
       const jobId = String(params.id);
-      fetch(`http://localhost:8000/jobs/${jobId}/check-applied`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/check-applied`, { headers: { Authorization: `Bearer ${token}` } })
         .then(res => res.ok ? res.json() : null)
         .then(data => { if (data?.has_applied) setHasApplied(true); });
       
@@ -475,7 +475,7 @@ export default function JobDetailPage() {
     const myId = ++latestAnalysisRef.current;
 
     try {
-      const parseRes = await fetch(`http://localhost:8000/candidate/me`, {
+      const parseRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -488,7 +488,7 @@ export default function JobDetailPage() {
           return; 
       }
       
-      const analyzeRes = await fetch('http://localhost:8000/analyze-gap', {
+      const analyzeRes = await fetch('${process.env.NEXT_PUBLIC_API_URL}/analyze-gap', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -531,7 +531,7 @@ export default function JobDetailPage() {
     setApplying(true);
     try {
       const jobId = String(job?.id); // No prefix stripping needed anymore
-      const response = await fetch('http://localhost:8000/jobs/apply', {
+      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/jobs/apply', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

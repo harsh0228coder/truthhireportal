@@ -19,7 +19,7 @@ export default function RecommendedJobs({ userId, title = "Recommended Jobs" }: 
     const fetchRecommendedJobs = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:8000/users/${userId}/recommended-jobs`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/recommended-jobs`);
         if (res.ok) {
           const data = await res.json();
           setJobs(data);

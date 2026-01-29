@@ -443,7 +443,7 @@ export default function EditProfilePage() {
       if (!token) { router.push("/login"); return; }
       
       try {
-        const res = await fetch(`http://localhost:8000/candidate/me`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error("Failed");
@@ -484,7 +484,7 @@ export default function EditProfilePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:8000/users/${user.id}/profile`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${user.id}/profile`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
@@ -616,8 +616,8 @@ export default function EditProfilePage() {
       const token = localStorage.getItem('token');
       const isEdit = !!editingItem.id;
       const url = isEdit 
-        ? `http://localhost:8000/users/${user.id}/projects/${editingItem.id}` 
-        : `http://localhost:8000/users/${user.id}/projects`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/users/${user.id}/projects/${editingItem.id}` 
+        : `${process.env.NEXT_PUBLIC_API_URL}/users/${user.id}/projects`;
       
       const method = isEdit ? "PUT" : "POST";
 
@@ -656,7 +656,7 @@ export default function EditProfilePage() {
   const deleteProject = async (id: number) => {
       try {
           const token = localStorage.getItem('token');
-          await fetch(`http://localhost:8000/users/${user.id}/projects/${id}`, { 
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${user.id}/projects/${id}`, { 
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` }
           });

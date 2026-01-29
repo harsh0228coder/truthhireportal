@@ -49,7 +49,7 @@ export default function MyApplicationsPage() {
     // 2. Fetch Data
     const fetchApps = async () => {
       try {
-        const res = await fetch("http://localhost:8000/candidate/applications", {
+        const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/candidate/applications", {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -83,7 +83,7 @@ export default function MyApplicationsPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:8000/applications/${deleteId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${deleteId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

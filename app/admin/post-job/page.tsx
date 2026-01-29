@@ -136,7 +136,7 @@ export default function AdminPostJobPage() {
     const toastId = toast.loading("AI is crafting a professional JD...");
 
     try {
-      const res = await fetch("http://localhost:8000/admin/generate-description", {
+      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/admin/generate-description", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -200,7 +200,7 @@ export default function AdminPostJobPage() {
     };
 
     try {
-      const res = await fetch("http://localhost:8000/admin/jobs", {
+      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/admin/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

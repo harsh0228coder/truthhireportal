@@ -33,7 +33,7 @@ export default function InterviewPrepPage() {
     setInterviewType(type);
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/applications/${applicationId}/generate-prep?type=${type}`, { method: 'POST' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicationId}/generate-prep?type=${type}`, { method: 'POST' });
       if (!res.ok) throw new Error("Failed to generate");
       const result = await res.json();
       setPrepData(result);
@@ -53,7 +53,7 @@ export default function InterviewPrepPage() {
     const currentQuestion = prepData.interview_flow[currentQIndex].question;
 
     try {
-        const res = await fetch("http://localhost:8000/interview/analyze-answer", {
+        const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/interview/analyze-answer", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -89,7 +89,7 @@ export default function InterviewPrepPage() {
           setFeedback(null);
       } else {
           setMode('summary');
-          fetch(`http://localhost:8000/applications/${applicationId}/complete-prep`, { method: 'POST' });
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/applications/${applicationId}/complete-prep`, { method: 'POST' });
       }
   };
 

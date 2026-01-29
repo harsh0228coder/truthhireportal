@@ -76,10 +76,10 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const [statsRes, jobsRes, usersRes, recruitersRes] = await Promise.all([
-        fetch('http://localhost:8000/admin/stats'),
-        fetch('http://localhost:8000/admin/jobs'),
-        fetch('http://localhost:8000/admin/users'),
-        fetch('http://localhost:8000/admin/recruiters')
+        fetch('${process.env.NEXT_PUBLIC_API_URL}/admin/stats'),
+        fetch('${process.env.NEXT_PUBLIC_API_URL}/admin/jobs'),
+        fetch('${process.env.NEXT_PUBLIC_API_URL}/admin/users'),
+        fetch('${process.env.NEXT_PUBLIC_API_URL}/admin/recruiters')
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
     if (!jobFormData.employment_type) return toast.error("Please select employment type");
     setIsSubmitting(true);
     try {
-      const res = await fetch('http://localhost:8000/admin/jobs', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/admin/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(jobFormData),
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
   const executeDelete = async (type: 'jobs' | 'users' | 'recruiters', id: string | number) => {
     if (!confirm("Are you sure?")) return;
     try {
-      const res = await fetch(`http://localhost:8000/admin/${type}/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/${type}/${id}`, { method: 'DELETE' });
       if (res.ok) {
         toast.success("Deleted successfully");
         fetchData();
@@ -142,7 +142,7 @@ export default function AdminDashboard() {
   const executeRecruiterStatus = async (id: number, status: 'verified' | 'rejected') => {
     const toastId = toast.loading("Updating status...");
     try {
-        const res = await fetch(`http://localhost:8000/admin/recruiters/${id}/verify`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/recruiters/${id}/verify`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status })
