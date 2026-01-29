@@ -1,0 +1,24 @@
+<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield Icon -->
+  <g transform="translate(50, 40)">
+    <!-- Shield outline -->
+    <path d="M 40 10 L 70 25 L 70 70 Q 70 95 40 110 Q 10 95 10 70 L 10 25 Z" 
+          fill="none" stroke="white" stroke-width="3" stroke-linejoin="round"/>
+    
+    <!-- Checkmark inside shield -->
+    <g transform="translate(40, 50)">
+      <!-- Checkmark -->
+      <path d="M -8 5 L 0 15 L 12 -8" 
+            fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    
+    <!-- Blue dot -->
+    <circle cx="55" cy="15" r="8" fill="#4f46e5"/>
+  </g>
+
+  <!-- TruthHire Text -->
+  <text x="140" y="100" font-family="Space Grotesk, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" 
+        font-size="56" font-weight="700" fill="white" letter-spacing="-1">
+    TruthHire
+  </text>
+</svg>
