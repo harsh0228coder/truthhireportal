@@ -486,7 +486,7 @@ def send_admin_recruiter_alert(recruiter_name: str, recruiter_email: str, linked
     """
     
     # You can update this link to point to your actual admin dashboard URL
-    cta_link = "http://localhost:3000/admin/recruiters" 
+    cta_link = "http://www.truthhire.in/admin/recruiters" 
     
     final_html = get_base_email_template(headline, content_html, "Open Admin Dashboard", cta_link)
 
@@ -497,8 +497,8 @@ def send_admin_recruiter_alert(recruiter_name: str, recruiter_email: str, linked
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        #server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
@@ -709,8 +709,8 @@ def send_application_email(hr_email: str, job_title: str, candidate_data: dict, 
 
     # Send Email
     try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        #server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
@@ -820,8 +820,8 @@ def send_candidate_update_email(candidate_email: str, candidate_name: str, job_t
     msg.attach(MIMEText(html_body, 'html'))
 
     try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        #server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
@@ -905,8 +905,8 @@ def send_welcome_email(email: str, name: str):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        #server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
@@ -944,8 +944,8 @@ def send_otp_email(email: str, otp: str, name: str = "User"):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        #server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
@@ -990,8 +990,8 @@ def send_recruiter_otp_email(email: str, otp: str, name: str = "Recruiter"):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        #server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
@@ -1024,8 +1024,8 @@ def send_login_success_email(email: str, name: str):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        #server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
@@ -1132,8 +1132,8 @@ def send_candidate_confirmation_email(candidate_email: str, candidate_name: str,
     msg.attach(MIMEText(html_body, 'html'))
 
     try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        #server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
@@ -1168,8 +1168,8 @@ def send_waitlist_confirmation_email(email: str, category: str, position: int):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        #server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
@@ -1324,8 +1324,8 @@ def send_recruiter_status_email(email: str, name: str, status: str):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        #server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
