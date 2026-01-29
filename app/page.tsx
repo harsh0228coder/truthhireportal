@@ -227,7 +227,7 @@ export default function Home() {
                 </Link>
               )}
               
-              <Link href="/about" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-xl font-semibold text-gray-300 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all flex items-center justify-center gap-2">
+              <Link href="/about-us" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-xl font-semibold text-gray-300 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all flex items-center justify-center gap-2">
                 <Shield size={18} /> How it works
               </Link>
             </div>
