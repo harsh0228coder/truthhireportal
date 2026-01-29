@@ -46,6 +46,15 @@ OTP_EXPIRY_SECONDS = 300  # 5 minutes
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") # Ensure this is the SERVICE_ROLE key
 
+# --- EMAIL CONFIGURATION (Add this at the top) ---
+MAIL_USER = os.getenv("MAIL_USER")
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
+
+if not MAIL_USER or not MAIL_PASSWORD:
+    print("⚠️ WARNING: Email credentials are missing in Environment Variables!")
+
 # Initialize Supabase Client
 try:
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -451,11 +460,11 @@ def fetch_job_content(data: UrlRequest):
 # ===========================
 
 def send_admin_recruiter_alert(recruiter_name: str, recruiter_email: str, linkedin_url: str):
-    sender_email = "hrtruthhire@gmail.com"
-    sender_password = os.getenv("MAIL_PASSWORD")
+    sender_email = MAIL_USER
+    sender_password = MAIL_PASSWORD
     
     # Change this to your actual admin email or set ADMIN_EMAIL in your .env file
-    admin_email = os.getenv("ADMIN_EMAIL", "hrtruthhire@gmail.com") 
+    admin_email = os.getenv("ADMIN_EMAIL", MAIL_USER) 
 
     headline = "⚠️ Action Required: Verify Recruiter"
     
@@ -488,7 +497,7 @@ def send_admin_recruiter_alert(recruiter_name: str, recruiter_email: str, linked
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -585,8 +594,8 @@ def magic_status_update(
 
 # --- UPDATED: send_application_email with Magic Links ---
 def send_application_email(hr_email: str, job_title: str, candidate_data: dict, cover_note: str, resume_path: str = None, is_cold_outreach: bool = False, app_id: int = None):
-    sender_email = "hrtruthhire@gmail.com"
-    sender_password = os.getenv("MAIL_PASSWORD")
+    sender_email = MAIL_USER
+    sender_password = MAIL_PASSWORD
     
     # 1. Prepare Data
     score = candidate_data.get('score', 0)
@@ -700,7 +709,7 @@ def send_application_email(hr_email: str, job_title: str, candidate_data: dict, 
 
     # Send Email
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -711,8 +720,8 @@ def send_application_email(hr_email: str, job_title: str, candidate_data: dict, 
 
 
 def send_candidate_update_email(candidate_email: str, candidate_name: str, job_title: str, company_name: str, hr_name: str, status: str, feedback: str = None):
-    sender_email = "hrtruthhire@gmail.com"
-    sender_password = os.getenv("MAIL_PASSWORD")
+    sender_email = MAIL_USER
+    sender_password = MAIL_PASSWORD
     current_year = datetime.now().year
     
     # --- A. SHORTLISTED TEMPLATE (Green/Positive) ---
@@ -811,7 +820,7 @@ def send_candidate_update_email(candidate_email: str, candidate_name: str, job_t
     msg.attach(MIMEText(html_body, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -868,8 +877,8 @@ def get_email_template(title, content, preheader=""):
     """
 
 def send_welcome_email(email: str, name: str):
-    sender_email = "hrtruthhire@gmail.com"
-    sender_password = os.getenv("MAIL_PASSWORD")
+    sender_email = MAIL_USER
+    sender_password = MAIL_PASSWORD
     
     content_html = f"""
     <p>Hi {name},</p>
@@ -896,7 +905,7 @@ def send_welcome_email(email: str, name: str):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -905,8 +914,8 @@ def send_welcome_email(email: str, name: str):
         print(f"Error: {e}")
 
 def send_otp_email(email: str, otp: str, name: str = "User"):
-    sender_email = "hrtruthhire@gmail.com"
-    sender_password = os.getenv("MAIL_PASSWORD")
+    sender_email = MAIL_USER
+    sender_password = MAIL_PASSWORD
     
     content_html = f"""
     <p>Hi {name},</p>
@@ -935,7 +944,7 @@ def send_otp_email(email: str, otp: str, name: str = "User"):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -945,8 +954,8 @@ def send_otp_email(email: str, otp: str, name: str = "User"):
         print(f"❌ Failed to send OTP: {e}")
 
 def send_recruiter_otp_email(email: str, otp: str, name: str = "Recruiter"):
-    sender_email = "hrtruthhire@gmail.com"
-    sender_password = os.getenv("MAIL_PASSWORD")
+    sender_email = MAIL_USER
+    sender_password = MAIL_PASSWORD
     
     headline = "Verify Your Corporate Account"
     
@@ -981,7 +990,7 @@ def send_recruiter_otp_email(email: str, otp: str, name: str = "Recruiter"):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -991,8 +1000,8 @@ def send_recruiter_otp_email(email: str, otp: str, name: str = "Recruiter"):
         print(f"❌ CRITICAL EMAIL ERROR (OTP): {e}") # Check your terminal for this error
 
 def send_login_success_email(email: str, name: str):
-    sender_email = "hrtruthhire@gmail.com"
-    sender_password = os.getenv("MAIL_PASSWORD")
+    sender_email = MAIL_USER
+    sender_password = MAIL_PASSWORD
     
     content_html = f"""
     <p>Hi {name},</p>
@@ -1015,7 +1024,7 @@ def send_login_success_email(email: str, name: str):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -1024,8 +1033,8 @@ def send_login_success_email(email: str, name: str):
         print(f"Error: {e}")
 
 def send_candidate_confirmation_email(candidate_email: str, candidate_name: str, job_title: str, company_name: str):
-    sender_email = "hrtruthhire@gmail.com"
-    sender_password = os.getenv("MAIL_PASSWORD")
+    sender_email = MAIL_USER
+    sender_password = MAIL_PASSWORD
     
     msg = MIMEMultipart('alternative')
     msg['From'] = f"TruthHire <{sender_email}>"
@@ -1123,7 +1132,7 @@ def send_candidate_confirmation_email(candidate_email: str, candidate_name: str,
     msg.attach(MIMEText(html_body, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -1132,8 +1141,8 @@ def send_candidate_confirmation_email(candidate_email: str, candidate_name: str,
         print(f"Failed to send confirmation email: {e}")
 
 def send_waitlist_confirmation_email(email: str, category: str, position: int):
-    sender_email = "hrtruthhire@gmail.com"
-    sender_password = os.getenv("MAIL_PASSWORD")
+    sender_email = MAIL_USER
+    sender_password = MAIL_PASSWORD
     
     headline = f"You are #{position} on the list!"
     
@@ -1159,7 +1168,7 @@ def send_waitlist_confirmation_email(email: str, category: str, position: int):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -1240,8 +1249,8 @@ def get_base_email_template(headline, content_html, cta_text=None, cta_link=None
     """
 
 def send_recruiter_status_email(email: str, name: str, status: str):
-    sender_email = "hrtruthhire@gmail.com"
-    sender_password = os.getenv("MAIL_PASSWORD")
+    sender_email = MAIL_USER
+    sender_password = MAIL_PASSWORD
     
     subject = ""
     headline = ""
@@ -1315,7 +1324,7 @@ def send_recruiter_status_email(email: str, name: str, status: str):
     msg.attach(MIMEText(final_html, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
