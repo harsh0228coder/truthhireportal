@@ -41,7 +41,7 @@ from supabase import create_client, Client
 # --- CONFIGURATION ---
 OTP_STORE = {} 
 OTP_EXPIRY_SECONDS = 300  # 5 minutes
-
+base_url = os.getenv("NEXT_PUBLIC_API_URL", "https://truthhire-api.onrender.com")
 # --- CONFIGURATION (Add this near the top with other configs) ---
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") # Ensure this is the SERVICE_ROLE key
@@ -612,7 +612,7 @@ def send_application_email(hr_email: str, job_title: str, candidate_data: dict, 
     
     # 2. Generate Magic Links (Strategy B)
     # REPLACE THIS with your actual domain when deploying
-    base_url = f"{os.getenv('NEXT_PUBLIC_API_URL')}"  # OR "${process.env.NEXT_PUBLIC_API_URL}" for local testing
+    base_url = f"{os.getenv('NEXT_PUBLIC_API_URL', 'https://truthhire-api.onrender.com')}"  # OR "${process.env.NEXT_PUBLIC_API_URL}" for local testing
     dummy_token = "secure_token_123" # In production, generate a real hash
     
     magic_actions_html = ""
@@ -1550,7 +1550,7 @@ def get_current_candidate(
         resume_url = None
         if user.resume_filename:
             # Note: Ensure this URL matches where you actually serve files
-            resume_url = f"https://truthhire-api.onrender.com/static/resumes/{user.resume_filename}"
+            resume_url = f"{base_url}/static/resumes/{user.resume_filename}"
             
         return {
             "id": user.id,
@@ -2579,7 +2579,7 @@ def get_user_profile(user_id: int, db: Session = Depends(get_db)):
     
     resume_url = None
     if user.resume_filename:
-        resume_url = f"${process.env.NEXT_PUBLIC_API_URL}/static/resumes/{user.resume_filename}"
+        resume_url = f"{base_url}/static/resumes/{user.resume_filename}"
 
     return {
         "id": user.id,
@@ -3099,7 +3099,7 @@ def get_job_applicants(job_id: int, db: Session = Depends(get_db)):
             "applicant_email": user.email,
             "headline": user.headline or "No headline",
             "phone": user.phone or "Hidden",
-            "resume_url": f"${process.env.NEXT_PUBLIC_API_URL}/static/resumes/{user.resume_filename}" if user.resume_filename else None,
+            "resume_url": f"{base_url}/static/resumes/{user.resume_filename}" if user.resume_filename else None,
             "applied_at": app.applied_at,
             "status": app.status,
             "metrics": {
