@@ -1549,8 +1549,13 @@ def get_current_candidate(
         # ✅ FIX 1: Use actual URL string (Python string), NOT JavaScript code
         resume_url = None
         if user.resume_filename:
-            # Note: Ensure this URL matches where you actually serve files
-            resume_url = f"{base_url}/static/resumes/{user.resume_filename}"
+            if user.resume_filename.startswith("http"):
+                # It is already a full Supabase URL -> Use it directly
+                resume_url = user.resume_filename
+            else:
+                # It is an old local file -> Add the path
+                base_url = "https://truthhire-api.onrender.com"
+                resume_url = f"{base_url}/static/resumes/{user.resume_filename}"
             
         return {
             "id": user.id,
@@ -2579,7 +2584,11 @@ def get_user_profile(user_id: int, db: Session = Depends(get_db)):
     
     resume_url = None
     if user.resume_filename:
-        resume_url = f"{base_url}/static/resumes/{user.resume_filename}"
+        if user.resume_filename.startswith("http"):
+            resume_url = user.resume_filename
+        else:
+            base_url = "https://truthhire-api.onrender.com"
+            resume_url = f"{base_url}/static/resumes/{user.resume_filename}"
 
     return {
         "id": user.id,
@@ -3090,16 +3099,30 @@ def get_job_applicants(job_id: int, db: Session = Depends(get_db)):
         .order_by(JobApplication.match_score.desc()).all()
     
     applicants = []
+    
+    # ✅ FIX 1: Define the Base URL explicitly
+    base_url = "https://truthhire-api.onrender.com"
+
     for app, user in results:
         ai_analysis = get_ai_gap_analysis(user.resume_text or "", job.description, candidate_id=str(user.id), job_id=str(job.id))
         
+        # ✅ FIX 2: Smart URL Check (Prevents Double URLs)
+        resume_link = None
+        if user.resume_filename:
+            if user.resume_filename.startswith("http"):
+                # If it's already a full Supabase URL, use it directly
+                resume_link = user.resume_filename
+            else:
+                # If it's a local filename, prepend the base URL
+                resume_link = f"{base_url}/static/resumes/{user.resume_filename}"
+
         applicants.append({
             "id": app.id,
             "applicant_name": user.name,
             "applicant_email": user.email,
             "headline": user.headline or "No headline",
             "phone": user.phone or "Hidden",
-            "resume_url": f"{base_url}/static/resumes/{user.resume_filename}" if user.resume_filename else None,
+            "resume_url": resume_link, # <--- Use the corrected link variable
             "applied_at": app.applied_at,
             "status": app.status,
             "metrics": {
