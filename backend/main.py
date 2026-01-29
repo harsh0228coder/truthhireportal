@@ -612,7 +612,7 @@ def send_application_email(hr_email: str, job_title: str, candidate_data: dict, 
     
     # 2. Generate Magic Links (Strategy B)
     # REPLACE THIS with your actual domain when deploying
-    base_url = "${process.env.NEXT_PUBLIC_API_URL}"  # OR "${process.env.NEXT_PUBLIC_API_URL}" for local testing
+    base_url = f"{os.getenv('NEXT_PUBLIC_API_URL')}"  # OR "${process.env.NEXT_PUBLIC_API_URL}" for local testing
     dummy_token = "secure_token_123" # In production, generate a real hash
     
     magic_actions_html = ""
@@ -1543,16 +1543,14 @@ def get_current_candidate(
         
         # Fetch related data
         projects = db.query(Project).filter(Project.user_id == user.id).all()
-
-        # --- 🆕 FETCH SKILL GAPS (Top 5) ---
         skill_gaps = db.query(SkillGap).filter(SkillGap.user_id == user.id)\
             .order_by(SkillGap.frequency.desc()).limit(5).all()
-        # -----------------------------------
         
-        # Build resume URL
+        # ✅ FIX 1: Use actual URL string (Python string), NOT JavaScript code
         resume_url = None
         if user.resume_filename:
-            resume_url = f"{process.env.NEXT_PUBLIC_API_URL}/static/resumes/{user.resume_filename}"
+            # Note: Ensure this URL matches where you actually serve files
+            resume_url = f"https://truthhire-api.onrender.com/static/resumes/{user.resume_filename}"
             
         return {
             "id": user.id,
@@ -1576,16 +1574,18 @@ def get_current_candidate(
             "resume_url": resume_url,
             "resume_text": user.resume_text,
             "profile_image": getattr(user, 'profile_image', None),
-            
-            # --- 🆕 RETURN SKILL GAPS ---
             "skill_gaps": [{"skill_name": s.skill_name, "frequency": s.frequency} for s in skill_gaps],
-            
             "projects": [{"id": p.id, "title": p.title, "description": p.description, "tech_stack": p.tech_stack, "live_link": p.live_link, "github_link": p.github_link} for p in projects]
         }
+
+    # ✅ FIX 2: Catch the correct exception for PyJWT
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.JWTError:
+    except jwt.PyJWTError:  # <--- Changed from jwt.JWTError to jwt.PyJWTError
         raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        print(f"Auth Error: {e}")
+        raise HTTPException(status_code=401, detail="Authentication failed")
 
 @app.get("/candidate/applications")
 def get_my_applications(
