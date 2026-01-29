@@ -36,7 +36,7 @@ export default function RecruiterLogin() {
     setLoading(true);
 
     try {
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/recruiters/login", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -103,7 +103,7 @@ export default function RecruiterLogin() {
     setError('');
     setVerifying(true);
     try {
-      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/recruiters/verify-login-otp', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/verify-login-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, otp: otpCode })

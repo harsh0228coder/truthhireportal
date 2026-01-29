@@ -49,7 +49,7 @@ export default function RecruiterRegister() {
     setLoading(true);
 
     try {
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/recruiters/register", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -102,7 +102,7 @@ export default function RecruiterRegister() {
     setError('');
     setVerifying(true);
     try {
-      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/recruiters/verify-signup-otp', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/verify-signup-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.official_email, otp: otpCode })

@@ -322,7 +322,7 @@ export default function OnboardingPage() {
     if (!token) {
         router.push('/login');
     } else {
-        fetch('${process.env.NEXT_PUBLIC_API_URL}/candidate/me', { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/me`, { headers: { Authorization: `Bearer ${token}` } })
             .then(res => res.json())
             .then(data => setUserId(data.id))
             .catch(() => router.push('/login'));

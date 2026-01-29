@@ -76,10 +76,10 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const [statsRes, jobsRes, usersRes, recruitersRes] = await Promise.all([
-        fetch('${process.env.NEXT_PUBLIC_API_URL}/admin/stats'),
-        fetch('${process.env.NEXT_PUBLIC_API_URL}/admin/jobs'),
-        fetch('${process.env.NEXT_PUBLIC_API_URL}/admin/users'),
-        fetch('${process.env.NEXT_PUBLIC_API_URL}/admin/recruiters')
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/stats`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/jobs`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/recruiters`)
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
     if (!jobFormData.employment_type) return toast.error("Please select employment type");
     setIsSubmitting(true);
     try {
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/admin/jobs', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/jobs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(jobFormData),

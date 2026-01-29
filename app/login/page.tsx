@@ -68,7 +68,7 @@ export default function LoginPage() {
       setLoading(true); // This already makes the button spin
       
       try {
-        const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/users/google-auth', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/google-auth`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ access_token: tokenResponse.access_token }),
@@ -104,7 +104,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/users/login', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -156,7 +156,7 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/users/verify-otp', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: otpCode })

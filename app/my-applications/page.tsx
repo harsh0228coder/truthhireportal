@@ -49,7 +49,7 @@ export default function MyApplicationsPage() {
     // 2. Fetch Data
     const fetchApps = async () => {
       try {
-        const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/candidate/applications", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/applications`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

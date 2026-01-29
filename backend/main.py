@@ -1543,7 +1543,7 @@ def get_current_candidate(
         # Build resume URL
         resume_url = None
         if user.resume_filename:
-            resume_url = f"${process.env.NEXT_PUBLIC_API_URL}/static/resumes/{user.resume_filename}"
+            resume_url = f"{process.env.NEXT_PUBLIC_API_URL}/static/resumes/{user.resume_filename}"
             
         return {
             "id": user.id,

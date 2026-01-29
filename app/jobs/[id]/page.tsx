@@ -90,7 +90,7 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId }: any) => {
 
     setIsSubmitting(true);
     try {
-        await fetch('${process.env.NEXT_PUBLIC_API_URL}/feedback/ai-analysis', {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/feedback/ai-analysis`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -488,7 +488,7 @@ export default function JobDetailPage() {
           return; 
       }
       
-      const analyzeRes = await fetch('${process.env.NEXT_PUBLIC_API_URL}/analyze-gap', {
+      const analyzeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analyze-gap`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -531,7 +531,7 @@ export default function JobDetailPage() {
     setApplying(true);
     try {
       const jobId = String(job?.id); // No prefix stripping needed anymore
-      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/jobs/apply', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/apply`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

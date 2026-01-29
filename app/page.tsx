@@ -111,7 +111,7 @@ export default function Home() {
       setSubmitting(true);
       
       try {
-        const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/waitlist/join', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/waitlist/join`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, category: waitlistCategory })

@@ -128,7 +128,7 @@ export default function PostJobPage() {
     setRecruiterId(id);
 
     // Fetch Recruiter Profile to get Company Name for AI
-    fetch("${process.env.NEXT_PUBLIC_API_URL}/recruiters/me", {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/me`, {
         headers: { "Authorization": `Bearer ${token}` }
     })
     .then(res => res.json())
@@ -151,7 +151,7 @@ export default function PostJobPage() {
     setModalType('loading_ai'); // Show AI Loading Modal
 
     try {
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/admin/generate-description", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/generate-description`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -216,7 +216,7 @@ export default function PostJobPage() {
         return;
       }
 
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL}/recruiters/post-job", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/post-job`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

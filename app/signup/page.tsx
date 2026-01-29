@@ -71,7 +71,7 @@ export default function SignupPage() {
       // We removed the toast here to rely on button spinner + final modal
       
       try {
-        const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/users/google-auth', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/google-auth`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ access_token: tokenResponse.access_token }),
@@ -113,7 +113,7 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/users/signup', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -159,7 +159,7 @@ export default function SignupPage() {
     setError('');
 
     try {
-      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/users/verify-signup-otp', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-signup-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, otp: otpCode })

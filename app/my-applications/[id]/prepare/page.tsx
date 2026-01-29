@@ -53,7 +53,7 @@ export default function InterviewPrepPage() {
     const currentQuestion = prepData.interview_flow[currentQIndex].question;
 
     try {
-        const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/interview/analyze-answer", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interview/analyze-answer`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

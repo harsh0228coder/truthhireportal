@@ -93,7 +93,7 @@ export default function CheckMyChances() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/parse-resume", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/parse-resume`, {
         method: "POST",
         body: formData
       });
@@ -114,7 +114,7 @@ export default function CheckMyChances() {
     setFetchingUrl(true);
 
     try {
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/fetch-job-content", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/fetch-job-content`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: jobUrl })
@@ -154,7 +154,7 @@ export default function CheckMyChances() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/analyze-gap", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analyze-gap`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

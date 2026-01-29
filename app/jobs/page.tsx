@@ -144,7 +144,7 @@ function JobsPageContent() {
             // 2. Fetch Saved Jobs (If User Logged In)
             const token = localStorage.getItem('token');
             if (token) {
-                const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/users/me/saved-ids', {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/saved-ids`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
