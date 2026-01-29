@@ -1,6 +1,6 @@
 import bcrypt
-from database import SessionLocal
-from models import Admin, Base
+from backend.database import SessionLocal
+from backend.models import Admin, Base
 from database import engine
 
 # Create tables

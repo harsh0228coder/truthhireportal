@@ -1,6 +1,6 @@
 # backend/init_db.py
-from database import engine
-from models import Base
+from backend.database import engine
+from backend.models import Base
 # Make sure to import all models so they are registered with Base
 import models 
 

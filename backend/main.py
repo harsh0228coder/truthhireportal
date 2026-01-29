@@ -17,13 +17,13 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from typing import Union, List, Optional, Any
 from fastapi.staticfiles import StaticFiles
-from database import SessionLocal, engine
-from models import Job, Recruiter, User, Application, SavedJob, JobApplication, Admin, Project, Achievement, Certification, SkillGap, AIFeedback, Waitlist
+from backend.database import SessionLocal, engine
+from backend.models import Job, Recruiter, User, Application, SavedJob, JobApplication, Admin, Project, Achievement, Certification, SkillGap, AIFeedback, Waitlist
 import random
 import string, requests
 from bs4 import BeautifulSoup
 import re
-import models
+import backend.models
 import sys
 from fastapi.responses import JSONResponse, HTMLResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -51,7 +51,7 @@ try:
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 except Exception as e:
     print(f"Warning: Supabase client failed to initialize. Check env vars. Error: {e}")
-    
+
 load_dotenv()
 
 GOOGLE_CLIENT_ID = "156178217038-72bv7qfb4o2an9b0o8qdsbq5uekecnu9.apps.googleusercontent.com"

@@ -4,8 +4,8 @@ import jwt
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from models import User
-from database import SessionLocal
+from backend.models import User
+from backend.database import SessionLocal
 import os
 
 SECRET_KEY = os.getenv("SECRET_KEY")

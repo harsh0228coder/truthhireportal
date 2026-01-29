@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Foreign
 from datetime import datetime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from database import Base, engine
+from backend.database import Base, engine
 import bcrypt
 
 class Job(Base):
