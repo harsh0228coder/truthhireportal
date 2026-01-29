@@ -36,11 +36,22 @@ import jwt
 from sqlalchemy import or_
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+from supabase import create_client, Client
 
 # --- CONFIGURATION ---
 OTP_STORE = {} 
 OTP_EXPIRY_SECONDS = 300  # 5 minutes
 
+# --- CONFIGURATION (Add this near the top with other configs) ---
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") # Ensure this is the SERVICE_ROLE key
+
+# Initialize Supabase Client
+try:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+except Exception as e:
+    print(f"Warning: Supabase client failed to initialize. Check env vars. Error: {e}")
+    
 load_dotenv()
 
 GOOGLE_CLIENT_ID = "156178217038-72bv7qfb4o2an9b0o8qdsbq5uekecnu9.apps.googleusercontent.com"
@@ -2718,27 +2729,26 @@ def delete_project(user_id: int, project_id: int, db: Session = Depends(get_db))
 
 @app.post("/users/{user_id}/resume")
 async def upload_resume(user_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    # 1. Verify User Exists
     user = db.query(User).filter(User.id == user_id).first()
     if not user: raise HTTPException(status_code=404, detail="User not found")
     
+    # 2. Read File Content into Memory
     content = await file.read()
-    safe_filename = f"{user_id}_{file.filename.replace(' ', '_')}"
-    file_path = f"static/resumes/{safe_filename}"
-    os.makedirs("static/resumes", exist_ok=True)
     
-    with open(file_path, "wb") as f:
-        f.write(content)
-    
+    # --- AI Text Extraction Logic (Unchanged) ---
     text = ""
     try:
         if file.filename.lower().endswith('.pdf'):
             try:
+                import pdfplumber
                 with pdfplumber.open(io.BytesIO(content)) as pdf:
                     for page in pdf.pages:
                         extracted = page.extract_text(x_tolerance=1)
                         if extracted: text += extracted + " "
             except: pass
             
+            # Fallback
             if len(text) < 50:
                 try:
                     import pypdf
@@ -2749,20 +2759,45 @@ async def upload_resume(user_id: int, file: UploadFile = File(...), db: Session 
                 except: pass
         else:
             text = content.decode('utf-8', errors='ignore')
-    except: pass
-    
-    user.resume_filename = safe_filename
-    user.resume_text = clean_text_for_ai(text)[:10000]
-    user.resume_uploaded_at = datetime.now()
-    db.commit()
-    
-    full_url = f"http://localhost:8000/static/resumes/{safe_filename}"
-    return {
-        "message": "Resume uploaded successfully", 
-        "filename": safe_filename,
-        "url": full_url
-    }
+    except Exception as e:
+        print(f"AI Extraction Warning: {e}")
+    # --------------------------------------------
 
+    # 3. UPLOAD TO SUPABASE (Replaces local save)
+    try:
+        # Create a unique filename: resumes/user_123_random.pdf
+        # We add random numbers to avoid caching issues when updating resumes
+        file_extension = file.filename.split(".")[-1]
+        unique_filename = f"user_{user_id}_{random.randint(1000, 9999)}.{file_extension}"
+        
+        # Upload using the Supabase Client
+        # Note: We upload 'content' (bytes) directly
+        res = supabase.storage.from_("resumes").upload(
+            path=unique_filename,
+            file=content,
+            file_options={"content-type": file.content_type}
+        )
+
+        # Get the Public URL
+        public_url = supabase.storage.from_("resumes").get_public_url(unique_filename)
+
+        # 4. Save to Database
+        # Important: We now save the FULL URL, not just the filename
+        user.resume_filename = public_url 
+        user.resume_text = clean_text_for_ai(text)[:10000]
+        user.resume_uploaded_at = datetime.now()
+        db.commit()
+        
+        return {
+            "message": "Resume uploaded successfully", 
+            "filename": unique_filename,
+            "url": public_url
+        }
+
+    except Exception as e:
+        print(f"Supabase Upload Error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload resume to cloud storage")
+    
 # --- ADD THIS NEW ENDPOINT ---
 @app.post("/users/{user_id}/profile-image")
 async def upload_profile_image(
