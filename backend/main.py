@@ -2485,33 +2485,36 @@ def get_user_profile(user_id: int, db: Session = Depends(get_db)):
         "experiences": user.experiences
     }
 
+# Update this class in main.py
 class ProfileUpdate(BaseModel):
-    name: str = None # <--- ADD THIS
-    headline: str = None
-    college: str = None
-    batch_year: str = None
-    degree: str = None
-    cgpa: str = None
-    work_status: str = None
-    bio: str = None
-    github_url: str = None
-    linkedin_url: str = None
-    portfolio_url: str = None
-    skills: Union[str, List[str]] = None
-    target_roles: Union[str, List[str]] = None
-    preferred_locations: Union[str, List[str]] = None
-    expected_salary: str = None
-    phone: str = None
-    location: str = None
-    first_name: str = None
-    last_name: str = None
-    user_id: str = None
-    education: Union[List[dict], dict, str] = None 
-    experiences: Union[List[dict], str] = None
-    summary: str = None
-    total_experience: float = None
-    current_salary: str = None
-    notice_period: str = None
+    name: Optional[str] = None 
+    headline: Optional[str] = None
+    college: Optional[str] = None
+    batch_year: Optional[str] = None
+    degree: Optional[str] = None
+    cgpa: Optional[str] = None
+    work_status: Optional[str] = None
+    bio: Optional[str] = None
+    github_url: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    skills: Union[str, List[str], None] = None
+    target_roles: Union[str, List[str], None] = None
+    preferred_locations: Union[str, List[str], None] = None
+    expected_salary: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    user_id: Optional[str] = None
+    education: Union[List[dict], dict, str, None] = None 
+    experiences: Union[List[dict], str, None] = None
+    summary: Optional[str] = None
+    # Changed float to Union[float, str, None] to handle "5 Years" strings safely
+    total_experience: Union[float, str, None] = None 
+    current_salary: Optional[str] = None
+    notice_period: Optional[str] = None
+    
     class Config:
         extra = 'allow'
          

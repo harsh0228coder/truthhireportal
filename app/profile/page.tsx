@@ -141,7 +141,14 @@ export default function ProfilePage() {
 
         const data = await response.json();
         
-        setUser({ ...user, resume_filename: data.filename });
+        // ✅ FIXED: Use 'data.url' so the UI sees the full Supabase link immediately
+        // We also update 'resume_uploaded_at' to force React to re-render the component
+        setUser({ 
+            ...user, 
+            resume_filename: data.url, 
+            resume_uploaded_at: new Date().toISOString() 
+        });
+        
         toast.success("Resume updated successfully!", { id: toastId });
     } catch (error) {
         console.error(error);
