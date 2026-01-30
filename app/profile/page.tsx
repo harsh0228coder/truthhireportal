@@ -9,7 +9,7 @@ import {
   Briefcase, Building2, FileText,
   Shield, Zap, Share2,
   Edit3, Download, Wallet, Hourglass, TrendingUp, Clock,
-  Upload, Loader2, Target, ArrowRight, CheckCircle2, AlertCircle, Plus
+  Upload, Loader2, Target, ArrowRight, CheckCircle2, AlertCircle, Plus, Eye
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -517,14 +517,29 @@ export default function ProfilePage() {
                                 <FileText size={20} />
                             </div>
                             <div className="overflow-hidden">
-                                <p className="text-sm text-white truncate w-32 font-medium">{user.resume_filename}</p>
+                                <p className="text-sm text-white truncate w-32 font-medium">
+                                    {/* Show a cleaner name if it's a long URL */}
+                                    {user.resume_filename.startsWith("http") ? "Resume.pdf" : user.resume_filename}
+                                </p>
                                 <p className="text-[10px] text-gray-500">PDF Document</p>
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <a href={`${process.env.NEXT_PUBLIC_API_URL}/static/resumes/${user.resume_filename}`} target="_blank" className="flex-1 text-center bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2">
-                                <Download size={14} /> Download
+                            {/* ✅ FIXED: Smart URL Logic */}
+                            <a 
+                                href={
+                                    user.resume_filename.startsWith("http") 
+                                    ? user.resume_filename 
+                                    : `${process.env.NEXT_PUBLIC_API_URL}/static/resumes/${user.resume_filename}`
+                                } 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex-1 text-center bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2"
+                            >
+                                {/* Changed from 'Download' to 'View' as requested */}
+                                <Eye size={14} /> View Resume
                             </a>
+                            
                             <button onClick={() => fileInputRef.current?.click()} className="flex-1 text-center bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2">
                                 <Edit3 size={14} /> Update
                             </button>
@@ -555,7 +570,6 @@ export default function ProfilePage() {
                     </div>
                 )}
             </div>
-
           </div>
 
         </div>
