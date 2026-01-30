@@ -201,7 +201,7 @@ export default function Navbar() {
   };
 
   // --- RENDER ---
-  if (pathname?.includes('/recruiter/dashboard') || pathname?.startsWith('/admin')) return null;
+  if (pathname?.includes('/recruiter/dashboard') || pathname?.startsWith('/secure-portal-0228')) return null;
 
   return (
     <nav 

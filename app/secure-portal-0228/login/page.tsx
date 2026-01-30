@@ -16,7 +16,7 @@ export default function AdminLogin() {
     setError('');
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/login`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/secure-portal-0228/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -26,7 +26,7 @@ export default function AdminLogin() {
         const data = await res.json();
         localStorage.setItem('admin_id', data.admin_id);
         localStorage.setItem('admin_username', data.username);
-        router.push('/admin/dashboard');
+        router.push('/secure-portal-0228/dashboard');
       } else {
         setError('Invalid credentials');
       }
