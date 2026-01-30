@@ -10,7 +10,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   // --- CONFIGURATION ---
   // These are the ONLY pages where we hide the Navbar and Footer
   const isAuthOrAdmin = 
-    pathname?.startsWith('/admin') || 
+    pathname?.startsWith('/secure-portal-0228') || 
     pathname === '/login' || 
     pathname === '/signup' || 
     pathname === '/onboarding' ||
