@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
     '/signup',
     '/recruiter/login',
     '/recruiter/register',
-    '/admin/login'
+    '/secure-portal-0228/login'
   ];
 
   // Check if the current path is public

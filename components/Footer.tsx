@@ -21,7 +21,7 @@ export default function Footer() {
   if (
       pathname?.includes('/recruiter/dashboard') || 
       pathname === '/recruiter/signup' ||
-      pathname?.startsWith('/admin')
+      pathname?.startsWith('/secure-portal-0228')
   ) {
     return null;
   }
