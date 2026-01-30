@@ -37,6 +37,7 @@ from sqlalchemy import or_
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from supabase import create_client, Client
+import resend
 
 # --- CONFIGURATION ---
 OTP_STORE = {} 
@@ -46,14 +47,7 @@ base_url = os.getenv("NEXT_PUBLIC_API_URL", "https://truthhire-api.onrender.com"
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") # Ensure this is the SERVICE_ROLE key
 
-# --- EMAIL CONFIGURATION (Add this at the top) ---
-MAIL_USER = os.getenv("MAIL_USER")
-MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
-MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
-MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
-
-if not MAIL_USER or not MAIL_PASSWORD:
-    print("⚠️ WARNING: Email credentials are missing in Environment Variables!")
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 # Initialize Supabase Client
 try:
@@ -459,12 +453,40 @@ def fetch_job_content(data: UrlRequest):
 # 📧 EMAIL FUNCTIONS
 # ===========================
 
+# --- 📧 MASTER EMAIL FUNCTION (RESEND) ---
+def send_email_via_resend(to_email: str, subject: str, html_content: str, attachment_path: str = None):
+    try:
+        # Define the sender. Since you verified 'truthhire.in', you can use ANY name!
+        # Examples: "TruthHire Admin <admin@truthhire.in>", "TruthHire Team <no-reply@truthhire.in>"
+        sender_identity = "TruthHire <no-reply@truthhire.in>" 
+
+        params = {
+            "from": sender_identity,
+            "to": [to_email],
+            "subject": subject,
+            "html": html_content,
+        }
+
+        # Handle Attachment (for Resend)
+        if attachment_path and os.path.exists(attachment_path):
+            with open(attachment_path, "rb") as f:
+                file_bytes = list(f.read()) # Convert bytes to list of integers for Resend
+                params["attachments"] = [{
+                    "filename": os.path.basename(attachment_path),
+                    "content": file_bytes
+                }]
+
+        email = resend.Emails.send(params)
+        print(f"✅ Email sent to {to_email} | ID: {email.get('id')}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Failed to send email via Resend: {e}")
+        return False
+
 def send_admin_recruiter_alert(recruiter_name: str, recruiter_email: str, linkedin_url: str):
-    sender_email = MAIL_USER
-    sender_password = MAIL_PASSWORD
-    
     # Change this to your actual admin email or set ADMIN_EMAIL in your .env file
-    admin_email = os.getenv("ADMIN_EMAIL", MAIL_USER) 
+    admin_email = os.getenv("ADMIN_EMAIL", "hrtruthhire@gmail.com") 
 
     headline = "⚠️ Action Required: Verify Recruiter"
     
@@ -486,25 +508,12 @@ def send_admin_recruiter_alert(recruiter_name: str, recruiter_email: str, linked
     """
     
     # You can update this link to point to your actual admin dashboard URL
-    cta_link = "http://www.truthhire.in/admin/recruiters" 
+    cta_link = "https://truthhire.in/admin/recruiters" 
     
     final_html = get_base_email_template(headline, content_html, "Open Admin Dashboard", cta_link)
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"TruthHire System <{sender_email}>"
-    msg['To'] = admin_email
-    msg['Subject'] = f"New Verification Request: {recruiter_name}"
-    msg.attach(MIMEText(final_html, 'html'))
-
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        #server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        print(f"✅ Admin alert sent regarding {recruiter_email}")
-    except Exception as e:
-        print(f"❌ Failed to send admin alert: {e}")
+    # ✅ UPDATED: Send via Resend
+    send_email_via_resend(admin_email, f"New Verification Request: {recruiter_name}", final_html)
 
 # --- UPDATED MAGIC LINK ENDPOINT ---
 @app.get("/public/magic-status", response_class=HTMLResponse)
@@ -592,11 +601,7 @@ def magic_status_update(
     </html>
     """
 
-# --- UPDATED: send_application_email with Magic Links ---
 def send_application_email(hr_email: str, job_title: str, candidate_data: dict, cover_note: str, resume_path: str = None, is_cold_outreach: bool = False, app_id: int = None):
-    sender_email = MAIL_USER
-    sender_password = MAIL_PASSWORD
-    
     # 1. Prepare Data
     score = candidate_data.get('score', 0)
     score_color = "#16a34a" if score >= 75 else "#d97706"
@@ -610,10 +615,9 @@ def send_application_email(hr_email: str, job_title: str, candidate_data: dict, 
 
     headline = "Candidate Match Found" if is_cold_outreach else "New Application Received"
     
-    # 2. Generate Magic Links (Strategy B)
-    # REPLACE THIS with your actual domain when deploying
-    base_url = f"{os.getenv('NEXT_PUBLIC_API_URL', 'https://truthhire-api.onrender.com')}"  # OR "${process.env.NEXT_PUBLIC_API_URL}" for local testing
-    dummy_token = "secure_token_123" # In production, generate a real hash
+    # 2. Generate Magic Links
+    base_url = f"{os.getenv('NEXT_PUBLIC_API_URL', 'https://truthhire-api.onrender.com')}"
+    dummy_token = "secure_token_123"
     
     magic_actions_html = ""
     if app_id:
@@ -683,45 +687,13 @@ def send_application_email(hr_email: str, job_title: str, candidate_data: dict, 
     <p style="font-size: 14px; color: #6b7280; margin-top: 24px;">The candidate's resume is attached to this email for your detailed review.</p>
     """
 
-    # Generate Full HTML
-    # Note: Replace localhost link with your actual recruiter dashboard link in production
-    final_html = get_base_email_template(headline, body_content, "Login to View Full Profile", "http://localhost:3000/recruiter/login")
+    final_html = get_base_email_template(headline, body_content, "Login to View Full Profile", "https://truthhire.in/recruiter/login")
 
-    msg = MIMEMultipart('mixed')
-    msg['From'] = f"TruthHire Talent <{sender_email}>"
-    msg['To'] = hr_email
-    msg['Subject'] = f"Action Required: {candidate_data['name']} for {job_title}"
-    
-    # Attach HTML Body
-    msg_body = MIMEMultipart('alternative')
-    msg_body.attach(MIMEText(final_html, 'html'))
-    msg.attach(msg_body)
-
-    # Attach Resume
-    if resume_path and os.path.exists(resume_path):
-        try:
-            with open(resume_path, "rb") as f:
-                part = MIMEApplication(f.read(), _subtype="pdf")
-                part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(resume_path))
-                msg.attach(part)
-        except Exception as e:
-            print(f"⚠️ Error attaching resume: {e}")
-
-    # Send Email
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        #server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        print(f"✅ Application email sent to {hr_email}")
-    except Exception as e:
-        print(f"❌ Failed to send email: {e}")
+    # ✅ UPDATED: Send via Resend (Handles Attachment)
+    send_email_via_resend(hr_email, f"Action Required: {candidate_data['name']} for {job_title}", final_html, resume_path)
 
 
 def send_candidate_update_email(candidate_email: str, candidate_name: str, job_title: str, company_name: str, hr_name: str, status: str, feedback: str = None):
-    sender_email = MAIL_USER
-    sender_password = MAIL_PASSWORD
     current_year = datetime.now().year
     
     # --- A. SHORTLISTED TEMPLATE (Green/Positive) ---
@@ -744,7 +716,7 @@ def send_candidate_update_email(candidate_email: str, candidate_name: str, job_t
         <p>In the meantime, feel free and practice for your upcoming interview or assignment.</p>
         """
         cta_text = "View Application Status"
-        cta_link = "http://localhost:3000/my-applications"
+        cta_link = "https://truthhire.in/my-applications"
 
     # --- B. REJECTED TEMPLATE (Grey/Professional) ---
     else: # status == 'rejected'
@@ -769,7 +741,7 @@ def send_candidate_update_email(candidate_email: str, candidate_name: str, job_t
             
         email_content += "<p>We wish you the very best in your job search.</p>"
         cta_text = "Browse Other Jobs"
-        cta_link = "http://localhost:3000/jobs"
+        cta_link = "https://truthhire.in/jobs"
 
     # --- SHARED HTML WRAPPER ---
     html_body = f"""
@@ -812,22 +784,9 @@ def send_candidate_update_email(candidate_email: str, candidate_name: str, job_t
     </body>
     </html>
     """
-
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"{company_name} <{sender_email}>"
-    msg['To'] = candidate_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(html_body, 'html'))
-
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        #server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        print(f"✅ Candidate update email sent to {candidate_email} ({status})")
-    except Exception as e:
-        print(f"❌ Failed to send email: {e}")
+    
+    # ✅ UPDATED: Send via Resend
+    send_email_via_resend(candidate_email, subject, html_body)
 
 def get_email_template(title, content, preheader=""):
     return f"""
@@ -877,9 +836,6 @@ def get_email_template(title, content, preheader=""):
     """
 
 def send_welcome_email(email: str, name: str):
-    sender_email = MAIL_USER
-    sender_password = MAIL_PASSWORD
-    
     content_html = f"""
     <p>Hi {name},</p>
     <p>Your account has been successfully created. You now have access to India's first AI-powered platform designed to eliminate ghost jobs.</p>
@@ -896,27 +852,12 @@ def send_welcome_email(email: str, name: str):
     <p>"The best way to predict the future is to create it." Let's get you hired.</p>
     """
 
-    final_html = get_base_email_template(f"Welcome, {name}! 🎉", content_html, "Log In to Dashboard", "http://localhost:3000/login")
+    final_html = get_base_email_template(f"Welcome, {name}! 🎉", content_html, "Log In to Dashboard", "https://truthhire.in/login")
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"TruthHire Team <{sender_email}>"
-    msg['To'] = email
-    msg['Subject'] = "Welcome to the TruthHire Community"
-    msg.attach(MIMEText(final_html, 'html'))
-
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        #server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-    except Exception as e:
-        print(f"Error: {e}")
+    # ✅ UPDATED: Send via Resend
+    send_email_via_resend(email, "Welcome to the TruthHire Community", final_html)
 
 def send_otp_email(email: str, otp: str, name: str = "User"):
-    sender_email = MAIL_USER
-    sender_password = MAIL_PASSWORD
-    
     content_html = f"""
     <p>Hi {name},</p>
     <p>You requested to sign in to your TruthHire account. Use the verification code below to complete your login:</p>
@@ -937,26 +878,10 @@ def send_otp_email(email: str, otp: str, name: str = "User"):
 
     final_html = get_base_email_template("Your Login Code", content_html)
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"TruthHire Security <{sender_email}>"
-    msg['To'] = email
-    msg['Subject'] = f"Your TruthHire Login Code: {otp}"
-    msg.attach(MIMEText(final_html, 'html'))
-
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        #server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        print(f"✅ OTP sent to {email}")
-    except Exception as e:
-        print(f"❌ Failed to send OTP: {e}")
+    # ✅ UPDATED: Send via Resend
+    send_email_via_resend(email, f"Your TruthHire Login Code: {otp}", final_html)
 
 def send_recruiter_otp_email(email: str, otp: str, name: str = "Recruiter"):
-    sender_email = MAIL_USER
-    sender_password = MAIL_PASSWORD
-    
     headline = "Verify Your Corporate Account"
     
     content_html = f"""
@@ -983,26 +908,10 @@ def send_recruiter_otp_email(email: str, otp: str, name: str = "Recruiter"):
 
     final_html = get_base_email_template(headline, content_html)
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"TruthHire Verification <{sender_email}>"
-    msg['To'] = email
-    msg['Subject'] = f"{otp} is your verification code"
-    msg.attach(MIMEText(final_html, 'html'))
-
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        #server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        print(f"✅ Recruiter OTP sent to {email}")
-    except Exception as e:
-        print(f"❌ CRITICAL EMAIL ERROR (OTP): {e}") # Check your terminal for this error
+    # ✅ UPDATED: Send via Resend
+    send_email_via_resend(email, f"{otp} is your verification code", final_html)
 
 def send_login_success_email(email: str, name: str):
-    sender_email = MAIL_USER
-    sender_password = MAIL_PASSWORD
-    
     content_html = f"""
     <p>Hi {name},</p>
     <p>Your account was successfully accessed. Welcome back to TruthHire!</p>
@@ -1015,32 +924,12 @@ def send_login_success_email(email: str, name: str):
     <p style="font-size: 14px; color: #6b7280;">If this wasn't you, please secure your account immediately by changing your password.</p>
     """
 
-    final_html = get_base_email_template("Login Successful", content_html, "Go to Dashboard", "http://localhost:3000/dashboard")
+    final_html = get_base_email_template("Login Successful", content_html, "Go to Dashboard", "https://truthhire.in/dashboard")
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"TruthHire Security <{sender_email}>"
-    msg['To'] = email
-    msg['Subject'] = "Login Successful - TruthHire"
-    msg.attach(MIMEText(final_html, 'html'))
-
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        #server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-    except Exception as e:
-        print(f"Error: {e}")
+    # ✅ UPDATED: Send via Resend
+    send_email_via_resend(email, "Login Successful - TruthHire", final_html)
 
 def send_candidate_confirmation_email(candidate_email: str, candidate_name: str, job_title: str, company_name: str):
-    sender_email = MAIL_USER
-    sender_password = MAIL_PASSWORD
-    
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"TruthHire <{sender_email}>"
-    msg['To'] = candidate_email
-    msg['Subject'] = f"Application sent: {job_title}"
-
     # Current Year for Footer
     year = datetime.now().year
     company_initial = company_name[0].upper() if company_name else "C"
@@ -1069,7 +958,7 @@ def send_candidate_confirmation_email(candidate_email: str, candidate_name: str,
     <body>
         <div class="container">
             <div class="header">
-                <a href="http://localhost:3000" class="logo">TruthHire<span>.</span></a>
+                <a href="https://truthhire.in" class="logo">TruthHire<span>.</span></a>
             </div>
 
             <div class="content">
@@ -1110,7 +999,7 @@ def send_candidate_confirmation_email(candidate_email: str, candidate_name: str,
                 </p>
 
                 <div style="text-align: center;">
-                    <a href="http://localhost:3000/jobs" class="btn">Browse Similar Jobs</a>
+                    <a href="https://truthhire.in/jobs" class="btn">Browse Similar Jobs</a>
                 </div>
             </div>
 
@@ -1129,21 +1018,10 @@ def send_candidate_confirmation_email(candidate_email: str, candidate_name: str,
     </html>
     """
     
-    msg.attach(MIMEText(html_body, 'html'))
-
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        #server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-    except Exception as e:
-        print(f"Failed to send confirmation email: {e}")
+    # ✅ UPDATED: Send via Resend
+    send_email_via_resend(candidate_email, f"Application sent: {job_title}", html_body)
 
 def send_waitlist_confirmation_email(email: str, category: str, position: int):
-    sender_email = MAIL_USER
-    sender_password = MAIL_PASSWORD
-    
     headline = f"You are #{position} on the list!"
     
     content_html = f"""
@@ -1161,21 +1039,8 @@ def send_waitlist_confirmation_email(email: str, category: str, position: int):
 
     final_html = get_base_email_template(headline, content_html)
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"TruthHire Waitlist <{sender_email}>"
-    msg['To'] = email
-    msg['Subject'] = f"You're #{position} on the list! ({category} Jobs)"
-    msg.attach(MIMEText(final_html, 'html'))
-
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        #server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        print(f"✅ Waitlist email sent to {email}")
-    except Exception as e:
-        print(f"❌ Failed to send waitlist email: {e}")
+    # ✅ UPDATED: Send via Resend
+    send_email_via_resend(email, f"You're #{position} on the list! ({category} Jobs)", final_html)
         
 
 # ===========================
@@ -1249,9 +1114,6 @@ def get_base_email_template(headline, content_html, cta_text=None, cta_link=None
     """
 
 def send_recruiter_status_email(email: str, name: str, status: str):
-    sender_email = MAIL_USER
-    sender_password = MAIL_PASSWORD
-    
     subject = ""
     headline = ""
     content_html = ""
@@ -1277,7 +1139,7 @@ def send_recruiter_status_email(email: str, name: str, status: str):
         <p style="font-size: 14px; color: #6b7280;">While you wait, you can still log in and draft job posts, but they will not go live until verified.</p>
         """
         cta_text = "Login to Dashboard"
-        cta_link = "http://localhost:3000/recruiter/login"
+        cta_link = "https://truthhire.in/recruiter/login"
 
     elif status == "verified":
         subject = "Welcome! Your Recruiter Account is Verified"
@@ -1296,7 +1158,7 @@ def send_recruiter_status_email(email: str, name: str, status: str):
         </div>
         """
         cta_text = "Post Your First Job"
-        cta_link = "http://localhost:3000/recruiter/dashboard"
+        cta_link = "https://truthhire.in/recruiter/dashboard"
 
     elif status == "rejected":
         subject = "Update on your TruthHire Account"
@@ -1317,21 +1179,8 @@ def send_recruiter_status_email(email: str, name: str, status: str):
 
     final_html = get_base_email_template(headline, content_html, cta_text, cta_link)
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"TruthHire Team <{sender_email}>"
-    msg['To'] = email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(final_html, 'html'))
-
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        #server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        print(f"✅ Status email sent to {email}")
-    except Exception as e:
-        print(f"❌ CRITICAL EMAIL ERROR (Status): {e}")
+    # ✅ UPDATED: Send via Resend
+    send_email_via_resend(email, subject, final_html)
 
 class FeedbackRequest(BaseModel):
     job_id: str
