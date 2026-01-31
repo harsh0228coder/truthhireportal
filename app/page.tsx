@@ -202,6 +202,7 @@ export default function Home() {
             </div>
 
             <h1 className="animate-fade-in-up delay-100 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] md:leading-[1.1]">
+              <span className="block text-white">Verified Jobs.</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-200 to-blue-500">
                   Real Offers.
               </span>
