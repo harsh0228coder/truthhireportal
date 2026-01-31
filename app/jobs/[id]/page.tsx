@@ -526,11 +526,14 @@ export default function JobDetailPage() {
 
   const handleEasyApply = async () => {
     if (!isSignedIn || !token) { setShowLoginPrompt(true); return; }
-    if (!userResume) return alert('Please upload your resume first');
+    if (!userResume) {
+        toast.error('Please upload your resume first');
+        return;
+    }
 
     setApplying(true);
     try {
-      const jobId = String(job?.id); // No prefix stripping needed anymore
+      const jobId = String(job?.id);
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/apply`, {
         method: 'POST',
         headers: { 
@@ -540,15 +543,26 @@ export default function JobDetailPage() {
         body: JSON.stringify({ job_id: parseInt(jobId), cover_note: coverNote })
       });
 
+      // ✅ FIX: Parse the response JSON regardless of success/failure
+      const data = await response.json();
+
       if (response.ok) {
         setHasApplied(true);
         setApplySuccess(true);
-        setShowLowScoreWarning(false); // Close warning if open
+        setShowLowScoreWarning(false);
+        toast.success("Application submitted successfully!");
         setTimeout(() => { setShowApplyModal(false); setApplySuccess(false); }, 2000);
       } else {
-        alert('Application failed');
+        // ✅ FIX: Read the specific error message from the backend (e.g., "Already applied")
+        const errorMessage = data.detail || 'Application failed';
+        toast.error(errorMessage);
       }
-    } catch (err) { alert('Failed to submit'); } finally { setApplying(false); }
+    } catch (err) { 
+        console.error(err);
+        toast.error('Network error. Failed to submit.'); 
+    } finally { 
+        setApplying(false); 
+    }
   };
 
   // --- HELPER: Format Salary ---
