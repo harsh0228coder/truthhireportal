@@ -39,7 +39,6 @@ from google.auth.transport import requests as google_requests
 from supabase import create_client, Client
 import resend
 from starlette.requests import Request
-from starlette.middleware.base import BaseHTTPMiddleware
 
 # --- CONFIGURATION ---
 OTP_STORE = {} 
@@ -79,14 +78,6 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
-
-@app.middleware("http")
-async def add_security_headers(request: Request, call_next):
-    response = await call_next(request)
-    # This tells the browser: "I am secure, but let me talk to popups I open (like Google Login)"
-    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
-    return response
-
 
 # Logging middleware removed for performance
 
