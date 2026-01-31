@@ -205,7 +205,7 @@ export default function Home() {
               <span className="block text-white">Verified Jobs.</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-200 to-blue-500">
                   Real Offers.
-              </span>
+              </span><br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-200 to-blue-500">
                   No Ghosts.
               </span>
