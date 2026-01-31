@@ -66,6 +66,15 @@ const getDepartment = (title: string): string => {
   return 'Other';
 };
 
+// --- NEW HELPER: Normalize Location (e.g., "Malad, Mumbai" -> "Mumbai") ---
+const getCityFromLocation = (location: string | undefined): string => {
+  if (!location) return "Unknown";
+  // Split by comma and take the last part (City), then trim whitespace
+  // Example: "Model colony, Pune" -> parts=["Model colony", " Pune"] -> returns "Pune"
+  const parts = location.split(',');
+  return parts[parts.length - 1].trim();
+};
+
 function JobsPageContent() {
   const searchParams = useSearchParams(); 
   const router = useRouter();
@@ -149,7 +158,6 @@ function JobsPageContent() {
                 });
                 if (res.ok) {
                     const ids = await res.json();
-                    // Ensure IDs are numbers to match comparison later
                     setSavedJobs(ids.map((id: any) => Number(id)));
                 }
             }
@@ -161,10 +169,11 @@ function JobsPageContent() {
     loadData();
   }, []);
 
-  // --- DERIVED DATA ---
+  // --- DERIVED DATA (UPDATED WITH NEW LOCATION LOGIC) ---
   const locationCounts = jobs.reduce((acc, job) => {
-    const loc = job.location || "Unknown";
-    acc[loc] = (acc[loc] || 0) + 1;
+    // 🟢 UPDATED: Use the helper to group by City
+    const city = getCityFromLocation(job.location);
+    acc[city] = (acc[city] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
@@ -222,8 +231,12 @@ function JobsPageContent() {
       result = result.filter(job => job.location?.toLowerCase().includes(locationFilter.toLowerCase()));
     }
 
+    // 🟢 UPDATED: Filter using the normalized city name
     if (selectedLocations.length > 0) {
-        result = result.filter(job => selectedLocations.includes(job.location));
+        result = result.filter(job => {
+            const jobCity = getCityFromLocation(job.location);
+            return selectedLocations.includes(jobCity);
+        });
     }
 
     if (selectedDepartments.length > 0) {
@@ -281,7 +294,7 @@ function JobsPageContent() {
     setList(list.includes(value) ? list.filter(t => t !== value) : [...list, value]);
   };
 
-  // --- SAVE JOB HANDLER (FIXED) ---
+  // --- SAVE JOB HANDLER ---
   const handleSaveJob = async (jobIdInput: number | string) => {
     const token = localStorage.getItem('token');
     
@@ -290,15 +303,12 @@ function JobsPageContent() {
         return;
     }
 
-    // Ensure we are working with a Number for the state array
     const jobId = Number(jobIdInput); 
     const isCurrentlySaved = savedJobs.includes(jobId);
     
-    // 1. Optimistic Update (Instant UI feedback)
     setSavedJobs(prev => isCurrentlySaved ? prev.filter(id => id !== jobId) : [...prev, jobId]);
 
     try {
-        // 2. Call API
         const endpoint = isCurrentlySaved ? 'unsave' : 'save';
         const method = isCurrentlySaved ? 'DELETE' : 'POST';
         
@@ -317,7 +327,6 @@ function JobsPageContent() {
 
     } catch (error) {
         console.error(error);
-        // Revert UI if API fails
         setSavedJobs(prev => isCurrentlySaved ? [...prev, jobId] : prev.filter(id => id !== jobId));
         toast.error("Failed to update saved jobs");
     }
@@ -467,7 +476,7 @@ function JobsPageContent() {
           
           {/* SEARCH BAR */}
           <div className="bg-[#111]/80 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl shadow-black/50 flex flex-col md:flex-row items-stretch gap-3 md:gap-10 max-w-4xl mx-auto relative z-50">
-            {/* 🟢 MODIFIED SEARCH INPUT CONTAINER */}
+            {/* SEARCH INPUT CONTAINER */}
             <div className="flex-1 w-full flex items-center bg-transparent px-4 h-12 md:h-14 group border-b border-white/10 md:border-b-0 relative" ref={searchContainerRef}>
               <Search className="h-5 w-5 text-gray-500 group-focus-within:text-electric transition-colors mb-4 mt-3" />
               <input 
@@ -479,7 +488,7 @@ function JobsPageContent() {
               />
               {searchQuery && <button onClick={() => { setSearchQuery(''); setShowSuggestions(false); }}><X className="h-4 w-4 text-gray-500 hover:text-white" /></button>}
 
-              {/* 🟢 AUTO-SUGGESTION DROPDOWN */}
+              {/* AUTO-SUGGESTION DROPDOWN */}
               {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-4 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[70] animate-in fade-in zoom-in-95 duration-100">
                     <div className="py-2">
@@ -588,7 +597,7 @@ function JobsPageContent() {
                     key={job.id} 
                     job={job} 
                     onSave={handleSaveJob} 
-                    isSaved={savedJobs.includes(Number(job.id))} // STRICT TYPE CHECK FIX
+                    isSaved={savedJobs.includes(Number(job.id))} 
                   />
                 ))}
               </div>
