@@ -8,8 +8,8 @@ import {
   MapPin, Mail, Phone, Github, Linkedin, Globe,
   Briefcase, Building2, FileText,
   Shield, Zap, Share2,
-  Edit3, Download, Wallet, Hourglass, TrendingUp, Clock,
-  Upload, Loader2, Target, ArrowRight, CheckCircle2, AlertCircle, Plus, Eye
+  Edit3, Wallet, Hourglass, TrendingUp, Clock,
+  Upload, Loader2, ArrowRight, Plus, Eye
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -141,8 +141,7 @@ export default function ProfilePage() {
 
         const data = await response.json();
         
-        // ✅ FIXED: Use 'data.url' so the UI sees the full Supabase link immediately
-        // We also update 'resume_uploaded_at' to force React to re-render the component
+        // Use 'data.url' so the UI sees the full Supabase link immediately
         setUser({ 
             ...user, 
             resume_filename: data.url, 
@@ -165,37 +164,35 @@ export default function ProfilePage() {
     let score = 0;
     const missing: { label: string, points: number }[] = [];
 
-    // 1. Basic Info (15%)
-    if (user.name && user.email && user.phone) score += 15;
-    else missing.push({ label: "Contact Info", points: 15 });
+    // 1. Basic Info (20%) - Increased from 15%
+    if (user.name && user.email && user.phone) score += 20;
+    else missing.push({ label: "Contact Info", points: 20 });
 
     // 2. Headline & Location (10%)
     if (user.headline && user.location) score += 10;
     else missing.push({ label: "Headline & Location", points: 10 });
 
-    // 3. Profile Photo (10%)
-    if (user.profile_image) score += 10;
-    else missing.push({ label: "Profile Photo", points: 10 });
+    // REMOVED: Profile Photo check (Was 10%)
 
-    // 4. Resume (20%) - Critical
+    // 3. Resume (20%) - Critical
     if (user.resume_filename) score += 20;
     else missing.push({ label: "Resume PDF", points: 20 });
 
-    // 5. Bio / Summary (10%)
+    // 4. Bio / Summary (10%)
     if (user.bio && user.bio.length > 20) score += 10;
     else missing.push({ label: "Summary", points: 10 });
 
-    // 6. Skills (10%)
+    // 5. Skills (10%)
     const skills = safeParse(user.skills);
     if (skills.length >= 3) score += 10;
     else missing.push({ label: "At least 3 Skills", points: 10 });
 
-    // 7. Experience (15%)
+    // 6. Experience (20%) - Increased from 15%
     const exp = safeParse(user.experiences);
-    if (exp.length > 0) score += 15;
-    else missing.push({ label: "Work Experience", points: 15 });
+    if (exp.length > 0) score += 20;
+    else missing.push({ label: "Work Experience", points: 20 });
 
-    // 8. Education (10%)
+    // 7. Education (10%)
     const eduList = safeParse(user.education);
     if (eduList.length > 0 || user.degree) score += 10;
     else missing.push({ label: "Education", points: 10 });
@@ -204,11 +201,6 @@ export default function ProfilePage() {
   };
 
   const { score, missing } = calculateProfileStrength();
-
-  const getProfileImageUrl = (filename: string) => {
-    if (!filename) return null;
-    return filename.startsWith("http") ? filename : `${process.env.NEXT_PUBLIC_API_URL}/static/profile_images/${filename}`;
-  };
 
   const getEducationList = (user: any) => {
     const parsed = safeParse(user.education, null);
@@ -284,18 +276,11 @@ export default function ProfilePage() {
                 </Link>
 
                 <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-start text-center sm:text-left">
+                    {/* AVATAR ONLY - REMOVED IMAGE LOGIC */}
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white/5 bg-gray-800 flex items-center justify-center text-3xl sm:text-4xl font-bold text-white shadow-xl overflow-hidden shrink-0 bg-gradient-to-br from-blue-600 to-purple-700">
-                        {user.profile_image ? (
-                            <img 
-                                src={getProfileImageUrl(user.profile_image)} 
-                                alt="Profile" 
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <span className="select-none">
-                                {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-                            </span>
-                        )}
+                        <span className="select-none">
+                            {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                        </span>
                     </div>
 
                     <div className="flex-1 w-full">
@@ -532,7 +517,7 @@ export default function ProfilePage() {
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            {/* ✅ FIXED: Smart URL Logic */}
+                            {/* Smart URL Logic */}
                             <a 
                                 href={
                                     user.resume_filename.startsWith("http") 
@@ -543,7 +528,6 @@ export default function ProfilePage() {
                                 rel="noopener noreferrer"
                                 className="flex-1 text-center bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-2"
                             >
-                                {/* Changed from 'Download' to 'View' as requested */}
                                 <Eye size={14} /> View Resume
                             </a>
                             
