@@ -118,7 +118,7 @@ class GoogleAuthRequest(BaseModel):
 @app.post("/users/google-auth")
 def google_auth(
     data: GoogleAuthRequest, 
-    background_tasks: BackgroundTasks,  # <--- Added this dependency
+    background_tasks: BackgroundTasks, 
     db: Session = Depends(get_db)
 ):
     try:
@@ -143,10 +143,10 @@ def google_auth(
         is_new_user = False
         
         if not user:
-            # --- REGISTER NEW USER ---
+            # --- CASE A: REGISTER NEW USER ---
             is_new_user = True
             
-            # Generate a random strong password (since they use Google)
+            # Generate a random strong password
             random_password = ''.join(random.choices(string.ascii_letters + string.digits, k=24))
             password_hash = bcrypt.hashpw(random_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             
@@ -154,18 +154,23 @@ def google_auth(
                 name=name,
                 email=email,
                 password_hash=password_hash,
-                is_student_verified=True # Google emails are verified by default
+                is_student_verified=True 
             )
             db.add(user)
             db.commit()
             db.refresh(user)
             
-            # --- 📧 SEND WELCOME EMAIL ---
-            # This runs in the background to keep the API fast
+            # 📧 Send Welcome Email (New User)
             print(f"🚀 Sending Google welcome email to {email}")
             background_tasks.add_task(send_welcome_email, email, name)
 
-        # 3. --- LOGIN (Generate Token) ---
+        else:
+            # --- CASE B: EXISTING USER LOGIN (The Fix) ---
+            # 📧 Send Login Success Email (Consistent with OTP flow)
+            print(f"🚀 Sending Google login alert to {email}")
+            background_tasks.add_task(send_login_success_email, email, user.name)
+
+        # 3. --- GENERATE TOKEN ---
         access_token = create_access_token(data={"sub": str(user.id), "role": "student"})
         
         return {
@@ -179,8 +184,7 @@ def google_auth(
 
     except Exception as e:
         print(f"Google Auth Error: {e}")
-        raise HTTPException(status_code=500, detail="Authentication failed")
-    
+        raise HTTPException(status_code=500, detail="Authentication failed")    
 
 # --- 🧠 THE TRUTH ENGINE (Robust AI Analysis) ---
 def clean_text_for_ai(text: str) -> str:
@@ -1182,6 +1186,22 @@ def send_recruiter_status_email(email: str, name: str, status: str):
     # ✅ UPDATED: Send via Resend
     send_email_via_resend(email, subject, final_html)
 
+def send_reset_success_email(email: str, name: str):
+    content_html = f"""
+    <p>Hi {name},</p>
+    <p>Your password has been successfully reset.</p>
+    
+    <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; border-radius: 8px; margin: 24px 0;">
+        <p style="margin: 0; font-size: 14px; color: #065f46; font-weight: 600;">✓ Security Update</p>
+        <p style="margin: 4px 0 0; font-size: 13px; color: #047857;">If you did not make this change, please contact support immediately.</p>
+    </div>
+    
+    <p style="font-size: 14px; color: #6b7280;">You can now log in with your new password.</p>
+    """
+
+    final_html = get_base_email_template("Password Changed", content_html, "Login Now", "https://truthhire.in/login")
+    send_email_via_resend(email, "Security Alert: Password Changed", final_html)
+
 class FeedbackRequest(BaseModel):
     job_id: str
     resume_text: str
@@ -1862,6 +1882,93 @@ def login_user(data: UserLogin, background_tasks: BackgroundTasks, db: Session =
         "email": data.email,
         "requires_otp": True
     }
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordVerify(BaseModel):
+    email: str
+    otp: str
+
+class ResetPasswordConfirm(BaseModel):
+    email: str
+    otp: str
+    new_password: str
+
+# 3. Endpoints
+
+@app.post("/users/forgot-password")
+def forgot_password_request(data: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
+    
+    # Security: If user doesn't exist, we return a generic error or 404 depending on your security preference.
+    # For better UX, we'll return 404 here so the frontend can show the specific error.
+    if not user:
+        raise HTTPException(status_code=404, detail="Email address not found")
+    
+    # Generate OTP
+    otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    
+    # Store OTP with 'reset' type
+    OTP_STORE[data.email] = {
+        'otp': otp,
+        'expires_at': datetime.now() + timedelta(seconds=OTP_EXPIRY_SECONDS),
+        'user_id': user.id,
+        'name': user.name,
+        'type': 'password_reset' # Different type than login
+    }
+    
+    # Re-use your existing OTP email template function
+    background_tasks.add_task(send_otp_email, data.email, otp, user.name)
+    
+    return {"message": "Reset code sent"}
+
+@app.post("/users/verify-reset-otp")
+def verify_reset_otp_endpoint(data: ResetPasswordVerify):
+    if data.email not in OTP_STORE:
+        raise HTTPException(status_code=400, detail="OTP expired or invalid")
+    
+    stored = OTP_STORE[data.email]
+    
+    if stored.get('type') != 'password_reset':
+        raise HTTPException(status_code=400, detail="Invalid OTP type")
+        
+    if datetime.now() > stored['expires_at']:
+        del OTP_STORE[data.email]
+        raise HTTPException(status_code=400, detail="OTP expired")
+    
+    if stored['otp'] != data.otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+        
+    return {"message": "OTP Verified"}
+
+@app.post("/users/reset-password")
+def reset_password_confirm(data: ResetPasswordConfirm, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    # 1. Verify OTP again (Double check for security)
+    if data.email not in OTP_STORE:
+        raise HTTPException(status_code=400, detail="Session expired")
+        
+    stored = OTP_STORE[data.email]
+    
+    if stored['otp'] != data.otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+        
+    # 2. Update Password
+    user = db.query(User).filter(User.id == stored['user_id']).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    new_hash = bcrypt.hashpw(data.new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    user.password_hash = new_hash
+    db.commit()
+    
+    # 3. Send Confirmation Email
+    background_tasks.add_task(send_reset_success_email, data.email, user.name)
+    
+    # 4. Clear OTP
+    del OTP_STORE[data.email]
+    
+    return {"message": "Password reset successfully"}
 
 class OTPVerify(BaseModel):
     email: str
