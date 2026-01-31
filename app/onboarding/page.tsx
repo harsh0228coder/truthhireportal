@@ -15,6 +15,36 @@ const noScrollStyle = `
 `;
 
 // --- DATASETS ---
+
+// ✅ NEW: INDIAN STATES & CITIES DATASET
+const INDIAN_LOCATIONS: Record<string, string[]> = {
+  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad", "Thane", "Solapur", "Amravati", "Kolhapur", "Jalgaon", "Akola", "Nanded", "Latur","Karad","Satara"],
+  "Karnataka": ["Bangalore", "Mysore", "Hubli", "Mangalore", "Belgaum", "Gulbarga", "Davangere", "Shimoga"],
+  "Delhi": ["New Delhi", "Delhi", "Noida", "Gurgaon (Gurugram)", "Ghaziabad", "Faridabad"],
+  "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam", "Ramagundam"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Erode", "Vellore"],
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Varanasi", "Agra", "Meerut", "Allahabad (Prayagraj)", "Bareilly", "Aligarh", "Moradabad", "Noida"],
+  "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Junagadh"],
+  "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Bardhaman"],
+  "Rajasthan": ["Jaipur", "Jodhpur", "Kota", "Bikaner", "Ajmer", "Udaipur", "Bhilwara", "Alwar"],
+  "Madhya Pradesh": ["Indore", "Bhopal", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas", "Satna"],
+  "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", "Darbhanga", "Bihar Sharif"],
+  "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Pathankot"],
+  "Haryana": ["Gurgaon", "Faridabad", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal"],
+  "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati"],
+  "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Kollam", "Palakkad", "Alappuzha"],
+  "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia"],
+  "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Berhampur", "Sambalpur", "Puri", "Balasore"],
+  "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Deoghar", "Hazaribagh"],
+  "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Durg", "Rajnandgaon"],
+  "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur", "Kashipur"],
+  "Himachal Pradesh": ["Shimla", "Dharamshala", "Mandi", "Solan", "Baddi", "Kullu"],
+  "Goa": ["Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda"],
+  "Jammu & Kashmir": ["Srinagar", "Jammu", "Anantnag", "Baramulla"],
+  "Chandigarh": ["Chandigarh"],
+  "Pondicherry": ["Pondicherry"]
+};
+
 const POPULAR_SKILLS = [
   "React", "Node.js", "Python", "JavaScript", "TypeScript", "Java", "C++", "C#", "Go", "Rust", "Swift", "Kotlin",
   "HTML", "CSS", "Tailwind CSS", "Bootstrap", "SQL", "NoSQL", "MongoDB", "PostgreSQL", "AWS", "Azure", "Google Cloud",
@@ -62,7 +92,7 @@ const InputGroup = ({ label, value, onChange, placeholder, type = "text", error,
 );
 
 // --- AUTO SUGGESTION INPUT ---
-const AutoSuggestionInput = ({ label, value, onChange, options, placeholder, error, required }: any) => {
+const AutoSuggestionInput = ({ label, value, onChange, options, placeholder, error, required, disabled }: any) => {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -97,7 +127,7 @@ const AutoSuggestionInput = ({ label, value, onChange, options, placeholder, err
     }, []);
 
     return (
-        <div className="mb-5 relative" ref={containerRef}>
+        <div className={`mb-5 relative ${disabled ? "opacity-50 pointer-events-none" : ""}`} ref={containerRef}>
             <label className="block text-xs text-gray-400 font-bold uppercase tracking-wider mb-2 flex justify-between">
                 <span>{label} {required && <span className="text-red-500">*</span>}</span>
                 {error && <span className="text-red-400 normal-case">{error}</span>}
@@ -107,9 +137,11 @@ const AutoSuggestionInput = ({ label, value, onChange, options, placeholder, err
                     type="text"
                     value={value || ""}
                     onChange={handleInputChange}
-                    onFocus={() => value && setShowSuggestions(true)}
+                    onFocus={() => value && !disabled && setShowSuggestions(true)}
+                    disabled={disabled}
                     className={`w-full bg-[#0A0A0A] border rounded-lg px-4 py-3 text-white outline-none transition placeholder:text-gray-600
                         ${error ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'}
+                        ${disabled ? 'cursor-not-allowed bg-white/5' : ''}
                     `}
                     placeholder={placeholder}
                 />
@@ -294,15 +326,16 @@ const SkillSelector = ({ value = [], onChange }: any) => {
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [errors, setErrors] = useState<any>({});
 
+  // ✅ UPDATED: Added state and city fields
   const [formData, setFormData] = useState({
-    firstName: '', lastName: '', headline: '', phone: '', location: '',
+    firstName: '', lastName: '', headline: '', phone: '',
+    state: '', city: '', // Replaces single 'location'
     school: '', degree: '', fieldOfStudy: '', graduationYear: '',
     jobTitle: '', company: '', startYear: '', endYear: '', description: '',
     skills: [] as string[],
@@ -335,7 +368,9 @@ export default function OnboardingPage() {
         if (!formData.firstName) newErrors.firstName = "Required";
         if (!formData.lastName) newErrors.lastName = "Required";
         if (!formData.headline) newErrors.headline = "Required";
-        if (!formData.location) newErrors.location = "Required";
+        // ✅ UPDATED VALIDATION
+        if (!formData.state) newErrors.state = "Required";
+        if (!formData.city) newErrors.city = "Required";
     }
     if (stepIndex === 1) {
         if (!formData.school) newErrors.school = "Required";
@@ -343,9 +378,6 @@ export default function OnboardingPage() {
         if (!formData.graduationYear) newErrors.graduationYear = "Required";
     }
     
-    // --- FIX: Strict Validation for Experience ---
-    // If the user entered ANY info for experience, force them to complete required fields.
-    // They can only skip if ALL fields are empty.
     if (stepIndex === 2) {
         const hasSomeExp = formData.jobTitle || formData.company || formData.startYear || formData.description;
         if (hasSomeExp) {
@@ -384,7 +416,8 @@ export default function OnboardingPage() {
         last_name: formData.lastName,
         headline: formData.headline,
         phone: formData.phone,
-        location: formData.location,
+        // ✅ COMBINING STATE AND CITY
+        location: `${formData.city}, ${formData.state}`, 
         bio: formData.summary,
         skills: formData.skills,
         education: [{
@@ -393,12 +426,11 @@ export default function OnboardingPage() {
             field_of_study: formData.fieldOfStudy || "", 
             graduation_year: formData.graduationYear
         }],
-        // Fix: Use 'role', 'start_date', 'end_date' to match Profile Page schema
         experiences: formData.jobTitle ? [{
-            role: formData.jobTitle,      // Use 'role'
+            role: formData.jobTitle,      
             company: formData.company,
-            start_date: formData.startYear, // Use 'start_date'
-            end_date: formData.endYear,     // Use 'end_date'
+            start_date: formData.startYear, 
+            end_date: formData.endYear,     
             description: formData.description,
             is_current: formData.endYear === "Present"
         }] : []
@@ -430,7 +462,12 @@ export default function OnboardingPage() {
   };
 
   const updateForm = (key: string, value: any) => {
-      setFormData(prev => ({ ...prev, [key]: value }));
+      // ✅ LOGIC: If state changes, clear the city
+      if (key === 'state' && value !== formData.state) {
+          setFormData(prev => ({ ...prev, [key]: value, city: '' }));
+      } else {
+          setFormData(prev => ({ ...prev, [key]: value }));
+      }
       if (errors[key]) setErrors((prev: any) => ({ ...prev, [key]: null }));
   };
 
@@ -482,9 +519,32 @@ export default function OnboardingPage() {
                     <InputGroup label="Last Name" value={formData.lastName} onChange={(v: string) => updateForm('lastName', v)} required error={errors.lastName} />
                 </div>
                 <InputGroup label="Headline" value={formData.headline} onChange={(v: string) => updateForm('headline', v)} placeholder="e.g. Senior Frontend Developer" required error={errors.headline} />
+                
+                {/* ✅ NEW: Professional State & City Selection */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <AutoSuggestionInput 
+                        label="State" 
+                        value={formData.state} 
+                        onChange={(v: string) => updateForm('state', v)} 
+                        options={Object.keys(INDIAN_LOCATIONS)}
+                        placeholder="Select State"
+                        required 
+                        error={errors.state}
+                    />
+                    <AutoSuggestionInput 
+                        label="City" 
+                        value={formData.city} 
+                        onChange={(v: string) => updateForm('city', v)} 
+                        options={formData.state ? (INDIAN_LOCATIONS[formData.state] || []) : []}
+                        placeholder={formData.state ? "Select City" : "Select State first"}
+                        required 
+                        error={errors.city}
+                        disabled={!formData.state}
+                    />
+                </div>
+                
+                <div className="mt-4">
                     <InputGroup label="Phone" value={formData.phone} onChange={(v: string) => updateForm('phone', v)} placeholder="+91 9876543210" />
-                    <InputGroup label="Location" value={formData.location} onChange={(v: string) => updateForm('location', v)} placeholder="City, Country" required error={errors.location} />
                 </div>
             </div>
         )}
@@ -495,7 +555,6 @@ export default function OnboardingPage() {
                 <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><BookOpen className="text-blue-500"/> Highest Education</h2>
                 <InputGroup label="School / University" value={formData.school} onChange={(v: string) => updateForm('school', v)} required error={errors.school} />
                 
-                {/* Auto Suggest for Degree */}
                 <AutoSuggestionInput 
                     label="Degree" 
                     value={formData.degree} 
@@ -507,7 +566,6 @@ export default function OnboardingPage() {
                 />
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Auto Suggest for Field */}
                     <AutoSuggestionInput 
                         label="Field of Study" 
                         value={formData.fieldOfStudy} 
@@ -532,14 +590,13 @@ export default function OnboardingPage() {
             <div className="animate-in fade-in slide-in-from-right-8 duration-300">
                 <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Briefcase className="text-blue-500"/> Most Recent Experience <span className="text-xs text-gray-500 font-normal ml-2">(Optional)</span></h2>
                 
-                {/* Auto Suggest for Job Title */}
                 <AutoSuggestionInput 
                     label="Job Title" 
                     value={formData.jobTitle} 
                     onChange={(v: string) => updateForm('jobTitle', v)} 
                     options={POPULAR_JOB_TITLES}
                     placeholder="e.g. Software Engineer" 
-                    required={!!(formData.company || formData.startYear)} // Dynamic Required Logic
+                    required={!!(formData.company || formData.startYear)} 
                     error={errors.jobTitle}
                 />
                 

@@ -60,19 +60,36 @@ export default function StudentDashboard() {
     setRefreshing(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
+      // ✅ FIX: Fetch both Dashboard Stats AND User Profile (for the name) in parallel
+      const [dashboardRes, profileRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      // 1. Handle Dashboard Stats
+      if (dashboardRes.ok) {
+        const data = await dashboardRes.json();
         setApplications(data.applications || []);
         setSavedJobs(data.saved_jobs || []);
-        // Ensure we always get an array
         setSkillGaps(data.skill_gaps || []);
         setAvgScore(data.avg_match_score || 0);
       } else {
         toast.error("Failed to load dashboard data");
       }
+
+      // 2. ✅ Handle Profile Name (Updates the name instantly)
+      if (profileRes.ok) {
+        const profile = await profileRes.json();
+        if (profile.name) {
+            setUserName(profile.name);
+            localStorage.setItem('user_name', profile.name); // Sync local storage for next time
+        }
+      }
+
     } catch (error) {
       console.error("Connection error");
     } finally {
@@ -80,6 +97,15 @@ export default function StudentDashboard() {
       setRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    // We set the initial name from local storage to avoid layout shift,
+    // but fetchDashboard will immediately overwrite it with the real DB name.
+    const name = localStorage.getItem('user_name');
+    if (name) setUserName(name);
+    
+    fetchDashboard();
+  }, []);
 
   useEffect(() => {
     const name = localStorage.getItem('user_name');
