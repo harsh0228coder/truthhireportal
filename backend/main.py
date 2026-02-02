@@ -160,13 +160,13 @@ def google_auth(
             db.refresh(user)
             
             # 📧 Send Welcome Email (New User)
-            print(f"🚀 Sending Google welcome email to {email}")
+            
             background_tasks.add_task(send_welcome_email, email, name)
 
         else:
             # --- CASE B: EXISTING USER LOGIN (The Fix) ---
             # 📧 Send Login Success Email (Consistent with OTP flow)
-            print(f"🚀 Sending Google login alert to {email}")
+            
             background_tasks.add_task(send_login_success_email, email, user.name)
 
         # 3. --- GENERATE TOKEN ---
@@ -480,7 +480,7 @@ def send_email_via_resend(to_email: str, subject: str, html_content: str, attach
                 }]
 
         email = resend.Emails.send(params)
-        print(f"✅ Email sent to {to_email} | ID: {email.get('id')}")
+       
         return True
         
     except Exception as e:
