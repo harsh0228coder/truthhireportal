@@ -19,7 +19,8 @@ if SQLALCHEMY_DATABASE_URL and SQLALCHEMY_DATABASE_URL.startswith("postgres://")
 # We also removed the event listener for WAL mode.
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    pool_pre_ping=True  # Helps handle dropped connections in production
+    pool_pre_ping=True,
+    echo=False  # Helps handle dropped connections in production
 )
 
 # 4. Create Session
