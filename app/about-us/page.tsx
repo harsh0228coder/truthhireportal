@@ -73,7 +73,7 @@ export default function AboutUs() {
       name: "Harshawardhan Chavan",
       role: "Founder & CEO",
       // Currently using a placeholder. Replace with: "/team/harsh.jpg"
-      image: "/team/harsh.jpg", 
+      image: "https://ui-avatars.com/api/?name=Harsh&background=0B1120&color=3B82F6&size=200", 
       linkedin: "https://www.linkedin.com/in/harshwardhan-chavan-hs28022002/"
     },
     {
