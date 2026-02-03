@@ -71,14 +71,26 @@ export default function AboutUs() {
   const TEAM_MEMBERS = [
     {
       name: "Harshawardhan Chavan",
-      role: "Founder & CEO",
+      role: "Founder Of TruthHire",
       // Currently using a placeholder. Replace with: "/team/harsh.jpg"
       image: "https://ui-avatars.com/api/?name=Harsh&background=0B1120&color=3B82F6&size=200", 
       linkedin: "https://www.linkedin.com/in/harshwardhan-chavan-hs28022002/"
     },
     {
-      name: "Co-Founder Name",
-      role: "CTO / Co-Founder",
+      name: "Sanika Surve",
+      role: "Co-Founder",
+      image: "https://ui-avatars.com/api/?name=Co+Founder&background=0B1120&color=A855F7&size=200",
+      linkedin: "#"
+    },
+    {
+      name: "Sushant Ghadage",
+      role: "Co-Founder",
+      image: "https://ui-avatars.com/api/?name=Co+Founder&background=0B1120&color=A855F7&size=200",
+      linkedin: "#"
+    },
+    {
+      name: "Aditya Tambe",
+      role: "Co-Founder",
       image: "https://ui-avatars.com/api/?name=Co+Founder&background=0B1120&color=A855F7&size=200",
       linkedin: "#"
     },
@@ -459,7 +471,7 @@ export default function AboutUs() {
                     rel="noopener noreferrer"
                     className="text-gray-500 hover:text-white transition-colors p-2"
                   >
-                    <Linkedin size={18} />
+                    <Linkedin size={20} />
                   </a>
                 )}
               </div>
