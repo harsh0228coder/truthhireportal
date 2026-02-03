@@ -15,6 +15,7 @@ import {
   Users,
   Search,
   Award,
+  Linkedin, // Added Linkedin icon
 } from "lucide-react";
 
 // --- ANIMATED COUNTER COMPONENT ---
@@ -62,6 +63,27 @@ export default function AboutUs() {
     activeCandidates: 50000,
     hiringPartners: 200
   });
+
+  // --- TEAM DATA CONFIGURATION ---
+  // INSTRUCTIONS: 
+  // 1. Put your images in the /public folder (e.g., /public/team/founder.jpg)
+  // 2. Change the 'image' path below to "/team/founder.jpg"
+  const TEAM_MEMBERS = [
+    {
+      name: "Harshawardhan Chavan",
+      role: "Founder & CEO",
+      // Currently using a placeholder. Replace with: "/team/harsh.jpg"
+      image: "https://ui-avatars.com/api/?name=Harsh&background=0B1120&color=3B82F6&size=200", 
+      linkedin: "#"
+    },
+    {
+      name: "Co-Founder Name",
+      role: "CTO / Co-Founder",
+      image: "https://ui-avatars.com/api/?name=Co+Founder&background=0B1120&color=A855F7&size=200",
+      linkedin: "#"
+    },
+    // Add more members here if needed
+  ];
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -384,7 +406,7 @@ export default function AboutUs() {
         </div>
       </section>
 
-      {/* ================= TEAM SECTION ================= */}
+      {/* ================= TEAM SECTION (UPDATED) ================= */}
       <section className="py-16 md:py-24 bg-[#0A0A0A] border-t border-white/5">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 tracking-tight">
@@ -402,22 +424,44 @@ export default function AboutUs() {
             experts based in India, obsessed with fixing recruitment.
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="group">
-                <div className="w-24 h-24 md:w-32 md:h-32 mx-auto bg-[#1a1a1a] rounded-full border border-white/10 mb-4 flex items-center justify-center overflow-hidden relative">
-                  {/* Placeholder for Team Image */}
-                  <Users
-                    size={32}
-                    className="text-gray-600 group-hover:text-white transition-colors"
-                  />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-center">
+            {TEAM_MEMBERS.map((member, i) => (
+              <div key={i} className="group flex flex-col items-center">
+                {/* Image Container with Hover Effect */}
+                <div className="w-32 h-32 md:w-40 md:h-40 mx-auto bg-[#1a1a1a] rounded-full border border-white/10 mb-5 flex items-center justify-center overflow-hidden relative transition-all duration-300 group-hover:border-blue-500/50 group-hover:shadow-[0_0_20px_rgba(37,99,235,0.2)]">
+                  {member.image ? (
+                    <img 
+                      src={member.image} 
+                      alt={member.name}
+                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                    />
+                  ) : (
+                    <Users
+                      size={40}
+                      className="text-gray-600 group-hover:text-white transition-colors"
+                    />
+                  )}
                 </div>
-                <h3 className="text-white font-bold text-sm md:text-base">
-                  Team Member
+                
+                {/* Name & Role */}
+                <h3 className="text-white font-bold text-lg mb-1 group-hover:text-blue-400 transition-colors">
+                  {member.name}
                 </h3>
-                <p className="text-blue-500 text-[10px] md:text-xs uppercase font-bold tracking-wider mt-1">
-                  Co-Founder
+                <p className="text-blue-500/80 text-xs md:text-sm uppercase font-bold tracking-wider mb-3">
+                  {member.role}
                 </p>
+                
+                {/* LinkedIn Link (Optional) */}
+                {member.linkedin && (
+                  <a 
+                    href={member.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-500 hover:text-white transition-colors p-2"
+                  >
+                    <Linkedin size={18} />
+                  </a>
+                )}
               </div>
             ))}
           </div>
