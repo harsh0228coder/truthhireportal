@@ -898,12 +898,6 @@ function JobsPageContent() {
           {/* RESULTS FEED */}
           <main className="flex-1 relative z-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 relative z-30">
-              <h2 className="text-xl font-bold text-white">
-                {filteredJobs.length}{" "}
-                <span className="text-gray-500 font-normal text-base">
-                  Jobs found
-                </span>
-              </h2>
 
               <div className="flex items-center gap-3">
                 <button
