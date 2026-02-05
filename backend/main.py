@@ -2183,10 +2183,12 @@ def verify_recruiter_login_otp(data: OTPVerify, background_tasks: BackgroundTask
 from sqlalchemy import or_ # <--- MAKE SURE TO ADD THIS IMPORT AT THE TOP
 
 # ... (rest of your imports)
+# ... (Keep your imports as they are)
+
 @app.get("/jobs")
 @limiter.limit("60/minute") # <--- Allow normal browsing, block bots (1 request/sec)
 def get_jobs(
-    limit: int = 30,
+    limit: int = 500, # 🟢 UPDATED: Increased from 30 to 500 to fetch all jobs
     skip: int = 0,
     q: Optional[str] = None,
     department: Optional[str] = None,
@@ -2212,6 +2214,7 @@ def get_jobs(
         query = query.filter(Job.title.ilike(f"%{department}%"))
 
     # 4. Execute
+    # The limit is now 500, so it will return all your 47 jobs
     jobs = query.order_by(Job.created_at.desc()).offset(skip).limit(limit).all()
 
     # 5. Format
