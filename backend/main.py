@@ -1218,6 +1218,62 @@ def send_reset_success_email(email: str, name: str):
     final_html = get_base_email_template("Password Changed", content_html, "Login Now", "https://truthhire.in/login")
     send_email_via_resend(email, "Security Alert: Password Changed", final_html)
 
+# ==========================================
+# 📢 MARKETING & RETENTION EMAILS
+# ==========================================
+
+def send_profile_completion_reminder(email: str, name: str, missing_fields: list):
+    """
+    Naukri-style 'Incomplete Profile' Nudge.
+    Triggers when a user has no resume, location, or skills.
+    """
+    subject = f"Recruiters are searching, but they can't find you, {name.split()[0]}"
+    headline = "Your profile is getting invisible 👻"
+    
+    missing_str = ", ".join(missing_fields).title()
+    
+    content_html = f"""
+    <p>Hi {name},</p>
+    <p>We noticed you started setting up your profile on TruthHire but didn't finish. <strong>Recruiters search by skills and resumes</strong>, not just names.</p>
+    
+    <div style="background-color: #fff1f2; border-left: 4px solid #f43f5e; padding: 16px; border-radius: 4px; margin: 24px 0;">
+        <p style="margin: 0 0 8px; font-size: 14px; font-weight: 700; color: #9f1239;">⚠️ Missing Information</p>
+        <p style="margin: 0; font-size: 14px; color: #881337;">
+            You are missing: <strong>{missing_str}</strong>.
+        </p>
+    </div>
+    
+    <p>Profiles with a resume and skills get <strong>5x more visibility</strong> and higher trust scores.</p>
+    """
+
+    final_html = get_base_email_template(headline, content_html, "Complete Profile Now", "https://truthhire.in/dashboard/profile")
+    send_email_via_resend(email, subject, final_html)
+
+def send_truth_score_nudge(email: str, name: str):
+    """
+    LinkedIn-style 'Feature Adoption' Nudge.
+    Triggers when a user has applied to 0 jobs or has avg_match_score = 0.
+    """
+    subject = "Why you might be getting ghosted (and how to fix it)"
+    headline = "Stop Applying Blindly 🛑"
+    
+    content_html = f"""
+    <p>Hi {name},</p>
+    <p>We noticed you haven't checked your <strong>Truth Score</strong> yet. Applying to jobs without knowing if you match is the #1 reason candidates get rejected.</p>
+    
+    <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
+        <p style="margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #1e3a8a;">Your Truth Score: <span style="color: #9ca3af;">Pending...</span></p>
+        <p style="margin: 0; font-size: 13px; color: #1e40af;">
+            Upload your resume against any job description to see your % chance of hiring instantly.
+        </p>
+    </div>
+    
+    <p>It takes 10 seconds and prevents "Ghost Jobs."</p>
+    """
+
+    final_html = get_base_email_template(headline, content_html, "Check My Score", "https://truthhire.in/jobs")
+    send_email_via_resend(email, subject, final_html)
+
 class FeedbackRequest(BaseModel):
     job_id: str
     resume_text: str
@@ -3715,6 +3771,60 @@ def verify_recruiter(recruiter_id: int, data: VerificationUpdate, background_tas
     background_tasks.add_task(send_recruiter_status_email, recruiter.official_email, recruiter.name, data.status)
     
     return {"message": f"Recruiter {data.status} successfully"}
+
+# ==========================================
+# ⚙️ MARKETING AUTOMATION ENDPOINTS
+# ==========================================
+
+class NudgeRequest(BaseModel):
+    admin_secret: str
+
+@app.post("/admin/marketing/trigger-nudges")
+def trigger_marketing_emails(
+    data: NudgeRequest, 
+    background_tasks: BackgroundTasks, 
+    db: Session = Depends(get_db)
+):
+    """
+    Smart System to find users who need a nudge.
+    Logic:
+    1. Users created > 24 hours ago.
+    2. Missing Resume OR Missing Location -> Send Profile Nudge.
+    3. Has Resume BUT Avg Match Score is 0 -> Send Truth Score Nudge.
+    """
+    # Simple security check (Change this secret!)
+    if data.admin_secret != os.getenv("ADMIN_SECRET", "truthhire_admin_secret"):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # 1. Fetch recent users (e.g., joined in last 7 days to avoid annoying old users)
+    seven_days_ago = datetime.now() - timedelta(days=7)
+    users = db.query(User).filter(User.created_at >= seven_days_ago).all()
+    
+    sent_count = 0
+    
+    for user in users:
+        # --- CHECK 1: INCOMPLETE PROFILE ---
+        missing = []
+        if not user.resume_filename and not user.resume_text:
+            missing.append("Resume")
+        if not user.location:
+            missing.append("Location")
+        if not user.skills or len(user.skills) < 5:
+            missing.append("Key Skills")
+            
+        if missing:
+            # Send Profile Nudge
+            background_tasks.add_task(send_profile_completion_reminder, user.email, user.name, missing)
+            sent_count += 1
+            continue # Don't send two emails at once
+            
+        # --- CHECK 2: UNUSED TRUTH SCORE ---
+        # If they have a resume but haven't used the AI Score feature (avg_score is 0 or None)
+        if (not user.avg_match_score or user.avg_match_score == 0) and user.resume_text:
+            background_tasks.add_task(send_truth_score_nudge, user.email, user.name)
+            sent_count += 1
+
+    return {"message": "Marketing campaign triggered", "emails_queued": sent_count}
 
 # ===========================
 # 🆕 WAITLIST ENDPOINT

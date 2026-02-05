@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, Briefcase, Users, Building2, LogOut, 
   Trash2, Search, CheckCircle, XCircle, ShieldAlert, Loader2,
-  AlertTriangle, X, Plus, MapPin, Clock, Globe, ChevronDown, FileText, Linkedin, Menu
+  AlertTriangle, X, Plus, MapPin, Clock, Globe, ChevronDown, 
+  Linkedin, Menu, Megaphone, Send, Sparkles, Zap
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -49,11 +50,11 @@ interface Stats {
 export default function AdminDashboard() {
   const router = useRouter();
   
-  // State
-  const [activeTab, setActiveTab] = useState<'overview' | 'jobs' | 'users' | 'recruiters'>('overview');
+  // State - Added 'marketing' tab
+  const [activeTab, setActiveTab] = useState<'overview' | 'jobs' | 'users' | 'recruiters' | 'marketing'>('overview');
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // ✅ New State for Mobile Sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Job Post State
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
@@ -99,7 +100,29 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  // --- ACTIONS ---
+  // --- NEW MARKETING ACTION ---
+  const handleTriggerMarketing = async () => {
+    if (!confirm("⚠️ Are you sure?\n\nThis will send 'Profile Completion' and 'Truth Score' reminder emails to all eligible candidates active in the last 7 days.")) return;
+
+    const toastId = toast.loading("Analyzing users & sending emails...");
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/marketing/trigger-nudges`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ admin_secret: "truthhire_admin_secret" }) // Matches your backend secret
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            toast.success(`Campaign Sent! 🚀\n${data.emails_queued} emails queued.`, { id: toastId, duration: 5000 });
+        } else {
+            throw new Error(data.detail || "Failed to trigger campaign");
+        }
+    } catch (error) {
+        toast.error("Failed to trigger campaign", { id: toastId });
+    }
+  };
 
   const handlePostJob = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,6 +236,10 @@ export default function AdminDashboard() {
             <SidebarItem icon={<Briefcase size={18}/>} label="Jobs Database" active={activeTab === 'jobs'} onClick={() => handleTabChange('jobs')} />
             <SidebarItem icon={<Users size={18}/>} label="Candidates" active={activeTab === 'users'} onClick={() => handleTabChange('users')} />
             <SidebarItem icon={<Building2 size={18}/>} label="Recruiters" active={activeTab === 'recruiters'} onClick={() => handleTabChange('recruiters')} />
+            <div className="pt-4 pb-2">
+                <p className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Growth Tools</p>
+                <SidebarItem icon={<Megaphone size={18}/>} label="Marketing" active={activeTab === 'marketing'} onClick={() => handleTabChange('marketing')} />
+            </div>
         </nav>
 
         <div className="p-4 border-t border-slate-100">
@@ -242,7 +269,7 @@ export default function AdminDashboard() {
             </div>
             
             <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4 w-full md:w-auto">
-                {activeTab !== 'overview' && (
+                {activeTab !== 'overview' && activeTab !== 'marketing' && (
                     <div className="relative w-full md:w-auto">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input 
@@ -306,7 +333,77 @@ export default function AdminDashboard() {
             </div>
         )}
 
-        {/* 2. JOBS TAB - Responsive Table */}
+        {/* 2. MARKETING TAB (NEW) */}
+        {activeTab === 'marketing' && (
+             <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
+                
+                {/* Campaign Card */}
+                <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                    
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                                <Sparkles size={24} className="text-yellow-300" />
+                            </div>
+                            <h2 className="text-2xl font-bold">Smart Retention Campaign</h2>
+                        </div>
+                        
+                        <p className="text-indigo-100 text-lg mb-8 max-w-2xl leading-relaxed">
+                            Automatically identify users who joined in the last 7 days but have incomplete profiles or haven't used the "Truth Score" feature. Send them personalized, Naukri-style nudges to boost activation.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <button 
+                                onClick={handleTriggerMarketing}
+                                className="bg-white text-indigo-700 px-8 py-4 rounded-xl font-bold text-lg hover:bg-indigo-50 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-3"
+                            >
+                                <Send size={20} /> Run Campaign Now
+                            </button>
+                        </div>
+                        
+                        <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-6 text-sm text-indigo-200">
+                            <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400"/> Targets Incomplete Profiles</div>
+                            <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400"/> Promotes AI Score Tool</div>
+                            <div className="flex items-center gap-2"><CheckCircle size={14} className="text-green-400"/> Safe (No Spam to Old Users)</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Additional Stats / Info (Optional) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                         <div className="flex items-center gap-3 mb-4">
+                            <div className="bg-blue-100 p-2 rounded-lg text-blue-600"><Users size={20}/></div>
+                            <h3 className="font-bold text-slate-800">Target Audience</h3>
+                         </div>
+                         <p className="text-slate-600 text-sm leading-relaxed">
+                            This tool scans for users created in the <strong>last 7 days</strong> who:
+                         </p>
+                         <ul className="mt-3 space-y-2 text-sm text-slate-500">
+                            <li className="flex items-center gap-2"><AlertTriangle size={14} className="text-amber-500"/> Have no resume uploaded</li>
+                            <li className="flex items-center gap-2"><AlertTriangle size={14} className="text-amber-500"/> Missing skills or location</li>
+                            <li className="flex items-center gap-2"><Zap size={14} className="text-purple-500"/> Uploaded resume but 0 Match Score checks</li>
+                         </ul>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                         <div className="flex items-center gap-3 mb-4">
+                            <div className="bg-green-100 p-2 rounded-lg text-green-600"><Send size={20}/></div>
+                            <h3 className="font-bold text-slate-800">Email Deliverability</h3>
+                         </div>
+                         <p className="text-slate-600 text-sm leading-relaxed">
+                            Emails are sent via <strong>Resend</strong> using your verified domain. They are designed to look like professional notifications from LinkedIn or Naukri to ensure high open rates.
+                         </p>
+                         <div className="mt-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <p className="text-xs text-slate-500 font-mono">Template: marketing_nudge_v1</p>
+                         </div>
+                    </div>
+                </div>
+             </div>
+        )}
+
+        {/* 3. JOBS TAB */}
         {activeTab === 'jobs' && (
             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm animate-in fade-in">
                 <div className="overflow-x-auto">
@@ -340,7 +437,7 @@ export default function AdminDashboard() {
             </div>
         )}
 
-        {/* 3. CANDIDATES TAB - Responsive Table */}
+        {/* 4. CANDIDATES TAB */}
         {activeTab === 'users' && (
             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm animate-in fade-in">
                 <div className="overflow-x-auto">
@@ -376,7 +473,7 @@ export default function AdminDashboard() {
             </div>
         )}
 
-        {/* 4. RECRUITERS TAB - Responsive Table */}
+        {/* 5. RECRUITERS TAB */}
         {activeTab === 'recruiters' && (
             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm animate-in fade-in">
                 <div className="overflow-x-auto">
@@ -431,7 +528,7 @@ export default function AdminDashboard() {
 
       </main>
 
-      {/* --- MANUAL JOB MODAL (RESPONSIVE) --- */}
+      {/* --- MANUAL JOB MODAL --- */}
       {isJobModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in zoom-in-95">
           <div className="bg-[#111827] rounded-[1.5rem] md:rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-white/10 m-4 max-h-[90vh]">
@@ -447,7 +544,6 @@ export default function AdminDashboard() {
             </div>
             
             <form onSubmit={handlePostJob} className="p-4 md:p-8 space-y-4 md:space-y-6 overflow-y-auto">
-              {/* Form Content */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Job Title *</label>
