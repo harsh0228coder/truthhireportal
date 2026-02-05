@@ -3485,6 +3485,7 @@ async def generate_job_description_ai(data: JDGeneratorRequest):
     if data.skills and len(data.skills) > 2:
         skills_instruction = f"MUST include these specific technical skills in the Requirements section: {data.skills}."
 
+    # 🟢 UPDATED PROMPT: Requests Arrays [] for stability
     prompt = f"""
     Role: Senior Talent Acquisition Specialist for {data.company}.
     Task: Write a highly professional Job Description for a '{data.title}'.
@@ -3500,17 +3501,16 @@ async def generate_job_description_ai(data: JDGeneratorRequest):
     
     GUIDELINES:
     1. **About the Role**: Write 2-3 engaging sentences. Mention the company culture and why this role matters. Explicitly mention it is a {data.work_mode} {data.employment_type} role.
-    2. **Responsibilities**: Write 5-7 bullet points. Use strong action verbs (e.g., "Architect," "Deploy," "Spearhead"). Tailor complexity to {data.experience}.
-    3. **Requirements**: Write 5-7 bullet points. {skills_instruction} Add soft skills relevant to the work mode.
-    4. **Benefits**: Write 3-4 bullet points. Include standard Indian market benefits (Health Insurance, Leave) PLUS specific benefits for {data.work_mode}.
-    5. **Formatting**: Start every bullet point with a hyphen (-) and ensure it is on a NEW LINE.
+    2. **Responsibilities**: Write 4-5 distinct tasks. Use strong action verbs (e.g., "Architect," "Deploy," "Spearhead"). Tailor complexity to {data.experience}.
+    3. **Requirements**: Write 4-5 distinct skills. {skills_instruction} Add soft skills relevant to the work mode.
+    4. **Benefits**: Write 3 distinct perks. Include standard Indian market benefits (Health Insurance, Leave) PLUS specific benefits for {data.work_mode}.
     
     OUTPUT JSON FORMAT ONLY:
     {{
         "about_role": "string",
-        "responsibilities": "string (bullet points with newlines)",
-        "requirements": "string (bullet points with newlines)",
-        "benefits": "string (bullet points with newlines)"
+        "responsibilities": ["Task 1", "Task 2", "Task 3", "Task 4", "Task 5"],
+        "requirements": ["Skill 1", "Skill 2", "Skill 3", "Skill 4", "Skill 5"],
+        "benefits": ["Benefit 1", "Benefit 2", "Benefit 3"]
     }}
     """
 
@@ -3523,11 +3523,31 @@ async def generate_job_description_ai(data: JDGeneratorRequest):
         )
         
         content = response.choices[0].message.content
-        return json.loads(content)
+        result = json.loads(content)
+
+        # 🟢 HELPER: Convert List ["A", "B"] -> String "- A\n- B"
+        def to_bullets(items):
+            if isinstance(items, list):
+                return "\n".join([f"- {item}" for item in items])
+            return str(items)
+
+        # Format output for Frontend
+        return {
+            "about_role": result.get("about_role", ""),
+            "responsibilities": to_bullets(result.get("responsibilities", [])),
+            "requirements": to_bullets(result.get("requirements", [])),
+            "benefits": to_bullets(result.get("benefits", []))
+        }
 
     except Exception as e:
         print(f"JD Gen Error: {e}")
-        raise HTTPException(status_code=500, detail="AI Generation Failed")
+        # Return fallback instead of crashing
+        return {
+            "about_role": f"Exciting opportunity for a {data.title} at {data.company}.",
+            "responsibilities": "- Lead development projects\n- Collaborate with teams",
+            "requirements": f"- Experience in {data.experience}\n- Strong technical skills",
+            "benefits": "- Competitive Salary\n- Health Insurance"
+        }
     
 
 @app.put("/admin/jobs/{job_id}")
