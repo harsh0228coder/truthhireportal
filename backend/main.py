@@ -39,6 +39,9 @@ from google.auth.transport import requests as google_requests
 from supabase import create_client, Client
 import resend
 from starlette.requests import Request
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 # --- CONFIGURATION ---
 OTP_STORE = {} 
@@ -78,6 +81,11 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+# --- 🛡️ SECURITY: CONFIGURE LIMITER ---
+# This identifies users by their IP address
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Logging middleware removed for performance
 
@@ -1784,7 +1792,8 @@ class OTPVerify(BaseModel):
     otp: str
 
 @app.post("/users/signup")
-def signup_user(data: UserSignup, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+@limiter.limit("3/minute")
+def signup_user(data: UserSignup, background_tasks: BackgroundTasks,request: Request, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == data.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -1811,7 +1820,8 @@ def signup_user(data: UserSignup, background_tasks: BackgroundTasks, db: Session
     }
 
 @app.post("/users/verify-signup-otp")
-def verify_signup_otp(data: OTPVerify, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def verify_signup_otp(data: OTPVerify, background_tasks: BackgroundTasks,request: Request, db: Session = Depends(get_db)):
     if data.email not in OTP_STORE:
         raise HTTPException(status_code=400, detail="OTP expired or invalid")
     
@@ -1855,7 +1865,8 @@ def verify_signup_otp(data: OTPVerify, background_tasks: BackgroundTasks, db: Se
     }
 
 @app.post("/users/login")
-def login_user(data: UserLogin, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")  # <--- ADD THIS LINE (Max 5 logins per minute)
+def login_user(data: UserLogin, background_tasks: BackgroundTasks,request: Request, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
     
     if not user:
@@ -2108,11 +2119,13 @@ from sqlalchemy import or_ # <--- MAKE SURE TO ADD THIS IMPORT AT THE TOP
 
 # ... (rest of your imports)
 @app.get("/jobs")
+@limiter.limit("60/minute") # <--- Allow normal browsing, block bots (1 request/sec)
 def get_jobs(
     limit: int = 30,
     skip: int = 0,
     q: Optional[str] = None,
     department: Optional[str] = None,
+    request: Request = None,
     db: Session = Depends(get_db)
 ):
     # 1. Unified Query on 'Job' table
