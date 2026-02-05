@@ -42,6 +42,7 @@ from starlette.requests import Request
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+import logging
 
 # --- CONFIGURATION ---
 OTP_STORE = {} 
@@ -86,6 +87,14 @@ app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# This overrides any other setting and forces SQLAlchemy to be silent
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
+logging.getLogger('sqlalchemy.pool').setLevel(logging.WARNING)
+
+# Also ensure Uvicorn doesn't log query parameters (optional but good)
+logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 
 # Logging middleware removed for performance
 
