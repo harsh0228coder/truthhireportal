@@ -1978,18 +1978,22 @@ class ResetPasswordConfirm(BaseModel):
 
 # 3. Endpoints
 
-# 🟢 UPDATED: Secure Forgot Password (Prevents Enumeration)
+# 🟢 SECURE: Fixed Email Enumeration & Added Logging
 @app.post("/users/forgot-password")
-@limiter.limit("3/minute") # Rate limit added
+@limiter.limit("3/minute") # Recommendation: Rate Limiting [cite: 8, 44]
 def forgot_password_request(
     data: ForgotPasswordRequest, 
     background_tasks: BackgroundTasks, 
-    request: Request, # Required for rate limiter
+    request: Request, # Required for rate limiting
     db: Session = Depends(get_db)
 ):
+    # 1. Recommendation: Monitor and log suspicious requests 
+    # We log the attempt so you can track if one IP is hitting this endpoint too often.
+    print(f"⚠️ Password reset attempt for: {data.email} | IP: {request.client.host}")
+
     user = db.query(User).filter(User.email == data.email).first()
     
-    # Logic: If user exists, send email. If not, DO NOTHING but return success.
+    # 2. Logic: Only process if User Exists
     if user:
         otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
         OTP_STORE[data.email] = {
@@ -1999,9 +2003,12 @@ def forgot_password_request(
             'name': user.name,
             'type': 'password_reset'
         }
+        # Send Email in background (so response time doesn't leak info)
         background_tasks.add_task(send_otp_email, data.email, otp, user.name)
     
-    # 🛡️ SECURITY FIX: Always return the same message
+    # 3. Recommendation: Implement a generic response [cite: 37, 44]
+    # We return the EXACT SAME success message even if the user does NOT exist.
+    # This confuses hackers because every email looks "valid" to them.
     return {"message": "If this email is registered, a reset code has been sent."}
 
 @app.post("/users/verify-reset-otp")
