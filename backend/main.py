@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, UploadFile, File, HTTPException, BackgroundTasks, status, Query
+from fastapi import FastAPI, Depends, UploadFile, File, HTTPException, BackgroundTasks, status, Query, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session, joinedload
 from groq import Groq
@@ -81,7 +81,13 @@ security = HTTPBearer()
 async def lifespan(app: FastAPI):
     yield
 
-app = FastAPI(lifespan=lifespan)
+# 🛡️ SECURITY FIX: Hide docs if in Production
+# Add ENVIRONMENT=production to your Render Environment Variables
+docs_url = "/docs" if os.getenv("ENVIRONMENT") != "production" else None
+redoc_url = "/redoc" if os.getenv("ENVIRONMENT") != "production" else None
+
+app = FastAPI(docs_url=docs_url, redoc_url=redoc_url, lifespan=lifespan)
+
 # --- 🛡️ SECURITY: CONFIGURE LIMITER ---
 # This identifies users by their IP address
 limiter = Limiter(key_func=get_remote_address)
@@ -1972,31 +1978,31 @@ class ResetPasswordConfirm(BaseModel):
 
 # 3. Endpoints
 
+# 🟢 UPDATED: Secure Forgot Password (Prevents Enumeration)
 @app.post("/users/forgot-password")
-def forgot_password_request(data: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+@limiter.limit("3/minute") # Rate limit added
+def forgot_password_request(
+    data: ForgotPasswordRequest, 
+    background_tasks: BackgroundTasks, 
+    request: Request, # Required for rate limiter
+    db: Session = Depends(get_db)
+):
     user = db.query(User).filter(User.email == data.email).first()
     
-    # Security: If user doesn't exist, we return a generic error or 404 depending on your security preference.
-    # For better UX, we'll return 404 here so the frontend can show the specific error.
-    if not user:
-        raise HTTPException(status_code=404, detail="Email address not found")
+    # Logic: If user exists, send email. If not, DO NOTHING but return success.
+    if user:
+        otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        OTP_STORE[data.email] = {
+            'otp': otp,
+            'expires_at': datetime.now() + timedelta(seconds=OTP_EXPIRY_SECONDS),
+            'user_id': user.id,
+            'name': user.name,
+            'type': 'password_reset'
+        }
+        background_tasks.add_task(send_otp_email, data.email, otp, user.name)
     
-    # Generate OTP
-    otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-    
-    # Store OTP with 'reset' type
-    OTP_STORE[data.email] = {
-        'otp': otp,
-        'expires_at': datetime.now() + timedelta(seconds=OTP_EXPIRY_SECONDS),
-        'user_id': user.id,
-        'name': user.name,
-        'type': 'password_reset' # Different type than login
-    }
-    
-    # Re-use your existing OTP email template function
-    background_tasks.add_task(send_otp_email, data.email, otp, user.name)
-    
-    return {"message": "Reset code sent"}
+    # 🛡️ SECURITY FIX: Always return the same message
+    return {"message": "If this email is registered, a reset code has been sent."}
 
 @app.post("/users/verify-reset-otp")
 def verify_reset_otp_endpoint(data: ResetPasswordVerify):
@@ -2601,7 +2607,13 @@ def get_resume_text(user_id: int, db: Session = Depends(get_db)):
     return {"text": user.resume_text}
 
 @app.get("/users/{user_id}")
-def get_user_profile(user_id: int, db: Session = Depends(get_db)):
+def get_user_profile(user_id: int, db: Session = Depends(get_db),current_user = Depends(get_current_user)):
+
+    #🛡️ SECURITY FIX: Strict Ownership Check
+    # Only allow access if the logged-in user IS the user being requested
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this profile")
+    
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -2959,6 +2971,54 @@ def register_recruiter(data: RecruiterRegister, background_tasks: BackgroundTask
         "email": email_clean,
         "requires_otp": True
     }
+
+# 🟢 NEW: Recruiter Forgot Password
+@app.post("/recruiters/forgot-password")
+@limiter.limit("3/minute")
+def recruiter_forgot_password(
+    data: ForgotPasswordRequest, 
+    background_tasks: BackgroundTasks, 
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    recruiter = db.query(Recruiter).filter(Recruiter.official_email == data.email).first()
+
+    if recruiter:
+        otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        OTP_STORE[data.email] = {
+            'otp': otp,
+            'expires_at': datetime.now() + timedelta(seconds=OTP_EXPIRY_SECONDS),
+            'recruiter_id': recruiter.id,
+            'name': recruiter.name,
+            'type': 'recruiter_password_reset'
+        }
+        # Re-use the user email function or create a new one
+        background_tasks.add_task(send_otp_email, data.email, otp, recruiter.name)
+
+    return {"message": "If this email is registered, a reset code has been sent."}
+
+# 🟢 NEW: Recruiter Reset Confirm
+@app.post("/recruiters/reset-password")
+def recruiter_reset_password_confirm(data: ResetPasswordConfirm, db: Session = Depends(get_db)):
+    if data.email not in OTP_STORE:
+        raise HTTPException(status_code=400, detail="Session expired")
+        
+    stored = OTP_STORE[data.email]
+    
+    # Verify OTP and correct Type
+    if stored.get('type') != 'recruiter_password_reset' or stored['otp'] != data.otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+        
+    recruiter = db.query(Recruiter).filter(Recruiter.id == stored['recruiter_id']).first()
+    if not recruiter:
+        raise HTTPException(status_code=404, detail="Recruiter not found")
+        
+    new_hash = bcrypt.hashpw(data.new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    recruiter.password_hash = new_hash
+    db.commit()
+    
+    del OTP_STORE[data.email]
+    return {"message": "Password reset successfully"}
 
 @app.get("/recruiters/{recruiter_id}")
 def get_recruiter(recruiter_id: int, db: Session = Depends(get_db)):
@@ -3347,11 +3407,29 @@ class AdminLogin(BaseModel):
     password: str
 
 @app.post("/admin/create")
-def create_admin(data: AdminLogin, db: Session = Depends(get_db)):
+def create_admin(
+    data: AdminLogin, 
+    # 🛡️ SECURITY FIX: Require a secret key in the header
+    x_admin_secret: str = Header(..., alias="x-admin-secret"), 
+    db: Session = Depends(get_db)
+):
+    # 1. VALIDATE SECRET KEY
+    # Make sure to add ADMIN_CREATION_SECRET="your_strong_password_here" to your .env file
+    required_secret = os.getenv("ADMIN_CREATION_SECRET")
+    
+    # Safety: If no secret is set in env, disable this endpoint entirely
+    if not required_secret:
+        raise HTTPException(status_code=403, detail="Admin creation is disabled (No secret set).")
+        
+    if x_admin_secret != required_secret:
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid Admin Secret")
+
+    # 2. Check if username exists
     existing = db.query(Admin).filter(Admin.username == data.username).first()
     if existing:
         raise HTTPException(status_code=400, detail="Admin username already exists")
     
+    # 3. Create Admin
     hashed_pw = bcrypt.hashpw(data.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     
     new_admin = Admin(
@@ -3361,6 +3439,7 @@ def create_admin(data: AdminLogin, db: Session = Depends(get_db)):
     )
     db.add(new_admin)
     db.commit()
+    
     return {"message": "Admin account created successfully"}
 
 @app.post("/admin/login")
