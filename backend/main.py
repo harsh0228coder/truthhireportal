@@ -2811,12 +2811,13 @@ def delete_project(user_id: int, project_id: int, db: Session = Depends(get_db))
 async def upload_resume(user_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     # 1. Verify User Exists
     user = db.query(User).filter(User.id == user_id).first()
-    if not user: raise HTTPException(status_code=404, detail="User not found")
+    if not user: 
+        raise HTTPException(status_code=404, detail="User not found")
     
     # 2. Read File Content into Memory
     content = await file.read()
     
-    # --- AI Text Extraction Logic (Unchanged) ---
+    # --- AI Text Extraction Logic ---
     text = ""
     try:
         if file.filename.lower().endswith('.pdf'):
@@ -2841,28 +2842,28 @@ async def upload_resume(user_id: int, file: UploadFile = File(...), db: Session 
             text = content.decode('utf-8', errors='ignore')
     except Exception as e:
         print(f"AI Extraction Warning: {e}")
-    # --------------------------------------------
 
-    # 3. UPLOAD TO SUPABASE (Replaces local save)
+    # 3. UPLOAD TO SUPABASE
     try:
-        # Create a unique filename: resumes/user_123_random.pdf
-        # We add random numbers to avoid caching issues when updating resumes
+        # Check if Supabase initialized successfully
+        if 'supabase' not in globals() or supabase is None:
+            raise Exception("Supabase client is missing. Check your Render Environment Variables for SUPABASE_URL and SUPABASE_SERVICE_KEY.")
+
         file_extension = file.filename.split(".")[-1]
         unique_filename = f"user_{user_id}_{random.randint(1000, 9999)}.{file_extension}"
         
-        # Upload using the Supabase Client
-        # Note: We upload 'content' (bytes) directly
+        # Fallback to application/pdf if the browser doesn't send a content-type
+        safe_content_type = file.content_type if file.content_type else "application/pdf"
+
         res = supabase.storage.from_("resumes").upload(
             path=unique_filename,
             file=content,
-            file_options={"content-type": file.content_type}
+            file_options={"content-type": safe_content_type}
         )
 
-        # Get the Public URL
         public_url = supabase.storage.from_("resumes").get_public_url(unique_filename)
 
         # 4. Save to Database
-        # Important: We now save the FULL URL, not just the filename
         user.resume_filename = public_url 
         user.resume_text = clean_text_for_ai(text)[:10000]
         user.resume_uploaded_at = datetime.now()
@@ -2875,8 +2876,10 @@ async def upload_resume(user_id: int, file: UploadFile = File(...), db: Session 
         }
 
     except Exception as e:
-        print(f"Supabase Upload Error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to upload resume to cloud storage")
+        # THIS SENDS THE REAL ERROR TO YOUR NEXT.JS CONSOLE
+        error_msg = f"Storage Error: {str(e)}"
+        print(f"CRITICAL: {error_msg}")
+        raise HTTPException(status_code=500, detail=error_msg)
         
 # --- ADD THIS NEW ENDPOINT ---
 @app.post("/users/{user_id}/profile-image")
