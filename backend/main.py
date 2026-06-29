@@ -2877,7 +2877,7 @@ async def upload_resume(user_id: int, file: UploadFile = File(...), db: Session 
     except Exception as e:
         print(f"Supabase Upload Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to upload resume to cloud storage")
-    
+        
 # --- ADD THIS NEW ENDPOINT ---
 @app.post("/users/{user_id}/profile-image")
 async def upload_profile_image(
