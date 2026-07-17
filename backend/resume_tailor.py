@@ -13,10 +13,10 @@ from __future__ import annotations
 import io
 import json
 import re
-from typing import Optional
+from typing import Optional, Any
 
 from groq import Groq
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
@@ -30,26 +30,74 @@ from reportlab.platypus import (
 )
 
 
+def _coerce_str_list(v: Any) -> list[str]:
+    """
+    Convert whatever the LLM gave us into a clean list[str].
+
+    Llama-3.3 frequently returns list-ish fields as one of:
+      - a proper list of strings              -> pass through
+      - a comma-separated string              -> split on ','
+      - a newline / bullet separated string   -> split on newlines
+      - None                                  -> []
+    """
+    if v is None:
+        return []
+    if isinstance(v, list):
+        return [str(x).strip() for x in v if str(x).strip()]
+    if isinstance(v, str):
+        # Split on commas OR newlines OR common bullet chars
+        parts = re.split(r"[,\n;•·]+|(?:^|\s)-\s+", v)
+        return [p.strip(" -•·\t") for p in parts if p.strip(" -•·\t")]
+    # Any other type -> try str conversion
+    return [str(v).strip()] if str(v).strip() else []
+
+
 # ---------- Structured schema returned by the LLM ---------------------------
 
 class TailoredExperience(BaseModel):
-    title: str
+    title: str = ""
     company: str = ""
     dates: str = ""
     bullets: list[str] = Field(default_factory=list)
 
+    @field_validator("bullets", mode="before")
+    @classmethod
+    def _v_bullets(cls, v): return _coerce_str_list(v)
+
+    @field_validator("title", "company", "dates", mode="before")
+    @classmethod
+    def _v_str(cls, v):
+        return "" if v is None else str(v)
+
 
 class TailoredEducation(BaseModel):
-    degree: str
+    degree: str = ""
     institution: str = ""
     dates: str = ""
     details: str = ""
 
+    @field_validator("degree", "institution", "dates", "details", mode="before")
+    @classmethod
+    def _v_str(cls, v):
+        return "" if v is None else str(v)
+
 
 class TailoredProject(BaseModel):
-    title: str
+    title: str = ""
     tech_stack: str = ""
     bullets: list[str] = Field(default_factory=list)
+
+    @field_validator("bullets", mode="before")
+    @classmethod
+    def _v_bullets(cls, v): return _coerce_str_list(v)
+
+    @field_validator("title", "tech_stack", mode="before")
+    @classmethod
+    def _v_str(cls, v):
+        # tech_stack occasionally comes as a list — flatten it
+        if isinstance(v, list):
+            return ", ".join(str(x) for x in v)
+        return "" if v is None else str(v)
 
 
 class TailoredResumeData(BaseModel):
@@ -66,6 +114,31 @@ class TailoredResumeData(BaseModel):
     projects: list[TailoredProject] = Field(default_factory=list)
     education: list[TailoredEducation] = Field(default_factory=list)
     certifications: list[str] = Field(default_factory=list)
+
+    # Coerce any string-y contact fields to str
+    @field_validator("full_name", "email", "phone", "location", "linkedin", "github", "summary", mode="before")
+    @classmethod
+    def _v_str(cls, v):
+        if isinstance(v, list):
+            return ", ".join(str(x) for x in v)
+        return "" if v is None else str(v)
+
+    # Coerce list fields (skills, certifications) whether the LLM gave string or list
+    @field_validator("skills", "certifications", mode="before")
+    @classmethod
+    def _v_list(cls, v):
+        return _coerce_str_list(v)
+
+    # If experience / projects / education arrive as a dict (LLM sometimes wraps a single
+    # item as an object instead of a list), promote it to a single-element list.
+    @field_validator("experience", "projects", "education", mode="before")
+    @classmethod
+    def _v_promote(cls, v):
+        if v is None:
+            return []
+        if isinstance(v, dict):
+            return [v]
+        return v
 
 
 # ---------- LLM prompt engineering ------------------------------------------
