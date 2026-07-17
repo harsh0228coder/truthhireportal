@@ -52,8 +52,16 @@ OTP_STORE = {}
 OTP_EXPIRY_SECONDS = 300  # 5 minutes
 base_url = os.getenv("NEXT_PUBLIC_API_URL", "https://truthhire-api.onrender.com")
 # --- CONFIGURATION (Add this near the top with other configs) ---
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") # Ensure this is the SERVICE_ROLE key
+# Strip whitespace, surrounding quotes and trailing slash to defend against
+# common env-var typos on Render/Vercel.
+def _clean_env(val: str) -> str:
+    if not val:
+        return val
+    v = val.strip().strip('"').strip("'").strip()
+    return v.rstrip("/")
+
+SUPABASE_URL = _clean_env(os.getenv("SUPABASE_URL"))
+SUPABASE_KEY = _clean_env(os.getenv("SUPABASE_SERVICE_KEY"))  # SERVICE_ROLE key
 
 resend.api_key = os.getenv("RESEND_API_KEY")
 
@@ -61,8 +69,11 @@ resend.api_key = os.getenv("RESEND_API_KEY")
 supabase: Client = None
 try:
     if SUPABASE_URL and SUPABASE_KEY:
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        print("✅ Supabase client initialized successfully")
+        if not SUPABASE_URL.startswith(("http://", "https://")):
+            print(f"❌ SUPABASE_URL missing http(s):// prefix -> got: {SUPABASE_URL!r}")
+        else:
+            supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+            print(f"✅ Supabase client initialized ({SUPABASE_URL})")
     else:
         print("⚠️ Warning: SUPABASE_URL or SUPABASE_SERVICE_KEY not set. Resume uploads will fail.")
 except Exception as e:
@@ -1502,13 +1513,15 @@ def get_current_candidate(
         # ✅ FIX 1: Use actual URL string (Python string), NOT JavaScript code
         resume_url = None
         if user.resume_filename:
-            if user.resume_filename.startswith("http"):
+            # Clean up any legacy trailing '?' saved from older supabase-py versions
+            cleaned_filename = user.resume_filename.rstrip("?")
+            if cleaned_filename.startswith("http"):
                 # It is already a full Supabase URL -> Use it directly
-                resume_url = user.resume_filename
+                resume_url = cleaned_filename
             else:
                 # It is an old local file -> Add the path
                 base_url = "https://truthhire-api.onrender.com"
-                resume_url = f"{base_url}/static/resumes/{user.resume_filename}"
+                resume_url = f"{base_url}/static/resumes/{cleaned_filename}"
             
         return {
             "id": user.id,
@@ -1528,7 +1541,7 @@ def get_current_candidate(
             "current_salary": user.current_salary,
             "expected_salary": user.expected_salary,
             "notice_period": user.notice_period,
-            "resume_filename": user.resume_filename,
+            "resume_filename": user.resume_filename.rstrip("?") if user.resume_filename else None,
             "resume_url": resume_url,
             "resume_text": user.resume_text,
             "profile_image": getattr(user, 'profile_image', None),
