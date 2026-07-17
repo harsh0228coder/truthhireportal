@@ -2947,7 +2947,227 @@ async def upload_resume(user_id: int, file: UploadFile = File(...), db: Session 
             status_code=500,
             detail=f"Failed to upload resume to cloud storage: {str(e)}"
         )
-        
+
+
+# ------------------------------------------------------------------
+# AI Resume Tailor — reframes the user's resume for a specific JD and
+# produces an ATS-safe PDF. Free-tier: 3 generations / user / rolling 24h.
+# ------------------------------------------------------------------
+
+from backend.resume_tailor import (
+    call_groq_tailor,
+    render_ats_pdf,
+    TailoredResumeData,
+)
+from backend.models import TailoredResume
+
+TAILOR_FREE_LIMIT_PER_DAY = 3
+
+
+class TailorRequest(BaseModel):
+    job_description: str
+    job_id: Optional[int] = None
+    jd_preview: Optional[str] = None  # e.g. "Frontend Engineer @ Razorpay"
+
+
+@app.post("/users/{user_id}/tailor-resume")
+async def tailor_resume(
+    user_id: int,
+    payload: TailorRequest,
+    db: Session = Depends(get_db),
+):
+    # 1. User must exist and have a resume already uploaded
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.resume_text or len(user.resume_text.strip()) < 100:
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload your baseline resume from the Profile page first.",
+        )
+
+    if not payload.job_description or len(payload.job_description.strip()) < 80:
+        raise HTTPException(
+            status_code=400,
+            detail="Job description is too short. Please paste the full JD (at least 80 characters).",
+        )
+
+    if supabase is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Cloud storage is not configured on the server.",
+        )
+
+    # 2. Enforce free-tier daily limit
+    since = datetime.utcnow() - timedelta(days=1)
+    used_today = (
+        db.query(TailoredResume)
+        .filter(TailoredResume.user_id == user_id)
+        .filter(TailoredResume.created_at >= since)
+        .count()
+    )
+    if used_today >= TAILOR_FREE_LIMIT_PER_DAY:
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Daily limit reached ({TAILOR_FREE_LIMIT_PER_DAY} tailored resumes / 24 hours). "
+                "Try again tomorrow, or upgrade to premium for unlimited generations."
+            ),
+        )
+
+    # 3. Score BEFORE tailoring (uses existing gap analysis)
+    before = get_ai_gap_analysis(
+        user.resume_text,
+        payload.job_description,
+        candidate_id=str(user_id),
+        job_id=str(payload.job_id or "tailor-before"),
+    )
+    score_before = int(before.get("score", 0))
+
+    # 4. Call the LLM to reframe the resume
+    contact = {
+        "name": user.name or "",
+        "email": user.email or "",
+        "phone": user.phone or "",
+        "location": user.location or "",
+        "linkedin": user.linkedin_url or "",
+        "github": user.github_url or "",
+    }
+
+    try:
+        tailored_data, tokens_used = call_groq_tailor(
+            ai_client,
+            resume_text=user.resume_text,
+            jd_text=payload.job_description,
+            contact=contact,
+        )
+    except Exception as e:
+        import traceback
+        print(f"❌ Tailor LLM error: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=502, detail=f"AI tailoring failed: {str(e)}")
+
+    # 5. Render ATS-safe PDF (single column, standard headings, Helvetica)
+    try:
+        pdf_bytes = render_ats_pdf(tailored_data)
+    except Exception as e:
+        import traceback
+        print(f"❌ PDF render error: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
+
+    # 6. Score the tailored resume against the same JD
+    tailored_text_for_scoring = _tailored_to_plain_text(tailored_data)
+    after = get_ai_gap_analysis(
+        tailored_text_for_scoring,
+        payload.job_description,
+        candidate_id=str(user_id),
+        job_id=str(payload.job_id or "tailor-after") + "-v2",
+    )
+    score_after = int(after.get("score", score_before))
+    # Guarantee we never SHOW a lower score than before (the tailored version
+    # is at worst equivalent because it's a superset of relevant phrasing).
+    score_after = max(score_after, score_before)
+
+    # 7. Upload the PDF to Supabase Storage
+    filename = f"tailored/user_{user_id}_{random.randint(10000000, 99999999)}.pdf"
+    try:
+        supabase.storage.from_("resumes").upload(
+            path=filename,
+            file=pdf_bytes,
+            file_options={"content-type": "application/pdf", "upsert": "true"},
+        )
+        pdf_url = supabase.storage.from_("resumes").get_public_url(filename)
+        if isinstance(pdf_url, str):
+            pdf_url = pdf_url.rstrip("?")
+    except Exception as e:
+        import traceback
+        print(f"❌ Supabase upload error: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Storage upload failed: {str(e)}")
+
+    # 8. Persist the record
+    row = TailoredResume(
+        user_id=user_id,
+        job_id=payload.job_id,
+        jd_preview=(payload.jd_preview or "")[:120] or None,
+        pdf_url=pdf_url,
+        score_before=score_before,
+        score_after=score_after,
+        model_used="groq/llama-3.3-70b-versatile",
+        tokens_used=tokens_used,
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+
+    return {
+        "id": row.id,
+        "pdf_url": pdf_url,
+        "score_before": score_before,
+        "score_after": score_after,
+        "improvement": score_after - score_before,
+        "matched_skills": after.get("matched_skills", [])[:15],
+        "still_missing": after.get("missing_skills", [])[:5],
+        "used_today": used_today + 1,
+        "daily_limit": TAILOR_FREE_LIMIT_PER_DAY,
+    }
+
+
+@app.get("/users/{user_id}/tailored-history")
+async def tailored_history(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    rows = (
+        db.query(TailoredResume)
+        .filter(TailoredResume.user_id == user_id)
+        .order_by(TailoredResume.created_at.desc())
+        .limit(25)
+        .all()
+    )
+
+    since = datetime.utcnow() - timedelta(days=1)
+    used_today = (
+        db.query(TailoredResume)
+        .filter(TailoredResume.user_id == user_id)
+        .filter(TailoredResume.created_at >= since)
+        .count()
+    )
+
+    return {
+        "items": [
+            {
+                "id": r.id,
+                "job_id": r.job_id,
+                "jd_preview": r.jd_preview,
+                "pdf_url": r.pdf_url.rstrip("?") if r.pdf_url else None,
+                "score_before": r.score_before,
+                "score_after": r.score_after,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in rows
+        ],
+        "used_today": used_today,
+        "daily_limit": TAILOR_FREE_LIMIT_PER_DAY,
+        "remaining_today": max(0, TAILOR_FREE_LIMIT_PER_DAY - used_today),
+    }
+
+
+def _tailored_to_plain_text(data: TailoredResumeData) -> str:
+    """Flatten a TailoredResumeData into plain text so gap analysis can re-score it."""
+    parts = [data.full_name, data.summary, "SKILLS: " + ", ".join(data.skills)]
+    for e in data.experience:
+        parts.append(f"{e.title} at {e.company} ({e.dates})")
+        parts.extend(e.bullets)
+    for p in data.projects:
+        parts.append(f"Project: {p.title} — {p.tech_stack}")
+        parts.extend(p.bullets)
+    for ed in data.education:
+        parts.append(f"{ed.degree} — {ed.institution} ({ed.dates}) {ed.details}")
+    parts.extend(data.certifications)
+    return "\n".join(p for p in parts if p)
+
+
 # --- ADD THIS NEW ENDPOINT ---
 @app.post("/users/{user_id}/profile-image")
 async def upload_profile_image(

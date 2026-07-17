@@ -86,3 +86,13 @@ On **Vercel** (frontend), confirm:
   - OpenGraph / Twitter social preview card at `/brand/og-image.png`.
   - Updated `layout.tsx` metadata (icons + og:image).
   - Replaced legacy `<Shield /> TruthHire.` mark in: Navbar, Footer, /login, /signup, /recruiter/login, /recruiter/register.
+- **AI Resume Tailor** (Jan 2026): reframes user's baseline resume for a target JD and outputs an ATS-safe PDF.
+  - Endpoint `POST /users/{id}/tailor-resume` (backend `resume_tailor.py` + `main.py`).
+  - Groq Llama-3.3-70B for the reframe, ReportLab for the PDF, Supabase for storage.
+  - **Anti-hallucination guardrail**: LLM output is post-processed against the baseline resume — any skill not present in the source is stripped. Verified with unit tests.
+  - **ATS-safe layout**: single column, standard headings (Summary, Skills, Experience, Projects, Education, Certifications), Helvetica, ASCII bullets. Tested via `pdfplumber` re-parse — output is clean text with no CID-font issues.
+  - **Rate limit**: 3 free generations / user / rolling 24h. Enforced via `TailoredResume` table row count.
+  - **History endpoint** `GET /users/{id}/tailored-history` returns the last 25 tailored PDFs.
+  - **Frontend**: reusable `<AiResumeTailor />` component wired into `/tools/check-chances` (after the score panel) and `/jobs/[id]` (after the gap analysis).
+  - Data model: new `tailored_resumes` table (auto-created by SQLAlchemy `metadata.create_all` on next backend boot).
+  - **5/5 backend end-to-end tests passing** (happy path, history, rate limit, JD-too-short, unknown user) with mocked Groq + Supabase.

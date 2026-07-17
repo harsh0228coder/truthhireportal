@@ -236,7 +236,38 @@ class Waitlist(Base):
     email = Column(String, index=True)
     category = Column(String)
     joined_at = Column(DateTime, default=datetime.utcnow)
-    
+
+
+class TailoredResume(Base):
+    """
+    Every time a user runs the AI Resume Tailor on a JD we save the outcome.
+    - Powers the daily rate-limit (3/day for free tier)
+    - Lets the user see their history + re-download previous tailored PDFs
+    - Analytics: which JDs users tailor most
+    """
+    __tablename__ = "tailored_resumes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), index=True)
+    job_id = Column(Integer, ForeignKey('jobs.id'), nullable=True, index=True)
+
+    # First 120 chars of JD title/company for the history UI
+    jd_preview = Column(String, nullable=True)
+
+    # Public URL of the generated PDF on Supabase Storage
+    pdf_url = Column(String, nullable=False)
+
+    # Scores before and after tailoring (both against the same JD)
+    score_before = Column(Integer, default=0)
+    score_after = Column(Integer, default=0)
+
+    # LLM meta (useful for cost tracking)
+    model_used = Column(String, nullable=True)
+    tokens_used = Column(Integer, default=0)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
 # Run this block to create tables
 if __name__ == "__main__":
     Base.metadata.create_all(bind=engine)
