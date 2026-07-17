@@ -44,6 +44,9 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import logging
 
+# ✅ FIX: Load .env BEFORE reading any environment variables
+load_dotenv()
+
 # --- CONFIGURATION ---
 OTP_STORE = {} 
 OTP_EXPIRY_SECONDS = 300  # 5 minutes
@@ -55,12 +58,15 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") # Ensure this is the SERVICE_RO
 resend.api_key = os.getenv("RESEND_API_KEY")
 
 # Initialize Supabase Client
+supabase: Client = None
 try:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    if SUPABASE_URL and SUPABASE_KEY:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print("✅ Supabase client initialized successfully")
+    else:
+        print("⚠️ Warning: SUPABASE_URL or SUPABASE_SERVICE_KEY not set. Resume uploads will fail.")
 except Exception as e:
-    print(f"Warning: Supabase client failed to initialize. Check env vars. Error: {e}")
-
-load_dotenv()
+    print(f"❌ Supabase client failed to initialize. Error: {e}")
 
 GOOGLE_CLIENT_ID = "156178217038-72bv7qfb4o2an9b0o8qdsbq5uekecnu9.apps.googleusercontent.com"
 
@@ -2809,13 +2815,36 @@ def delete_project(user_id: int, project_id: int, db: Session = Depends(get_db))
 
 @app.post("/users/{user_id}/resume")
 async def upload_resume(user_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    # 0. Verify Supabase is configured
+    if supabase is None:
+        print("❌ Supabase client not initialized. Check SUPABASE_URL and SUPABASE_SERVICE_KEY env vars.")
+        raise HTTPException(
+            status_code=500,
+            detail="Cloud storage is not configured on the server. Please contact support."
+        )
+
     # 1. Verify User Exists
     user = db.query(User).filter(User.id == user_id).first()
-    if not user: raise HTTPException(status_code=404, detail="User not found")
-    
-    # 2. Read File Content into Memory
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # 2. Validate filename
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No file provided")
+
+    # 3. Read File Content into Memory
     content = await file.read()
-    
+
+    # 4. Validate file size (5 MB max — matches frontend)
+    MAX_SIZE = 5 * 1024 * 1024  # 5 MB
+    if len(content) == 0:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+    if len(content) > MAX_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large. Max size is 5MB (yours is {len(content) / (1024*1024):.2f}MB)"
+        )
+
     # --- AI Text Extraction Logic (Unchanged) ---
     text = ""
     try:
@@ -2843,40 +2872,68 @@ async def upload_resume(user_id: int, file: UploadFile = File(...), db: Session 
         print(f"AI Extraction Warning: {e}")
     # --------------------------------------------
 
-    # 3. UPLOAD TO SUPABASE (Replaces local save)
+    # 5. UPLOAD TO SUPABASE (Replaces local save)
     try:
-        # Create a unique filename: resumes/user_123_random.pdf
-        # We add random numbers to avoid caching issues when updating resumes
-        file_extension = file.filename.split(".")[-1]
-        unique_filename = f"user_{user_id}_{random.randint(1000, 9999)}.{file_extension}"
-        
-        # Upload using the Supabase Client
-        # Note: We upload 'content' (bytes) directly
-        res = supabase.storage.from_("resumes").upload(
+        # Safely derive extension (default to 'pdf')
+        if "." in file.filename:
+            file_extension = file.filename.rsplit(".", 1)[-1].lower()
+        else:
+            file_extension = "pdf"
+        # Only allow safe extensions
+        if file_extension not in {"pdf", "doc", "docx"}:
+            file_extension = "pdf"
+
+        # Create a unique filename: user_123_<8-char-hex>.pdf
+        # Random hex avoids caching issues + prevents collisions on repeated uploads
+        unique_filename = f"user_{user_id}_{random.randint(10000000, 99999999)}.{file_extension}"
+
+        # Determine content type (fallback to application/pdf)
+        content_type = file.content_type or "application/pdf"
+
+        # Upload using the Supabase Client with upsert enabled so re-uploads never
+        # fail with "resource already exists"
+        supabase.storage.from_("resumes").upload(
             path=unique_filename,
             file=content,
-            file_options={"content-type": file.content_type}
+            file_options={
+                "content-type": content_type,
+                "upsert": "true",
+            }
         )
 
-        # Get the Public URL
+        # Get the Public URL (strip any trailing "?" appended by supabase-py)
         public_url = supabase.storage.from_("resumes").get_public_url(unique_filename)
+        if isinstance(public_url, str):
+            public_url = public_url.rstrip("?")
 
-        # 4. Save to Database
+        if not public_url:
+            raise Exception("Supabase returned an empty public URL")
+
+        # 6. Save to Database
         # Important: We now save the FULL URL, not just the filename
-        user.resume_filename = public_url 
-        user.resume_text = clean_text_for_ai(text)[:10000]
+        user.resume_filename = public_url
+        user.resume_text = clean_text_for_ai(text)[:10000] if text else None
         user.resume_uploaded_at = datetime.now()
         db.commit()
-        
+
         return {
-            "message": "Resume uploaded successfully", 
+            "message": "Resume uploaded successfully",
             "filename": unique_filename,
-            "url": public_url
+            "url": public_url,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Supabase Upload Error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to upload resume to cloud storage")
+        db.rollback()
+        # Log full error server-side, return concise message to client
+        import traceback
+        print(f"❌ Supabase Upload Error: {e}")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to upload resume to cloud storage: {str(e)}"
+        )
         
 # --- ADD THIS NEW ENDPOINT ---
 @app.post("/users/{user_id}/profile-image")
