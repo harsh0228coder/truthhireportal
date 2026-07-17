@@ -96,6 +96,20 @@ security = HTTPBearer()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # ✅ AUTO-MIGRATE: create any tables that don't exist yet.
+    # SQLAlchemy's create_all() is idempotent and only creates missing tables
+    # (it will NOT drop or alter existing ones). This fixes the "relation X
+    # does not exist" error that occurs when a new model is added but the DB
+    # hasn't been manually migrated yet.
+    try:
+        from backend.database import engine as _engine
+        from backend.models import Base as _Base
+        _Base.metadata.create_all(bind=_engine)
+        print("✅ Database schema check complete (any missing tables were created)")
+    except Exception as e:
+        # We don't crash the app — the endpoint that needs the table will
+        # surface a clear error to the caller.
+        print(f"⚠️ Startup schema check failed (non-fatal): {e}")
     yield
 
 # 🛡️ SECURITY FIX: Hide docs if in Production
