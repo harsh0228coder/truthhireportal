@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Mail, Eye, EyeOff, Loader2, X, AlertCircle, Shield, Check } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { useGoogleLogin } from '@react-oauth/google';
+import { LogoMark } from '@/components/Logo';
 
 // --- PROFESSIONAL GOOGLE ICON ---
 const GoogleIcon = () => (
@@ -200,11 +201,11 @@ export default function SignupPage() {
         
         {/* 1. Header */}
         <div className="text-center">
-             <Link href="/" className="inline-flex items-center justify-center gap-2 mb-2 hover:opacity-80 transition-opacity">
-                <div className="bg-blue-600/10 p-1.5 rounded-lg">
-                    <Shield className="w-5 h-5 text-blue-500" />
-                </div>
-                <span className="text-lg font-bold tracking-tight text-white">TruthHire.</span>
+             <Link href="/" aria-label="TruthHire home" className="inline-flex items-center justify-center gap-2 mb-2 hover:opacity-80 transition-opacity">
+                <LogoMark size={28} />
+                <span className="text-[17px] font-semibold tracking-tight text-white leading-none">
+                  truthhire<span className="text-white/60">.in</span>
+                </span>
              </Link>
              <h1 className="text-[16px] font-semibold text-white">Create your account</h1>
              <p className="text-[#a1a1aa] text-[14px] mt-0.5">Welcome! Please fill in the details to get started.</p>

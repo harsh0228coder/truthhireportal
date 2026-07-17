@@ -79,3 +79,10 @@ On **Vercel** (frontend), confirm:
 - Google OAuth + JWT auth flows.
 - Recruiter portals + admin secure portal.
 - Job feed, AI gap analysis (Groq), cold-outreach emails (Resend).
+- **New brand identity applied site-wide** (Jan 2026):
+  - Reusable `<Logo />` React component (`components/Logo.tsx`) with 3 variants: `icon`, `full`, `stacked`.
+  - Inline SVG `<LogoMark />` (blue gradient pill + dot) — crisp at any size, no image request.
+  - Favicon (`.ico` + PNG 16/32/192/512) + Apple touch icon.
+  - OpenGraph / Twitter social preview card at `/brand/og-image.png`.
+  - Updated `layout.tsx` metadata (icons + og:image).
+  - Replaced legacy `<Shield /> TruthHire.` mark in: Navbar, Footer, /login, /signup, /recruiter/login, /recruiter/register.
