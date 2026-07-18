@@ -122,6 +122,14 @@ export default function ProfilePage() {
       return;
     }
 
+    // ✅ Client-side size validation (matches backend 5MB limit)
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      toast.error(`File too large. Max 5MB (yours is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     setUploadingResume(true);
     const toastId = toast.loading("Uploading resume...");
 
@@ -137,9 +145,21 @@ export default function ProfilePage() {
             body: formData,
         });
 
-        if (!response.ok) throw new Error("Upload failed");
+        if (!response.ok) {
+            // ✅ Surface actual server error to the user for easier debugging
+            let errMsg = "Upload failed";
+            try {
+                const err = await response.json();
+                errMsg = err.detail || err.message || errMsg;
+            } catch {}
+            throw new Error(errMsg);
+        }
 
         const data = await response.json();
+
+        if (!data.url) {
+            throw new Error("Server did not return a resume URL");
+        }
         
         // Use 'data.url' so the UI sees the full Supabase link immediately
         setUser({ 
@@ -149,9 +169,9 @@ export default function ProfilePage() {
         });
         
         toast.success("Resume updated successfully!", { id: toastId });
-    } catch (error) {
-        console.error(error);
-        toast.error("Failed to upload resume", { id: toastId });
+    } catch (error: any) {
+        console.error("Resume upload error:", error);
+        toast.error(error?.message || "Failed to upload resume", { id: toastId });
     } finally {
         setUploadingResume(false);
         if (fileInputRef.current) fileInputRef.current.value = "";

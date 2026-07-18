@@ -8,6 +8,7 @@ import {
   Instagram, Facebook, Youtube, ArrowRight, Loader2, Check 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Logo from '@/components/Logo';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -72,14 +73,7 @@ export default function Footer() {
           
           {/* Brand Column (4 Cols) */}
           <div className="lg:col-span-4 space-y-6">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="bg-blue-600/10 p-2 rounded-lg group-hover:bg-blue-600/20 transition-colors">
-                <Shield className="text-blue-500 w-6 h-6" />
-              </div>
-              <span className="text-xl md:text-2xl font-bold text-white tracking-tight">
-                TruthHire<span className="text-blue-500">.</span>
-              </span>
-            </Link>
+            <Logo variant="stacked" size={64} priority={false} className="items-start" />
             <p className="text-sm leading-relaxed max-w-sm">
               India's first AI-powered job verification platform. We eliminate ghost jobs and connect verified talent with real opportunities using advanced <span className="text-white font-medium">Resume Gap Analysis.</span>
             </p>

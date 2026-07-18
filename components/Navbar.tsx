@@ -7,6 +7,7 @@ import {
   Shield, Menu, X, User, LogOut, LayoutDashboard, 
   Sparkles, Search, ChevronDown, TrendingUp
 } from 'lucide-react';
+import { LogoMark } from '@/components/Logo';
 
 // --- ⚡ 50+ MOCK POPULAR SEARCHES (INSTANT) ---
 const POPULAR_SEARCHES = [
@@ -214,12 +215,10 @@ export default function Navbar() {
       <div className="w-full h-full px-6 lg:px-10 flex items-center justify-between gap-4">
         
         {/* 1. LOGO */}
-        <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center gap-2 group shrink-0 z-[102]">
-          <div className="bg-blue-600/10 p-2 rounded-lg group-hover:bg-blue-600/20 transition-colors">
-            <Shield className="w-6 h-6 text-blue-500" />
-          </div>
-          <span className="text-xl font-bold text-white tracking-tight">
-            TruthHire<span className="text-blue-500">.</span>
+        <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center gap-2.5 group shrink-0 z-[102]" aria-label="TruthHire home">
+          <LogoMark size={30} className="transition-transform duration-300 group-hover:rotate-[-6deg]" />
+          <span className="text-[19px] font-semibold text-white tracking-tight leading-none">
+            truthhire<span className="text-white/60">.in</span>
           </span>
         </Link>
 

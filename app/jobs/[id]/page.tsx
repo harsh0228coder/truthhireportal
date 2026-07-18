@@ -15,11 +15,12 @@ import {
   ThumbsUp, ThumbsDown, Send, CheckSquare
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import AiResumeTailor from "@/components/AiResumeTailor";
 
 // --- COMPONENTS ---
 
 // 1. GAP ANALYSIS SECTION (Fixed Rating Logic)
-const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId }: any) => {
+const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescription, jobTitle, companyName, userId }: any) => {
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [showFeedbackTags, setShowFeedbackTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -271,6 +272,38 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId }: any) => {
                     </div>
                 )}
             </div>
+
+            {/* AI RESUME TAILOR — the "fix it for me" CTA on the job details page */}
+            {jobDescription && userId && (
+              <div className="mt-8 pt-6 border-t border-white/5">
+                <div className="bg-gradient-to-br from-blue-950/50 via-indigo-950/30 to-transparent border border-blue-500/20 rounded-xl p-5 relative overflow-hidden">
+                  <div className="absolute -top-16 -right-16 w-48 h-48 bg-blue-500/15 blur-[80px] rounded-full pointer-events-none" />
+                  <div className="relative flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="flex-1">
+                      <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-blue-300 bg-blue-500/10 border border-blue-500/20 rounded-full px-2 py-0.5 mb-2 uppercase tracking-wider">
+                        <Sparkles size={10} className="fill-current" /> New — AI Resume Tailor
+                      </div>
+                      <h4 className="text-base md:text-lg font-bold text-white leading-snug">
+                        Get an ATS-optimized resume for <span className="text-blue-300">this exact job</span> in 5 seconds
+                      </h4>
+                      <p className="text-xs md:text-sm text-gray-400 mt-1">
+                        We rephrase your real experience to match this JD&apos;s keywords. Golden rule: <span className="text-white">no fake skills, ever.</span>
+                      </p>
+                    </div>
+                    <div className="md:w-64 shrink-0">
+                      <AiResumeTailor
+                        userId={userId}
+                        jobDescription={jobDescription}
+                        jobId={jobId}
+                        jdPreview={`${jobTitle || 'Job'} @ ${companyName || ''}`.trim()}
+                        baselineScore={result.match_score}
+                        variant="compact"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
         </div>
       </div>
     );
@@ -352,6 +385,7 @@ export default function JobDetailPage() {
   const [similarJobs, setSimilarJobs] = useState<Job[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [userResume, setUserResume] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
   
   // --- NEW: Low Score Warning State ---
@@ -427,10 +461,18 @@ export default function JobDetailPage() {
 
     // 2. FETCH USER CONTEXT (Independent)
     if (isSignedIn && token) {
+      // Decode user id from JWT so tailor endpoint can be called
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1] || ''));
+        const id = payload?.sub ?? payload?.user_id ?? payload?.id;
+        if (id) setUserId(Number(id));
+      } catch { /* ignore */ }
+
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data?.resume_filename) setUserResume(data.resume_filename);
+          if (data?.id) setUserId(Number(data.id)); // authoritative id from server
         });
       
       const jobId = String(params.id);
@@ -759,7 +801,11 @@ export default function JobDetailPage() {
                     analyzing={analyzing} 
                     result={result} 
                     onAnalyze={() => handleCheckChances(false)}
-                    jobId={job.id} // Pass Job ID for Feedback
+                    jobId={job.id}
+                    jobDescription={job.description}
+                    jobTitle={job.title}
+                    companyName={job.company_name}
+                    userId={userId}
                 />
             </div>
 

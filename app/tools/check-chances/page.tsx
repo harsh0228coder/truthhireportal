@@ -8,6 +8,7 @@ import {
   Zap, Brain, Target, AlertTriangle, RefreshCw, ArrowRight, Lock, ChevronRight
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import AiResumeTailor from '@/components/AiResumeTailor';
 
 // Premium Score Gauge Component
 const ScoreGauge = ({ score }: { score: number }) => {
@@ -53,11 +54,20 @@ const ScoreGauge = ({ score }: { score: number }) => {
 
 export default function CheckMyChances() {
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsSignedIn(!!token);
+    // Extract user id from JWT (base64 payload) — safe read-only
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1] || ''));
+        const id = payload?.user_id ?? payload?.sub ?? payload?.id;
+        if (id) setUserId(Number(id));
+      } catch { /* ignore malformed token */ }
+    }
   }, []);
   
   // UI States
@@ -460,6 +470,32 @@ export default function CheckMyChances() {
                                             {skill}
                                         </span>
                                     )) : <span className="text-xs text-green-500 italic font-medium">No major skills missing!</span>}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* AI RESUME TAILOR — the "fix it for me" button */}
+                        <div className="bg-gradient-to-br from-blue-950/40 via-indigo-950/30 to-[#111] border border-blue-500/20 rounded-2xl p-5 md:p-6 relative overflow-hidden">
+                            <div className="absolute -top-16 -right-16 w-56 h-56 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none" />
+                            <div className="relative flex flex-col md:flex-row md:items-center gap-4">
+                                <div className="flex-1">
+                                    <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-blue-300 bg-blue-500/10 border border-blue-500/20 rounded-full px-2 py-0.5 mb-2">
+                                        <Sparkles size={10} className="fill-current" /> New
+                                    </div>
+                                    <h4 className="text-base md:text-lg font-bold text-white leading-tight">
+                                        Don&apos;t just see the gap — <span className="text-blue-300">close it</span>.
+                                    </h4>
+                                    <p className="text-xs md:text-sm text-gray-400 mt-1 max-w-md">
+                                        Get an ATS-safe PDF resume rewritten for this exact JD in ~5 seconds. No fake skills — only your real experience, rephrased.
+                                    </p>
+                                </div>
+                                <div className="md:w-64 shrink-0">
+                                    <AiResumeTailor
+                                        userId={userId}
+                                        jobDescription={jobDesc}
+                                        baselineScore={result.match_score}
+                                        variant="compact"
+                                    />
                                 </div>
                             </div>
                         </div>

@@ -11,7 +11,7 @@ const suisse = localFont({
   display: 'swap',
 });
 
-// 🟢 UPDATED METADATA (No Images)
+// 🟢 UPDATED METADATA — with brand icons & social preview image
 export const metadata: Metadata = {
   metadataBase: new URL('https://truthhire.in'),
   title: {
@@ -32,6 +32,21 @@ export const metadata: Metadata = {
   authors: [{ name: "TruthHire Team" }],
   creator: "TruthHire",
   publisher: "TruthHire",
+
+  // 🟢 FAVICON + APP ICONS
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/brand/favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/brand/favicon-16.png", type: "image/png", sizes: "16x16" },
+      { url: "/brand/truthhire-icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/brand/truthhire-icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [
+      { url: "/brand/apple-touch-icon.png", sizes: "180x180" },
+    ],
+    shortcut: "/favicon.ico",
+  },
   
   // 1. Google Search Console Verification (PASTE YOUR CODE HERE)
   verification: {
@@ -51,7 +66,7 @@ export const metadata: Metadata = {
     },
   },
 
-  // 3. OpenGraph (Text Only)
+  // 3. OpenGraph (with logo card)
   openGraph: {
     title: "TruthHire - Stop Applying to Ghost Jobs",
     description: "Find 100% verified jobs and check your resume match score instantly.",
@@ -59,13 +74,22 @@ export const metadata: Metadata = {
     siteName: 'TruthHire',
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: '/brand/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'TruthHire — AI Powered Job Platform',
+      },
+    ],
   },
 
-  // 4. Twitter Card (Text Only)
+  // 4. Twitter Card (large image)
   twitter: {
-    card: 'summary', // Changed to 'summary' since there is no large image
+    card: 'summary_large_image',
     title: 'TruthHire - Verified Jobs Only',
     description: 'The AI-powered job portal that eliminates ghost jobs.',
+    images: ['/brand/og-image.png'],
   },
 };
 
