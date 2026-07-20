@@ -109,7 +109,9 @@ class TailoredResumeData(BaseModel):
     github: str = ""
 
     summary: str = ""
-    skills: list[str] = Field(default_factory=list)
+    technical_skills: list[str] = Field(default_factory=list)
+    tools_and_software: list[str] = Field(default_factory=list)
+    soft_skills: list[str] = Field(default_factory=list)
     experience: list[TailoredExperience] = Field(default_factory=list)
     projects: list[TailoredProject] = Field(default_factory=list)
     education: list[TailoredEducation] = Field(default_factory=list)
@@ -123,14 +125,13 @@ class TailoredResumeData(BaseModel):
             return ", ".join(str(x) for x in v)
         return "" if v is None else str(v)
 
-    # Coerce list fields (skills, certifications) whether the LLM gave string or list
-    @field_validator("skills", "certifications", mode="before")
+    # Coerce list fields whether the LLM gave string or list
+    @field_validator("technical_skills", "tools_and_software", "soft_skills", "certifications", mode="before")
     @classmethod
     def _v_list(cls, v):
         return _coerce_str_list(v)
 
-    # If experience / projects / education arrive as a dict (LLM sometimes wraps a single
-    # item as an object instead of a list), promote it to a single-element list.
+    # Promote single dicts to lists
     @field_validator("experience", "projects", "education", mode="before")
     @classmethod
     def _v_promote(cls, v):
@@ -144,10 +145,10 @@ class TailoredResumeData(BaseModel):
 _SYSTEM_PROMPT = """You are TruthHire's ATS Resume Tailor. Your job is to reframe a candidate's EXISTING resume for a specific job description to maximize ATS parseability and keyword matching.
 
 STRICT LAWS (breaking any of these produces a bad answer):
-1. NO TECHNICAL HALLUCINATIONS: NEVER invent hard skills, tools, frameworks, or degrees the candidate does not have. (e.g., If JD wants "Kubernetes", do not add it unless it's in their baseline).
-2. BRIDGE THE VOCABULARY GAP: You MUST rewrite bullet points and skill names to match the EXACT terminology used in the JD. If baseline says "data cleaning" and JD wants "Data Manipulation", rewrite it to "Data Manipulation".
-3. EXTRACT INFERRED SKILLS: Add soft skills or broader conceptual skills (e.g., "Agile", "Cross-functional Collaboration", "Backend Development") to the skills list if the candidate's experience proves they possess them.
-4. Prioritize bullets and skills that overlap with the target JD. Drop unrelated fluff. Every bullet must start with a strong action verb.
+1. NO TECHNICAL HALLUCINATIONS: NEVER invent hard skills, tools, frameworks, or degrees the candidate does not have.
+2. CATEGORIZE SKILLS: Segregate the candidate's existing skills into exactly three categories: Technical Skills (languages, frameworks), Tools & Software (e.g., AWS, Git, Jira), and Soft Skills/Methodologies (e.g., Agile, Leadership).
+3. RETAIN ALL PROJECTS AND EXPERIENCE: You MUST extract and include ALL projects and work experiences present in the baseline resume. Do not drop any project just to save space.
+4. BRIDGE THE VOCABULARY GAP: Rewrite bullet points and skill names to match the EXACT terminology used in the JD without lying.
 5. Output ONLY valid JSON matching the exact schema. No prose, no markdown formatting outside the JSON.
 """
 
@@ -170,14 +171,16 @@ github: {contact.get('github', '')}
 ### TASK
 Return a single JSON object with this exact schema:
 {{
-  "full_name": string,
-  "email": string,
-  "phone": string,
-  "location": string,
-  "linkedin": string,
-  "github": string,
-  "summary": "2-3 sentence professional summary tailored to this JD, using only facts from the baseline resume",
-  "skills": ["8-15 comma-separated skills, prioritized by JD relevance, ALL must appear in the baseline resume"],
+  "full_name": "string",
+  "email": "string",
+  "phone": "string",
+  "location": "string",
+  "linkedin": "string",
+  "github": "string",
+  "summary": "2-3 sentence professional summary tailored to this JD",
+  "technical_skills": ["Languages, libraries, and frameworks from baseline"],
+  "tools_and_software": ["Software, platforms, and tools from baseline"],
+  "soft_skills": ["Interpersonal and methodology skills from baseline"],
   "experience": [
     {{"title": "role", "company": "company", "dates": "MMM YYYY - MMM YYYY", "bullets": ["4-5 bullets, action-verb first, JD-aligned language"]}}
   ],
@@ -199,10 +202,7 @@ def call_groq_tailor(
     contact: dict,
     model: str = "llama-3.3-70b-versatile",
 ) -> tuple[TailoredResumeData, int]:
-    """
-    Runs the LLM once and returns the parsed, validated TailoredResumeData
-    plus tokens_used (int).
-    """
+    
     resp = client.chat.completions.create(
         model=model,
         messages=[
@@ -227,9 +227,10 @@ def call_groq_tailor(
 
     data = TailoredResumeData(**payload)
 
-    # The prompt now controls semantic bridging without raw string-matching destruction.
-    # We enforce a maximum limit of 15 skills to keep the ATS parser heavily targeted.
-    data.skills = data.skills[:15]
+    # Enforce strict limits per category to keep the ATS parser heavily targeted
+    data.technical_skills = data.technical_skills[:12]
+    data.tools_and_software = data.tools_and_software[:10]
+    data.soft_skills = data.soft_skills[:6]
 
     return data, tokens_used
 
@@ -329,9 +330,15 @@ def render_ats_pdf(data: TailoredResumeData) -> bytes:
         story.append(Paragraph(_esc(data.summary), body_style))
 
     # -- Skills ------------------------------------------------------------
-    if data.skills:
-        story.append(_section("Skills"))
-        story.append(Paragraph(", ".join(_esc(s) for s in data.skills), body_style))
+    if data.technical_skills or data.tools_and_software or data.soft_skills:
+        story.append(_section("Skills & Technologies"))
+        if data.technical_skills:
+            story.append(Paragraph(f"<b>Technical Skills:</b> {', '.join(_esc(s) for s in data.technical_skills)}", body_style))
+        if data.tools_and_software:
+            story.append(Paragraph(f"<b>Tools & Software:</b> {', '.join(_esc(s) for s in data.tools_and_software)}", body_style))
+        if data.soft_skills:
+            story.append(Paragraph(f"<b>Soft Skills:</b> {', '.join(_esc(s) for s in data.soft_skills)}", body_style))
+        story.append(Spacer(1, 4))
 
     # -- Experience --------------------------------------------------------
     if data.experience:

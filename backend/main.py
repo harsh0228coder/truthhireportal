@@ -3176,7 +3176,15 @@ async def tailored_history(user_id: int, db: Session = Depends(get_db)):
 
 def _tailored_to_plain_text(data: TailoredResumeData) -> str:
     """Flatten a TailoredResumeData into plain text so gap analysis can re-score it."""
-    parts = [data.full_name, data.summary, "SKILLS: " + ", ".join(data.skills)]
+    parts = [data.full_name, data.summary]
+    
+    if data.technical_skills:
+        parts.append("TECHNICAL SKILLS: " + ", ".join(data.technical_skills))
+    if data.tools_and_software:
+        parts.append("TOOLS & SOFTWARE: " + ", ".join(data.tools_and_software))
+    if data.soft_skills:
+        parts.append("SOFT SKILLS: " + ", ".join(data.soft_skills))
+        
     for e in data.experience:
         parts.append(f"{e.title} at {e.company} ({e.dates})")
         parts.extend(e.bullets)
@@ -3186,6 +3194,7 @@ def _tailored_to_plain_text(data: TailoredResumeData) -> str:
     for ed in data.education:
         parts.append(f"{ed.degree} — {ed.institution} ({ed.dates}) {ed.details}")
     parts.extend(data.certifications)
+    
     return "\n".join(p for p in parts if p)
 
 
