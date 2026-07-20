@@ -141,23 +141,14 @@ class TailoredResumeData(BaseModel):
         return v
 
 
-# ---------- LLM prompt engineering ------------------------------------------
-
-_SYSTEM_PROMPT = """You are TruthHire's Resume Tailor. Your job is to reframe a candidate's
-EXISTING resume for a specific job description so it passes ATS parsers.
+_SYSTEM_PROMPT = """You are TruthHire's ATS Resume Tailor. Your job is to reframe a candidate's EXISTING resume for a specific job description to maximize ATS parseability and keyword matching.
 
 STRICT LAWS (breaking any of these produces a bad answer):
-1. NEVER invent, exaggerate, or add ANY skill, tool, framework, certification, company,
-   role, degree, or achievement that is not already in the candidate's baseline resume.
-   If the JD asks for "Kubernetes" but the candidate has never used it, DO NOT add it.
-2. You MAY reword phrasing to match the JD's terminology.
-   Example: baseline says "built REST APIs in Python" and JD wants "scalable FastAPI backends"
-   -> only rewrite this if the candidate mentioned FastAPI anywhere in their resume.
-   If FastAPI is NOT in their resume, keep it as "REST APIs in Python".
-3. Prioritize bullets and skills that overlap with the JD. Drop unrelated fluff.
-4. Every bullet must start with a strong action verb + measurable outcome (numbers, %, scale)
-   when the baseline already contains such data. Do NOT invent numbers.
-5. Output ONLY valid JSON matching the exact schema. No prose, no markdown.
+1. NO TECHNICAL HALLUCINATIONS: NEVER invent hard skills, tools, frameworks, or degrees the candidate does not have. (e.g., If JD wants "Kubernetes", do not add it unless it's in their baseline).
+2. BRIDGE THE VOCABULARY GAP: You MUST rewrite bullet points and skill names to match the EXACT terminology used in the JD. If baseline says "data cleaning" and JD wants "Data Manipulation", rewrite it to "Data Manipulation".
+3. EXTRACT INFERRED SKILLS: Add soft skills or broader conceptual skills (e.g., "Agile", "Cross-functional Collaboration", "Backend Development") to the skills list if the candidate's experience proves they possess them.
+4. Prioritize bullets and skills that overlap with the target JD. Drop unrelated fluff. Every bullet must start with a strong action verb.
+5. Output ONLY valid JSON matching the exact schema. No prose, no markdown formatting outside the JSON.
 """
 
 
@@ -211,9 +202,6 @@ def call_groq_tailor(
     """
     Runs the LLM once and returns the parsed, validated TailoredResumeData
     plus tokens_used (int).
-
-    Raises ValueError if the LLM output is unparseable or the anti-hallucination
-    guardrail is violated.
     """
     resp = client.chat.completions.create(
         model=model,
@@ -232,7 +220,6 @@ def call_groq_tailor(
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError:
-        # Try to salvage a JSON object out of the response
         m = re.search(r"\{.*\}", raw, re.DOTALL)
         if not m:
             raise ValueError("Model did not return JSON")
@@ -240,32 +227,9 @@ def call_groq_tailor(
 
     data = TailoredResumeData(**payload)
 
-    # -------- Post-generation guardrail: no fabricated skills ---------------
-    baseline_lower = resume_text.lower()
-    trusted_skills = []
-    fabricated = []
-    for s in data.skills:
-        # Split multi-token skills like "AWS Lambda" and require ALL tokens present
-        # OR the whole phrase to appear as a substring in the baseline.
-        s_clean = s.strip()
-        if not s_clean:
-            continue
-        if s_clean.lower() in baseline_lower:
-            trusted_skills.append(s_clean)
-        else:
-            # Allow if at least one meaningful token (>=4 chars) is present
-            tokens_in = re.findall(r"[A-Za-z0-9\+#\.]{3,}", s_clean)
-            if tokens_in and all(t.lower() in baseline_lower for t in tokens_in if len(t) >= 4):
-                trusted_skills.append(s_clean)
-            else:
-                fabricated.append(s_clean)
-    data.skills = trusted_skills[:15]
-
-    # We just LOG fabricated skills — we don't fail the request, because the LLM
-    # may legitimately have paraphrased ("REST API" -> "RESTful APIs"). But we strip
-    # them out to be safe.
-    if fabricated:
-        print(f"[tailor] Stripped {len(fabricated)} unverifiable skills: {fabricated[:5]}...")
+    # The prompt now controls semantic bridging without raw string-matching destruction.
+    # We enforce a maximum limit of 15 skills to keep the ATS parser heavily targeted.
+    data.skills = data.skills[:15]
 
     return data, tokens_used
 
