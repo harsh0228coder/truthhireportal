@@ -72,7 +72,7 @@ export function LogoMark({
         x="53"
         y="30"
         width="20"
-        height="65"
+        height="52"
         rx="10"
         ry="10"
         transform="rotate(20 63 56)"
@@ -102,7 +102,7 @@ export default function Logo({
         <Image
           src="/brand/truthhire-logo.png"
           alt="TruthHire — AI Powered Job Platform"
-          width={h * 4.10} // aspect ratio of the exported PNG ~4.23:1
+          width={h * 4.23} // aspect ratio of the exported PNG ~4.23:1
           height={h}
           priority={priority}
           className="h-auto w-auto max-h-full select-none"
