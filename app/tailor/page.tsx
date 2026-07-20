@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, FileText, CheckCircle2, Download, Loader2, Sparkles, AlertTriangle } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
-export default function TailorPage() {
+// Forces Vercel to render this page dynamically per request instead of crashing during static export
+export const dynamic = "force-dynamic";
+
+function TailorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId");
@@ -24,12 +27,12 @@ export default function TailorPage() {
     }
     fetchUser(token);
     if (jobId) fetchJobDetails(jobId);
-    
-    // --- 🟢 NEW: Check for a passed JD from the Check Chances page ---
+
+    // Pull saved Job Description from Check Chances / Job Details page if present
     const savedJd = sessionStorage.getItem("tailor_jd");
     if (savedJd) {
       setJobDesc(savedJd);
-      sessionStorage.removeItem("tailor_jd"); // Clear it immediately
+      sessionStorage.removeItem("tailor_jd");
     }
   }, [jobId]);
 
@@ -195,5 +198,13 @@ export default function TailorPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function TailorPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader2 className="w-8 h-8 text-blue-500 animate-spin" /></div>}>
+      <TailorContent />
+    </Suspense>
   );
 }
