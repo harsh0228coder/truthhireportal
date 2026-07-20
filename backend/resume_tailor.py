@@ -235,158 +235,155 @@ def call_groq_tailor(
     return data, tokens_used
 
 
-# ---------- ATS-safe PDF renderer (ReportLab, single-column) ----------------
+# ---------- ATS-safe PDF renderer (Overleaf/LaTeX Style) ----------------
 
 def render_ats_pdf(data: TailoredResumeData) -> bytes:
     """
-    Renders a strict single-column, standard-heading PDF that Workday/Taleo/Greenhouse
-    and other ATS platforms can parse cleanly.
-
-    Rules followed:
-      - Single column, no tables/text-boxes
-      - Standard section headings: Summary, Skills, Experience, Projects, Education, Certifications
-      - Helvetica (universally embedded, treated as Arial by ATS parsers)
-      - Plain bullets, no icons, no columns, no images
+    Renders a strict single-column PDF that visually mimics the classic 
+    "Jake's Resume" Overleaf LaTeX template, highly optimized for ATS.
     """
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
         buf,
         pagesize=LETTER,
-        leftMargin=0.55 * inch,
-        rightMargin=0.55 * inch,
-        topMargin=0.5 * inch,
-        bottomMargin=0.5 * inch,
+        leftMargin=0.5 * inch,
+        rightMargin=0.5 * inch,
+        topMargin=0.4 * inch,
+        bottomMargin=0.4 * inch,
         title=data.full_name or "Resume",
         author=data.full_name or "Candidate",
     )
 
-    # -- Styles ------------------------------------------------------------
+    # -- Overleaf-style Fonts (Times-Roman) -------------------------------
     name_style = ParagraphStyle(
-        "Name", fontName="Helvetica-Bold", fontSize=18, alignment=TA_LEFT, spaceAfter=2, leading=22
+        "Name", fontName="Times-Bold", fontSize=22, alignment=1, spaceAfter=4 # alignment=1 is Center
     )
     contact_style = ParagraphStyle(
-        "Contact", fontName="Helvetica", fontSize=10, alignment=TA_LEFT, spaceAfter=10, leading=13, textColor="#333333"
+        "Contact", fontName="Times-Roman", fontSize=10.5, alignment=1, spaceAfter=12
     )
+    # Section headers: Bold, left-aligned, with a bottom border (simulated via HR)
     section_style = ParagraphStyle(
-        "Section", fontName="Helvetica-Bold", fontSize=11.5, alignment=TA_LEFT,
-        spaceBefore=10, spaceAfter=4, leading=14, textColor="#111111",
+        "Section", fontName="Times-Bold", fontSize=12, alignment=TA_LEFT,
+        spaceBefore=8, spaceAfter=2, textTransform="uppercase"
     )
     body_style = ParagraphStyle(
-        "Body", fontName="Helvetica", fontSize=10, alignment=TA_LEFT, leading=13.5, spaceAfter=3
+        "Body", fontName="Times-Roman", fontSize=10.5, alignment=TA_LEFT, leading=13, spaceAfter=2
     )
-    body_bold = ParagraphStyle(
-        "BodyBold", fontName="Helvetica-Bold", fontSize=10.5, alignment=TA_LEFT, leading=14
+    # The trick for left/right alignment on the same line in ReportLab
+    # We use a table for headers, but for simple text we can just bold the left part.
+    item_header_style = ParagraphStyle(
+        "ItemHeader", fontName="Times-Bold", fontSize=11, alignment=TA_LEFT, leading=14, spaceBefore=4
     )
-    body_italic = ParagraphStyle(
-        "BodyIt", fontName="Helvetica-Oblique", fontSize=9.5, alignment=TA_LEFT, leading=12, textColor="#555555"
+    item_sub_style = ParagraphStyle(
+        "ItemSub", fontName="Times-Italic", fontSize=10.5, alignment=TA_LEFT, leading=12, spaceAfter=2
     )
     bullet_style = ParagraphStyle(
-        "Bullet", fontName="Helvetica", fontSize=10, alignment=TA_LEFT, leading=13.5, leftIndent=0
+        "Bullet", fontName="Times-Roman", fontSize=10.5, alignment=TA_LEFT, leading=13, leftIndent=0
     )
 
     def _hr():
-        return Paragraph('<para><font color="#cccccc">' + ("_" * 200) + "</font></para>", body_style)
+        # Creates a solid black line under section headers
+        return Paragraph('<para><font color="#000000">' + ("_" * 92) + "</font></para>", 
+                         ParagraphStyle("HR", fontName="Times-Roman", fontSize=10, leading=2, spaceAfter=6))
 
     def _section(title):
-        return Paragraph(title.upper(), section_style)
+        return [Paragraph(title.upper(), section_style), _hr()]
 
     def _bullets(items):
-        # Use ASCII hyphen bullets — every ATS parser (Workday, Taleo, Greenhouse,
-        # Lever, Ashby) decodes these cleanly. Symbol-font bullets can be lost.
+        # Uses a classic dot bullet point
         return ListFlowable(
             [
                 ListItem(
                     Paragraph(_esc(b), bullet_style),
                     leftIndent=12,
-                    value="-",
+                    value="•", # Standard solid bullet
                 )
                 for b in items if b.strip()
             ],
             bulletType="bullet",
-            start="-",
-            bulletFontName="Helvetica",
+            start="•",
+            bulletFontName="Times-Roman",
             bulletFontSize=10,
-            leftIndent=14,
-            bulletOffsetY=0,
+            leftIndent=10,
+            bulletOffsetY=1,
         )
 
     story = []
 
-    # -- Header ------------------------------------------------------------
+    # -- Header (Centered Name & Contact) ----------------------------------
     story.append(Paragraph(_esc(data.full_name or "Candidate"), name_style))
 
     contact_bits = []
-    if data.email:    contact_bits.append(_esc(data.email))
     if data.phone:    contact_bits.append(_esc(data.phone))
+    if data.email:    contact_bits.append(f'<a href="mailto:{_esc(data.email)}" color="blue">{_esc(data.email)}</a>')
+    if data.linkedin: contact_bits.append(f'<a href="{_esc(data.linkedin)}" color="blue">LinkedIn</a>')
+    if data.github:   contact_bits.append(f'<a href="{_esc(data.github)}" color="blue">GitHub</a>')
     if data.location: contact_bits.append(_esc(data.location))
-    if data.linkedin: contact_bits.append(_esc(data.linkedin))
-    if data.github:   contact_bits.append(_esc(data.github))
+    
     if contact_bits:
-        story.append(Paragraph(" &nbsp;|&nbsp; ".join(contact_bits), contact_style))
+        story.append(Paragraph(" | ".join(contact_bits), contact_style))
 
-    # -- Summary -----------------------------------------------------------
-    if data.summary:
-        story.append(_section("Summary"))
-        story.append(Paragraph(_esc(data.summary), body_style))
+    # -- Education ---------------------------------------------------------
+    # In academic/Overleaf templates, Education often comes first for freshers
+    if data.education:
+        story.extend(_section("Education"))
+        for e in data.education:
+            # Main Line: University (Left) -- We just print linearly for ATS safety
+            head = f"<b>{_esc(e.institution)}</b>"
+            if e.dates: head += f" | {_esc(e.dates)}"
+            story.append(Paragraph(head, item_header_style))
+            
+            # Sub Line: Degree (Left)
+            sub = f"<i>{_esc(e.degree)}</i>"
+            if e.details: sub += f" — {_esc(e.details)}"
+            story.append(Paragraph(sub, item_sub_style))
 
     # -- Skills ------------------------------------------------------------
     if data.technical_skills or data.tools_and_software or data.soft_skills:
-        story.append(_section("Skills & Technologies"))
+        story.extend(_section("Technical Skills"))
         if data.technical_skills:
-            story.append(Paragraph(f"<b>Technical Skills:</b> {', '.join(_esc(s) for s in data.technical_skills)}", body_style))
+            story.append(Paragraph(f"<b>Languages & Frameworks:</b> {', '.join(_esc(s) for s in data.technical_skills)}", body_style))
         if data.tools_and_software:
-            story.append(Paragraph(f"<b>Tools & Software:</b> {', '.join(_esc(s) for s in data.tools_and_software)}", body_style))
+            story.append(Paragraph(f"<b>Developer Tools:</b> {', '.join(_esc(s) for s in data.tools_and_software)}", body_style))
         if data.soft_skills:
-            story.append(Paragraph(f"<b>Soft Skills:</b> {', '.join(_esc(s) for s in data.soft_skills)}", body_style))
+            story.append(Paragraph(f"<b>Methodologies:</b> {', '.join(_esc(s) for s in data.soft_skills)}", body_style))
         story.append(Spacer(1, 4))
 
     # -- Experience --------------------------------------------------------
     if data.experience:
-        story.append(_section("Experience"))
+        story.extend(_section("Experience"))
         for exp in data.experience:
-            line = f"<b>{_esc(exp.title)}</b>"
+            head = f"<b>{_esc(exp.title)}</b>"
+            if exp.dates: head += f" | {_esc(exp.dates)}"
+            story.append(Paragraph(head, item_header_style))
+            
             if exp.company:
-                line += f" — {_esc(exp.company)}"
-            story.append(Paragraph(line, body_bold))
-            if exp.dates:
-                story.append(Paragraph(_esc(exp.dates), body_italic))
+                story.append(Paragraph(f"<i>{_esc(exp.company)}</i>", item_sub_style))
+                
             if exp.bullets:
                 story.append(_bullets(exp.bullets))
             story.append(Spacer(1, 4))
 
     # -- Projects ----------------------------------------------------------
     if data.projects:
-        story.append(_section("Projects"))
+        story.extend(_section("Projects"))
         for p in data.projects:
             head = f"<b>{_esc(p.title)}</b>"
             if p.tech_stack:
-                head += f" <font color='#555555'>({_esc(p.tech_stack)})</font>"
-            story.append(Paragraph(head, body_bold))
+                head += f" | <i>{_esc(p.tech_stack)}</i>"
+            story.append(Paragraph(head, item_header_style))
+            
             if p.bullets:
                 story.append(_bullets(p.bullets))
             story.append(Spacer(1, 4))
 
-    # -- Education ---------------------------------------------------------
-    if data.education:
-        story.append(_section("Education"))
-        for e in data.education:
-            head = f"<b>{_esc(e.degree)}</b>"
-            if e.institution:
-                head += f" — {_esc(e.institution)}"
-            story.append(Paragraph(head, body_bold))
-            if e.dates or e.details:
-                sub = " - ".join(x for x in [e.dates, e.details] if x)
-                story.append(Paragraph(_esc(sub), body_italic))
-            story.append(Spacer(1, 2))
-
     # -- Certifications ----------------------------------------------------
     if data.certifications:
-        story.append(_section("Certifications"))
+        story.extend(_section("Certifications"))
         story.append(_bullets([c for c in data.certifications if c]))
 
     doc.build(story)
     return buf.getvalue()
-
 
 # ---------- Small helpers ---------------------------------------------------
 

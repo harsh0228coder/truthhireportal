@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // <-- Added Router
 import { 
   UploadCloud, Search, AlertCircle, CheckCircle2, 
   ArrowLeft, Loader2, FileText, X, Sparkles, Link as LinkIcon, Type,
   Zap, Brain, Target, AlertTriangle, RefreshCw, ArrowRight, Lock, ChevronRight
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
-import AiResumeTailor from '@/components/AiResumeTailor';
 
 // Premium Score Gauge Component
 const ScoreGauge = ({ score }: { score: number }) => {
@@ -53,6 +53,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
 };
 
 export default function CheckMyChances() {
+  const router = useRouter(); // <-- Initialized Router
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userId, setUserId] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -474,28 +475,31 @@ export default function CheckMyChances() {
                             </div>
                         </div>
 
-                        {/* AI RESUME TAILOR — the "fix it for me" button */}
+                        {/* 🟢 NEW ROUTING BUTTON: Replaced AiResumeTailor Component */}
                         <div className="bg-gradient-to-br from-blue-950/40 via-indigo-950/30 to-[#111] border border-blue-500/20 rounded-2xl p-5 md:p-6 relative overflow-hidden">
                             <div className="absolute -top-16 -right-16 w-56 h-56 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none" />
-                            <div className="relative flex flex-col md:flex-row md:items-center gap-4">
+                            <div className="relative flex flex-col md:flex-row md:items-center gap-6">
                                 <div className="flex-1">
                                     <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-blue-300 bg-blue-500/10 border border-blue-500/20 rounded-full px-2 py-0.5 mb-2">
-                                        <Sparkles size={10} className="fill-current" /> New
+                                        <Sparkles size={10} className="fill-current" /> Overleaf LaTeX Standard
                                     </div>
                                     <h4 className="text-base md:text-lg font-bold text-white leading-tight">
-                                        Don&apos;t just see the gap — <span className="text-blue-300">close it</span>.
+                                        Don't just see the gap — <span className="text-blue-300">close it</span>.
                                     </h4>
                                     <p className="text-xs md:text-sm text-gray-400 mt-1 max-w-md">
-                                        Get an ATS-safe PDF resume rewritten for this exact JD in ~5 seconds. No fake skills — only your real experience, rephrased.
+                                        Get an ATS-safe, single-column PDF resume generated specifically for this JD. No fake skills — just perfect keyword bridging.
                                     </p>
                                 </div>
                                 <div className="md:w-64 shrink-0">
-                                    <AiResumeTailor
-                                        userId={userId}
-                                        jobDescription={jobDesc}
-                                        baselineScore={result.match_score}
-                                        variant="compact"
-                                    />
+                                    <button 
+                                        onClick={() => {
+                                            sessionStorage.setItem("tailor_jd", jobDesc);
+                                            router.push("/tailor");
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20"
+                                    >
+                                        <Sparkles size={18} /> Tailor Resume Now
+                                    </button>
                                 </div>
                             </div>
                         </div>

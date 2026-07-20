@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { fetchJobs } from "@/lib/api";
 import { Job } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -15,17 +15,17 @@ import {
   ThumbsUp, ThumbsDown, Send, CheckSquare
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
-import AiResumeTailor from "@/components/AiResumeTailor";
 
 // --- COMPONENTS ---
 
 // 1. GAP ANALYSIS SECTION (Fixed Rating Logic)
 const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescription, jobTitle, companyName, userId }: any) => {
+  const router = useRouter(); // 🟢 ADDED: Initialized router for the button
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [showFeedbackTags, setShowFeedbackTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasSubmitted, setHasSubmitted] = useState(false); // 🔒 Tracks if user already voted
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   // Check if feedback was already submitted for this job on mount
   useEffect(() => {
@@ -43,16 +43,16 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescriptio
 
   // Handle Main Rating Click
   const handleRate = async (vote: 'up' | 'down') => {
-    if (hasSubmitted) return; // 🔒 Stop if already submitted
+    if (hasSubmitted) return; 
     if (rating === vote) return;
     
     setRating(vote);
     
     if (vote === 'up') {
         setShowFeedbackTags(false);
-        await submitFeedback('up', []); // Auto-submit thumbs up
+        await submitFeedback('up', []); 
     } else {
-        setShowFeedbackTags(true); // Open dropdown for thumbs down
+        setShowFeedbackTags(true); 
     }
   };
 
@@ -65,11 +65,11 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescriptio
       setSelectedTags(newTags);
   };
 
-  // Handle Cancel/Close Popup (The Fix)
+  // Handle Cancel/Close Popup
   const handleCancelFeedback = (e: React.MouseEvent) => {
       e.stopPropagation();
       setShowFeedbackTags(false);
-      setRating(null); // Reset rating so it doesn't stay red
+      setRating(null); 
       setSelectedTags([]);
   };
 
@@ -107,9 +107,8 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescriptio
             })
         });
         toast.success("Thanks for your feedback!");
-        setHasSubmitted(true); // 🔒 Lock the buttons
+        setHasSubmitted(true); 
         
-        // Persist feedback submission to localStorage
         const feedbackKey = `feedback_submitted_${jobId}`;
         const ratingKey = `feedback_rating_${jobId}`;
         localStorage.setItem(feedbackKey, 'true');
@@ -170,7 +169,7 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescriptio
                 </div>
             </div>
             
-            {/* RATING FEATURE (Fixed & Responsive) */}
+            {/* RATING FEATURE */}
             <div className="relative">
                 <div className={`flex items-center gap-2 bg-black/40 p-2 rounded-xl border border-white/5 transition-opacity duration-300 ${hasSubmitted ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     {hasSubmitted ? (
@@ -203,7 +202,7 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescriptio
                     )}
                 </div>
 
-                {/* FEEDBACK POPUP (Responsive & Proper Closing) */}
+                {/* FEEDBACK POPUP */}
                 {showFeedbackTags && !hasSubmitted && (
                     <div className="absolute top-full right-0 mt-3 w-64 max-w-[90vw] bg-[#151515] border border-white/10 rounded-xl p-5 shadow-2xl z-50 animate-in slide-in-from-top-2 ring-1 ring-white/5">
                         <div className="flex justify-between items-center mb-4">
@@ -273,7 +272,7 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescriptio
                 )}
             </div>
 
-            {/* AI RESUME TAILOR — the "fix it for me" CTA on the job details page */}
+            {/* 🟢 NEW: ROUTING BUTTON FOR AI RESUME TAILOR */}
             {jobDescription && userId && (
               <div className="mt-8 pt-6 border-t border-white/5">
                 <div className="bg-gradient-to-br from-blue-950/50 via-indigo-950/30 to-transparent border border-blue-500/20 rounded-xl p-5 relative overflow-hidden">
@@ -281,7 +280,7 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescriptio
                   <div className="relative flex flex-col md:flex-row md:items-center gap-4">
                     <div className="flex-1">
                       <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-blue-300 bg-blue-500/10 border border-blue-500/20 rounded-full px-2 py-0.5 mb-2 uppercase tracking-wider">
-                        <Sparkles size={10} className="fill-current" /> New — AI Resume Tailor
+                        <Sparkles size={10} className="fill-current" /> Overleaf LaTeX Standard
                       </div>
                       <h4 className="text-base md:text-lg font-bold text-white leading-snug">
                         Get an ATS-optimized resume for <span className="text-blue-300">this exact job</span> in 5 seconds
@@ -291,14 +290,15 @@ const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescriptio
                       </p>
                     </div>
                     <div className="md:w-64 shrink-0">
-                      <AiResumeTailor
-                        userId={userId}
-                        jobDescription={jobDescription}
-                        jobId={jobId}
-                        jdPreview={`${jobTitle || 'Job'} @ ${companyName || ''}`.trim()}
-                        baselineScore={result.match_score}
-                        variant="compact"
-                      />
+                      <button 
+                          onClick={() => {
+                              sessionStorage.setItem("tailor_jd", jobDescription);
+                              router.push(`/tailor?jobId=${jobId}`);
+                          }}
+                          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20"
+                      >
+                          <Sparkles size={18} /> Tailor Resume Now
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -376,7 +376,8 @@ const CompanyCard = ({ job }: { job: any }) => {
 };
 
 export default function JobDetailPage() {
-  const params = useParams(); // Using hook as standard for client components
+  const params = useParams(); 
+  const router = useRouter(); 
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
@@ -388,7 +389,6 @@ export default function JobDetailPage() {
   const [userId, setUserId] = useState<number | null>(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
   
-  // --- NEW: Low Score Warning State ---
   const [showLowScoreWarning, setShowLowScoreWarning] = useState(false);
   
   const [coverNote, setCoverNote] = useState('');
@@ -408,38 +408,25 @@ export default function JobDetailPage() {
     setToken(authToken);
   }, []);
 
-  // --- ⚡ OPTIMIZED PARALLEL FETCHING ---
   useEffect(() => {
     if (!params?.id) return;
 
     const loadData = async () => {
         try {
-            // Start both requests concurrently
             const jobPromise = fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}`).then(res => res.ok ? res.json() : null);
-            const allJobsPromise = fetchJobs(); // Assuming this is fast enough, otherwise create a dedicated /jobs/similar endpoint
+            const allJobsPromise = fetchJobs(); 
 
             const [jobData, allJobs] = await Promise.all([jobPromise, allJobsPromise]);
 
             if (jobData) {
                 setJob(jobData);
-                
-                // 🟢 NEW: Update Browser Title Dynamically
                 document.title = `${jobData.title} at ${jobData.company_name} - TruthHire`; 
 
-                // Track view only once per session
-                if (!hasViewedRef.current) {
-                    hasViewedRef.current = true;
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}/view`, { method: 'POST' }).catch(() => {});
-                }
-                
-                // Track view only once per session
                 if (!hasViewedRef.current) {
                     hasViewedRef.current = true;
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${params.id}/view`, { method: 'POST' }).catch(() => {});
                 }
 
-                // Process similar jobs in memory (since we have allJobs)
-                // Ideally, this should be a backend endpoint: /jobs/{id}/similar
                 if (allJobs) {
                     const related = allJobs.filter((j: Job) => 
                         String(j.id) !== params.id && (
@@ -459,9 +446,7 @@ export default function JobDetailPage() {
 
     loadData();
 
-    // 2. FETCH USER CONTEXT (Independent)
     if (isSignedIn && token) {
-      // Decode user id from JWT so tailor endpoint can be called
       try {
         const payload = JSON.parse(atob(token.split('.')[1] || ''));
         const id = payload?.sub ?? payload?.user_id ?? payload?.id;
@@ -472,7 +457,7 @@ export default function JobDetailPage() {
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data?.resume_filename) setUserResume(data.resume_filename);
-          if (data?.id) setUserId(Number(data.id)); // authoritative id from server
+          if (data?.id) setUserId(Number(data.id)); 
         });
       
       const jobId = String(params.id);
@@ -485,32 +470,27 @@ export default function JobDetailPage() {
     }
   }, [params?.id, isSignedIn, token]);
 
-  // --- MODIFIED: Handle Apply Click (Gatekeeper Logic) ---
   const handleHeroApply = async () => {
     if (!isSignedIn || !token) { setShowLoginPrompt(true); return; }
     if (hasApplied) return;
 
-    // Case 1: Result exists
     if (result) {
         if (result.match_score < 60) {
-            setShowLowScoreWarning(true); // ⚠️ Low Score Warning
+            setShowLowScoreWarning(true); 
         } else {
-            setShowApplyModal(true); // ✅ Good Score -> Easy Apply
+            setShowApplyModal(true); 
         }
     } 
-    // Case 2: No result yet -> Run Analysis then check
     else {
-        await handleCheckChances(true); // true = auto-open modal after analysis
+        await handleCheckChances(true); 
     }
   };
 
-  // --- LOGIC: Run AI Analysis ---
   const handleCheckChances = async (autoOpenApply = false) => {
     if (!isSignedIn || !token) { setShowLoginPrompt(true); return; }
     if (analyzing) return;
     
     setAnalyzing(true);
-    // Scroll to analysis section to show loading
     document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     
     setResult(null);
@@ -585,7 +565,6 @@ export default function JobDetailPage() {
         body: JSON.stringify({ job_id: parseInt(jobId), cover_note: coverNote })
       });
 
-      // ✅ FIX: Parse the response JSON regardless of success/failure
       const data = await response.json();
 
       if (response.ok) {
@@ -595,7 +574,6 @@ export default function JobDetailPage() {
         toast.success("Application submitted successfully!");
         setTimeout(() => { setShowApplyModal(false); setApplySuccess(false); }, 2000);
       } else {
-        // ✅ FIX: Read the specific error message from the backend (e.g., "Already applied")
         const errorMessage = data.detail || 'Application failed';
         toast.error(errorMessage);
       }
@@ -607,7 +585,6 @@ export default function JobDetailPage() {
     }
   };
 
-  // --- HELPER: Format Salary ---
   const formatSalary = (min: number | undefined, max: number | undefined, currency: string = "₹", freq: string = "Monthly") => {
     if (!min && !max) return "Salary not disclosed";
     
@@ -626,27 +603,23 @@ export default function JobDetailPage() {
     return "Salary not disclosed";
   };
 
-  // --- JOB POSTED DATE LOGIC (CALENDAR DAYS) ---
   const getPostedLabel = (dateStr: string) => {
     if (!dateStr) return 'Today';
     const posted = new Date(dateStr);
     const now = new Date();
     
-    // Reset time components to compare strictly by calendar date
     const postedDate = new Date(posted.getFullYear(), posted.getMonth(), posted.getDate());
     const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    // Calculate difference in days
     const diffTime = nowDate.getTime() - postedDate.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 0) return 'Newly Posted'; // Handle future dates (timezone overlap)
+    if (diffDays < 0) return 'Newly Posted'; 
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     return `${diffDays} days ago`;
   };
 
-  // --- JOB DESCRIPTION RENDERER ---
   const renderDescription = (text: string) => {
     if (!text) return <p className="text-gray-500 italic">No description available.</p>;
 
@@ -704,11 +677,10 @@ export default function JobDetailPage() {
   if (!job) return null;
 
   const isExternalLink = job.apply_link && !job.apply_link.includes('@');
-  const activityStatus = (job as any).activity_status || "Active"; // Safe fallback
+  const activityStatus = (job as any).activity_status || "Active"; 
 
   const postedString = getPostedLabel(job.created_at);
 
-  // Status Badge Logic
   let activityConfig = { color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/20', icon: CheckCircle };
   if (activityStatus === 'Inactive') activityConfig = { color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20', icon: X };
   else if (activityStatus === 'Hiring Actively') activityConfig = { color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20', icon: Activity };
@@ -737,7 +709,6 @@ export default function JobDetailPage() {
                   <span className="flex items-center gap-1.5"><Building2 className="h-4 w-4 text-electric" /> {job.company_name}</span>
                   <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-gray-500" /> {job.location}</span>
                   <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4 text-gray-500" /> {postedString}</span>
-                  {/* HERO SALARY */}
                   <span className="flex items-center gap-1.5 text-green-400 font-semibold w-full md:w-auto mt-1 md:mt-0">
                       {formatSalary(job.salary_min, job.salary_max, job.currency, job.salary_frequency)}
                       {job.equity && <span className="ml-2 text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">+ Equity</span>}
@@ -750,7 +721,6 @@ export default function JobDetailPage() {
                       <Shield className="h-3 w-3 md:h-4 md:w-4" /> Verified Job
                     </span>
                   )}
-                  {/* --- 🆕 ACTIVITY BADGE --- */}
                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full ${activityConfig.bg} border ${activityConfig.border} ${activityConfig.color} text-[12px] md:text-[14px] font-medium`}>
                       <activityConfig.icon className="h-3 w-3 md:h-4 md:w-4" /> {activityStatus}
                   </span>
@@ -834,7 +804,6 @@ export default function JobDetailPage() {
               <h3 className="text-lg font-bold text-white mb-5 flex items-center gap-2"><BriefcaseIcon size={20} className="text-gray-500" /> Job Overview</h3>
               <div className="space-y-4">
                   
-                  {/* WORK MODE / LOCATION TYPE (ADDED) */}
                   <div className="flex items-start justify-between pb-3 border-b border-white/5">
                       <span className="text-gray-500 text-sm flex items-center gap-2"><Laptop size={14}/> Work Mode</span>
                       <span className="text-white text-sm font-medium text-right">{job.location_type || "On-site"}</span>
@@ -850,7 +819,6 @@ export default function JobDetailPage() {
                       <span className="text-white text-sm font-medium text-right">{job.location}</span>
                   </div>
                   
-                  {/* SALARY (FIXED FORMAT) */}
                   <div className="flex items-start justify-between pb-3 border-b border-white/5">
                       <span className="text-gray-500 text-sm">Salary</span>
                       <span className="text-green-400 text-sm font-bold text-right">
@@ -869,7 +837,7 @@ export default function JobDetailPage() {
         </div>
       </div>
 
-      {/* --- SIMILAR JOBS SECTION (RESTORED) --- */}
+      {/* --- SIMILAR JOBS SECTION --- */}
       {similarJobs.length > 0 && (
         <div className="border-t border-white/10 bg-[#0a0a0a] py-12 md:py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -901,7 +869,7 @@ export default function JobDetailPage() {
         </div>
       )}
 
-      {/* --- LOW SCORE WARNING MODAL (NEW) --- */}
+      {/* --- LOW SCORE WARNING MODAL --- */}
       {showLowScoreWarning && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="bg-[#111] border border-white/10 rounded-2xl max-w-md w-full p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200 border-t-4 border-t-yellow-500">
