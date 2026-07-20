@@ -364,7 +364,7 @@ export default function Home() {
                 <Link 
                   href={`/jobs/${job.id}`}
                   key={i} 
-                  className="w-[280px] md:w-[340px] bg-[#121212] border border-white/5 rounded-xl p-4 md:p-5 flex items-center gap-4 group transition-all duration-300 hover:scale-105 hover:border-blue-500/30 hover:bg-[#151515] hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] relative cursor-pointer"
+                  className="w-[280px] md:w-[340px] bg-[#121212] border border-white/5 rounded-xl p-4 md:p-5 flex items-center gap-4 group transition-all duration-100 hover:scale-105 hover:border-blue-500/30 hover:bg-[#151515] hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] relative cursor-pointer"
                 >
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white flex items-center justify-center text-black font-bold text-lg md:text-xl shadow-sm flex-shrink-0">
                     {job.company_name ? job.company_name.charAt(0).toUpperCase() : 'C'}
@@ -559,7 +559,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="group relative">
-                <div className="relative h-full bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center transition-transform duration-300 group-hover:-translate-y-1">
+                <div className="relative h-full bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center transition-transform duration-300 group-hover:-translate-y-1 cursor:pointer">
                     <div className="absolute top-2 right-4 text-6xl font-black text-white/5 select-none">01</div>
                     <div className="w-16 h-16 bg-blue-900/20 rounded-2xl flex items-center justify-center mb-6 text-blue-400"><FileText size={32} /></div>
                     <h3 className="text-xl font-bold text-white mb-3">Upload Resume</h3>
@@ -567,7 +567,7 @@ export default function Home() {
                 </div>
             </div>
             <div className="group relative mt-8 md:mt-0">
-                <div className="relative h-full bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center transition-transform duration-300 group-hover:-translate-y-1">
+                <div className="relative h-full bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center transition-transform duration-300 group-hover:-translate-y-1 cursor:pointer">
                     <div className="absolute top-2 right-4 text-6xl font-black text-white/5 select-none">02</div>
                     <div className="w-16 h-16 bg-purple-900/20 rounded-2xl flex items-center justify-center mb-6 text-purple-400"><Activity size={32} /></div>
                     <h3 className="text-xl font-bold text-white mb-3">Truth Score™</h3>
@@ -575,7 +575,7 @@ export default function Home() {
                 </div>
             </div>
             <div className="group relative">
-                <div className="relative h-full bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center transition-transform duration-300 group-hover:-translate-y-1">
+                <div className="relative h-full bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center transition-transform duration-300 group-hover:-translate-y-1 cursor:pointer">
                     <div className="absolute top-2 right-4 text-6xl font-black text-white/5 select-none">03</div>
                     <div className="w-16 h-16 bg-green-900/20 rounded-2xl flex items-center justify-center mb-6 text-green-400"><Code2 size={32} /></div>
                     <h3 className="text-xl font-bold text-white mb-3">Gap Analysis</h3>
@@ -583,7 +583,7 @@ export default function Home() {
                 </div>
             </div>
             <div className="group relative mt-8 md:mt-0">
-                <div className="relative h-full bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center transition-transform duration-300 group-hover:-translate-y-1">
+                <div className="relative h-full bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center transition-transform duration-300 group-hover:-translate-y-1 cursor:pointer">
                     <div className="absolute top-2 right-4 text-6xl font-black text-white/5 select-none">04</div>
                     <div className="w-16 h-16 bg-orange-900/20 rounded-2xl flex items-center justify-center mb-6 text-orange-400"><ArrowUpRight size={32} /></div>
                     <h3 className="text-xl font-bold text-white mb-3">Direct Connect</h3>
@@ -653,7 +653,7 @@ export default function Home() {
                   
                   <div className="flex justify-center gap-6 text-xs sm:text-sm text-gray-400">
                     <Link href="/jobs" className="hover:text-blue-400 transition-colors flex items-center gap-2 group">
-                       <Briefcase size={14} className="group-hover:text-blue-500 transition-colors" /> View 1,240+ Open Roles
+                       <Briefcase size={14} className="group-hover:text-blue-500 transition-colors" /> View All Open Roles
                     </Link>
                   </div>
               </div>
