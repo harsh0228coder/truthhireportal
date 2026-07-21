@@ -211,7 +211,7 @@ export default function Navbar() {
       <div className="w-full h-full px-6 lg:px-10 flex items-center justify-between gap-4">
         
         {/* 1. LOGO (Responsive Sizing) */}
-        <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center shrink-0 z-[102] transition-transform duration-300 hover:scale-105" aria-label="TruthHire home">
+        <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center shrink-0 z-[102] transition-transform duration-300 hover:scale-105 mt-1" aria-label="TruthHire home">
           <div className="block lg:hidden flex items-center">
             <Logo variant="stacked" size={32} href={null} priority={true} />
           </div>
