@@ -853,14 +853,14 @@ export default function JobDetailPage() {
                                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-charcoal to-black border border-white/10 flex items-center justify-center font-bold text-gray-500 group-hover:text-white transition-colors">
                                     {simJob.company_name ? simJob.company_name.charAt(0) : 'C'}
                                 </div>
-                                <div className="px-2 py-1 bg-white/5 rounded text-[10px] text-gray-400 border border-white/5">{simJob.employment_type}</div>
+                                <div className="px-2 py-1 bg-white/5 rounded text-[12px] text-gray-400 border border-white/5">{simJob.employment_type}</div>
                             </div>
                             <h3 className="font-bold text-white text-lg mb-1 group-hover:text-electric transition-colors line-clamp-1">{simJob.title}</h3>
                             <p className="text-sm text-gray-500 mb-4">{simJob.company_name}</p>
                             
                             <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                                <span className="text-xs text-gray-400 flex items-center gap-1"><MapPin size={12}/> {simJob.location}</span>
-                                <span className="text-xs text-electric font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">View <ArrowUpRight size={12}/></span>
+                                <span className="text-14px text-gray-400 flex items-center gap-1"><MapPin size={12}/> {simJob.location}</span>
+                                <span className="text-14px text-electric font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">View <ArrowUpRight size={14}/></span>
                             </div>
                         </Link>
                     ))}
