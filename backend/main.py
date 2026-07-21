@@ -1,5 +1,6 @@
-from fastapi import FastAPI, Depends, UploadFile, File, HTTPException, BackgroundTasks, status, Query, Header
+from fastapi import FastAPI, Depends, UploadFile, File, HTTPException, BackgroundTasks, status, Query, Header, Response
 from fastapi.middleware.cors import CORSMiddleware
+import secrets
 from sqlalchemy.orm import Session, joinedload
 from groq import Groq
 from pydantic import BaseModel, field_validator
@@ -18,7 +19,7 @@ from email.mime.application import MIMEApplication
 from typing import Union, List, Optional, Any
 from fastapi.staticfiles import StaticFiles
 from backend.database import SessionLocal, engine
-from backend.models import Job, Recruiter, User, Application, SavedJob, JobApplication, Admin, Project, Achievement, Certification, SkillGap, AIFeedback, Waitlist
+from backend.models import Job, Recruiter, User, Application, SavedJob, JobApplication, Admin, Project, Achievement, Certification, SkillGap, AIFeedback, Waitlist, UserSession
 import random
 import string, requests
 from bs4 import BeautifulSoup
@@ -83,7 +84,8 @@ GOOGLE_CLIENT_ID = "156178217038-72bv7qfb4o2an9b0o8qdsbq5uekecnu9.apps.googleuse
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your_super_secret_key_change_this")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 43200
+ACCESS_TOKEN_EXPIRE_MINUTES = 15 # 🟢 Security Upgrade: Reduced to 15 minutes
+REFRESH_TOKEN_EXPIRE_DAYS = 30 
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -92,7 +94,113 @@ def create_access_token(data: dict):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+def create_and_set_session(db: Session, response: Response, request: Request, user_id: int, role: str, token_version: int):
+    """Generates dual-tokens, saves session to DB, and sets HttpOnly cookie."""
+    # 1. Generate Secure Refresh Token
+    refresh_token = secrets.token_urlsafe(64)
+    refresh_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+    
+    is_recruiter = (role == "recruiter")
+    ip_addr = request.client.host if request.client else "Unknown"
+    user_agent = request.headers.get("User-Agent", "Unknown")[:255]
+    
+    # 2. Save Session to Database
+    session = UserSession(
+        user_id=None if is_recruiter else user_id,
+        recruiter_id=user_id if is_recruiter else None,
+        role=role,
+        refresh_token_hash=refresh_hash,
+        browser=user_agent,
+        ip_address=ip_addr,
+        expires_at=datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    )
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+    
+    # 3. Create Short-Lived Access Token (Include version & session_id)
+    access_token = create_access_token(data={
+        "sub": str(user_id), 
+        "role": role, 
+        "session_id": session.id,
+        "version": token_version
+    })
+    
+    # 4. Set HttpOnly Cookie (Invisible to JavaScript/XSS)
+    is_prod = os.getenv("ENVIRONMENT") == "production"
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=is_prod, # Must be True in Production
+        samesite="lax",
+        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+    )
+    
+    return access_token
+
 security = HTTPBearer()
+
+@app.post("/auth/refresh")
+def refresh_session(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Validates the HttpOnly cookie and issues a fresh Access Token."""
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
+        
+    token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+    session = db.query(UserSession).filter(UserSession.refresh_token_hash == token_hash).first()
+    
+    # Check if session exists, is active, and not expired
+    if not session or not session.is_active or session.expires_at < datetime.utcnow():
+        response.delete_cookie("refresh_token")
+        raise HTTPException(status_code=401, detail="Session revoked or expired.")
+        
+    # Find the corresponding User or Recruiter
+    if session.role == "student":
+        user = db.query(User).filter(User.id == session.user_id).first()
+    else:
+        user = db.query(Recruiter).filter(Recruiter.id == session.recruiter_id).first()
+        
+    if not user:
+        raise HTTPException(status_code=401, detail="User account not found.")
+        
+    # Refresh Token Rotation (Generate a brand new refresh token for security)
+    new_refresh_token = secrets.token_urlsafe(64)
+    session.refresh_token_hash = hashlib.sha256(new_refresh_token.encode()).hexdigest()
+    session.last_activity = datetime.utcnow()
+    db.commit()
+    
+    # Generate new Access Token
+    access_token = create_access_token(data={
+        "sub": str(user.id), 
+        "role": session.role, 
+        "session_id": session.id,
+        "version": user.token_version
+    })
+    
+    # Set new cookie
+    is_prod = os.getenv("ENVIRONMENT") == "production"
+    response.set_cookie(
+        key="refresh_token", value=new_refresh_token, httponly=True,
+        secure=is_prod, samesite="lax", max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.post("/auth/logout")
+def logout(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Kills the current session and clears the cookie."""
+    refresh_token = request.cookies.get("refresh_token")
+    if refresh_token:
+        token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+        session = db.query(UserSession).filter(UserSession.refresh_token_hash == token_hash).first()
+        if session:
+            session.is_active = False
+            db.commit()
+            
+    response.delete_cookie("refresh_token")
+    return {"message": "Logged out successfully"}
 
 def cleanup_inactive_jobs():
     """Runs daily to automatically delete inactive jobs."""
@@ -209,6 +317,8 @@ class GoogleAuthRequest(BaseModel):
 def google_auth(
     data: GoogleAuthRequest, 
     background_tasks: BackgroundTasks, 
+    request: Request,
+    response: Response,
     db: Session = Depends(get_db)
 ):
     try:
@@ -261,7 +371,7 @@ def google_auth(
             background_tasks.add_task(send_login_success_email, email, user.name)
 
         # 3. --- GENERATE TOKEN ---
-        access_token = create_access_token(data={"sub": str(user.id), "role": "student"})
+        access_token = create_and_set_session(db, response, request, user.id, "student", user.token_version)
         
         return {
             "access_token": access_token,
@@ -1961,7 +2071,7 @@ def signup_user(data: UserSignup, background_tasks: BackgroundTasks,request: Req
 
 @app.post("/users/verify-signup-otp")
 @limiter.limit("5/minute")
-def verify_signup_otp(data: OTPVerify, background_tasks: BackgroundTasks,request: Request, db: Session = Depends(get_db)):
+def verify_signup_otp(data: OTPVerify, background_tasks: BackgroundTasks,request: Request,response: Response, db: Session = Depends(get_db)):
     if data.email not in OTP_STORE:
         raise HTTPException(status_code=400, detail="OTP expired or invalid")
     
@@ -1988,7 +2098,7 @@ def verify_signup_otp(data: OTPVerify, background_tasks: BackgroundTasks,request
     db.refresh(new_user)
     
     # Generate token
-    access_token = create_access_token(data={"sub": str(new_user.id), "role": "student"})
+    access_token = create_and_set_session(db, response, request, new_user.id, "student", new_user.token_version)
     
     # Send welcome email
     background_tasks.add_task(send_welcome_email, data.email, stored['name'])
@@ -2132,7 +2242,7 @@ class OTPVerify(BaseModel):
     otp: str
 
 @app.post("/users/verify-otp")
-def verify_otp(data: OTPVerify, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def verify_otp(data: OTPVerify, background_tasks: BackgroundTasks,request: Request,response: Response, db: Session = Depends(get_db)):
     if data.email not in OTP_STORE:
         raise HTTPException(status_code=400, detail="OTP expired or invalid")
     
@@ -2145,8 +2255,9 @@ def verify_otp(data: OTPVerify, background_tasks: BackgroundTasks, db: Session =
     if stored['otp'] != data.otp:
         raise HTTPException(status_code=400, detail="Invalid OTP")
     
+    user = db.query(User).filter(User.id == stored['user_id']).first()
     # OTP verified, generate token
-    access_token = create_access_token(data={"sub": str(stored['user_id']), "role": "student"})
+    access_token = create_and_set_session(db, response, request, user.id, "student", user.token_version)
     
     # Send success email
     background_tasks.add_task(send_login_success_email, data.email, stored['name'])
@@ -2163,7 +2274,7 @@ def verify_otp(data: OTPVerify, background_tasks: BackgroundTasks, db: Session =
     }
 
 @app.post("/recruiters/verify-signup-otp")
-def verify_recruiter_signup_otp(data: OTPVerify, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def verify_recruiter_signup_otp(data: OTPVerify, background_tasks: BackgroundTasks, request: Request, response: Response, db: Session = Depends(get_db)):
     # 1. Validate OTP
     if data.email not in OTP_STORE:
         raise HTTPException(status_code=400, detail="OTP expired or invalid")
@@ -2210,7 +2321,7 @@ def verify_recruiter_signup_otp(data: OTPVerify, background_tasks: BackgroundTas
     db.refresh(recruiter)
     
     # 4. Generate Token
-    access_token = create_access_token(data={"sub": str(recruiter.id), "role": "recruiter"})
+    access_token = create_and_set_session(db, response, request, recruiter.id, "recruiter", recruiter.token_version)
     
     # 5. Send Status Email
     background_tasks.add_task(send_recruiter_status_email, data.email, stored['name'], email_action)
@@ -2229,7 +2340,7 @@ def verify_recruiter_signup_otp(data: OTPVerify, background_tasks: BackgroundTas
     }
 
 @app.post("/recruiters/verify-login-otp")
-def verify_recruiter_login_otp(data: OTPVerify, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def verify_recruiter_login_otp(data: OTPVerify, background_tasks: BackgroundTasks, request: Request, response: Response,db: Session = Depends(get_db)):
     if data.email not in OTP_STORE:
         raise HTTPException(status_code=400, detail="OTP expired or invalid")
     
@@ -2245,8 +2356,9 @@ def verify_recruiter_login_otp(data: OTPVerify, background_tasks: BackgroundTask
     if stored['otp'] != data.otp:
         raise HTTPException(status_code=400, detail="Invalid OTP")
     
+    recruiter = db.query(Recruiter).filter(Recruiter.id == stored['recruiter_id']).first()
     # Generate token
-    access_token = create_access_token(data={"sub": str(stored['recruiter_id']), "role": "recruiter"})
+    access_token = create_and_set_session(db, response, request, recruiter.id, "recruiter", recruiter.token_version)
     
     # Clean up OTP
     del OTP_STORE[data.email]
