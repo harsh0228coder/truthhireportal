@@ -7,6 +7,7 @@ import { Mail, Eye, EyeOff, Loader2, X, AlertCircle, Shield, Check } from 'lucid
 import toast, { Toaster } from 'react-hot-toast';
 import { useGoogleLogin } from '@react-oauth/google';
 import { LogoMark } from '@/components/Logo';
+import { setAuthToken } from '@/lib/api'; // 🟢 Import the new token manager
 
 // --- PROFESSIONAL GOOGLE ICON ---
 const GoogleIcon = () => (
@@ -75,13 +76,14 @@ export default function SignupPage() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/google-auth`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // 🟢 Allow secure cookie injection
           body: JSON.stringify({ access_token: tokenResponse.access_token }),
         });
 
         const data = await res.json();
 
         if (res.ok) {
-          localStorage.setItem('token', data.access_token);
+          setAuthToken(data.access_token); // 🟢 Use new memory storage
           localStorage.setItem('user_id', data.user_id);
           localStorage.setItem('user_name', data.name);
           window.dispatchEvent(new Event('auth-change'));
@@ -117,6 +119,7 @@ export default function SignupPage() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // 🟢
         body: JSON.stringify(formData)
       });
 
@@ -163,12 +166,13 @@ export default function SignupPage() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-signup-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // 🟢 Allow secure cookie
         body: JSON.stringify({ email: formData.email, otp: otpCode })
       });
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.access_token);
+        setAuthToken(data.access_token); // 🟢 Use new memory storage
         localStorage.setItem('user_id', data.user_id);
         localStorage.setItem('user_name', data.name);
         window.dispatchEvent(new Event('auth-change'));

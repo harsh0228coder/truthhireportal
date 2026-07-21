@@ -8,6 +8,7 @@ import {
   Sparkles, Search, ChevronDown, TrendingUp
 } from 'lucide-react';
 import Logo from '@/components/Logo';
+import { setAuthToken } from '@/lib/api'; // 🟢 Added import for memory token manager
 
 // --- ⚡ 50+ MOCK POPULAR SEARCHES (INSTANT) ---
 const POPULAR_SEARCHES = [
@@ -187,14 +188,29 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // --- ACTIONS ---
-  const handleLogout = () => {
-    localStorage.clear();
-    setIsLoggedIn(false);
-    setUserRole(null);
-    setIsProfileOpen(false);
-    setIsMobileOpen(false);
-    router.push('/login');
+  // --- 🟢 ACTIONS: SECURE LOGOUT ---
+  const handleLogout = async () => {
+    try {
+      // 1. Tell backend to invalidate the HttpOnly cookie and database session
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include", // Critical for backend to see the cookie
+      });
+    } catch (error) {
+      console.error("Logout request failed", error);
+    } finally {
+      // 2. Clear frontend state and storage
+      setAuthToken(null);
+      localStorage.clear();
+      setIsLoggedIn(false);
+      setUserRole(null);
+      setIsProfileOpen(false);
+      setIsMobileOpen(false);
+      
+      // 3. Dispatch event and redirect
+      window.dispatchEvent(new Event("auth-change"));
+      router.push('/login');
+    }
   };
 
   // --- RENDER ---

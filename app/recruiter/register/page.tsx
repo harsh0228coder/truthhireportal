@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Loader2, Building2, User, Mail, Lock, Linkedin, Shield, AlertCircle, X, CheckCircle2, Clock } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { LogoMark } from "@/components/Logo";
+import { setAuthToken } from "@/lib/api"; // 🟢 Import the new token manager
 
 export default function RecruiterRegister() {
   const router = useRouter();
@@ -53,6 +54,7 @@ export default function RecruiterRegister() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // 🟢 Allow secure cookie
         body: JSON.stringify(formData),
       });
 
@@ -106,15 +108,18 @@ export default function RecruiterRegister() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recruiters/verify-signup-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: "include", // 🟢 Allow secure cookie
         body: JSON.stringify({ email: formData.official_email, otp: otpCode })
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        setAuthToken(data.access_token); // 🟢 Use new memory storage
         localStorage.setItem('recruiter_token', data.access_token);
         localStorage.setItem('recruiter_id', data.recruiter_id);
         localStorage.setItem('recruiter_name', data.name);
+        localStorage.setItem("user_role", "recruiter"); // Ensure navbar picks up the role
         window.dispatchEvent(new Event('auth-change'));
 
         setShowOtpModal(false);

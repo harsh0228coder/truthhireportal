@@ -19,6 +19,7 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import { useGoogleLogin } from "@react-oauth/google";
 import { LogoMark } from "@/components/Logo";
+import { setAuthToken } from "@/lib/api"; // 🟢 Import the new token manager
 
 // --- PROFESSIONAL GOOGLE ICON ---
 const GoogleIcon = () => (
@@ -106,12 +107,13 @@ export default function LoginPage() {
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include", // 🟢 Allow secure cookie injection
             body: JSON.stringify({ access_token: tokenResponse.access_token }),
-          },
+          }
         );
         const data = await res.json();
         if (res.ok) {
-          localStorage.setItem("token", data.access_token);
+          setAuthToken(data.access_token); // 🟢 Use new memory storage
           localStorage.setItem("user_id", data.user_id);
           localStorage.setItem("user_name", data.name);
           window.dispatchEvent(new Event("auth-change"));
@@ -140,16 +142,16 @@ export default function LoginPage() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include", // 🟢 Allow secure cookie
           body: JSON.stringify({ email, password }),
-        },
+        }
       );
       const data = await response.json();
 
       if (response.ok && data.requires_otp) {
-        // toast.success('Code sent to email'); // Removed Toast as requested
         setShowOtpModal(true);
       } else if (response.ok) {
-        localStorage.setItem("token", data.access_token);
+        setAuthToken(data.access_token); // 🟢 Use new memory storage
         localStorage.setItem("user_id", data.user_id);
         localStorage.setItem("user_name", data.name);
         window.dispatchEvent(new Event("auth-change"));
@@ -169,7 +171,7 @@ export default function LoginPage() {
     index: number,
     value: string,
     setOtpFunc: any,
-    otpState: string[],
+    otpState: string[]
   ) => {
     if (value.length > 1) value = value[0];
     if (!/^\d*$/.test(value)) return;
@@ -209,13 +211,14 @@ export default function LoginPage() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include", // 🟢 Allow secure cookie
           body: JSON.stringify({ email, otp: otpCode }),
-        },
+        }
       );
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("token", data.access_token);
+        setAuthToken(data.access_token); // 🟢 Use new memory storage
         localStorage.setItem("user_id", data.user_id);
         localStorage.setItem("user_name", data.name);
         window.dispatchEvent(new Event("auth-change"));
@@ -247,8 +250,9 @@ export default function LoginPage() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include", // 🟢
           body: JSON.stringify({ email: resetEmail }),
-        },
+        }
       );
       if (res.ok) {
         setResetStep(2); // Move to OTP
@@ -278,8 +282,9 @@ export default function LoginPage() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include", // 🟢
           body: JSON.stringify({ email: resetEmail, otp: code }),
-        },
+        }
       );
       if (res.ok) {
         setResetStep(3); // Move to New Password
@@ -315,12 +320,13 @@ export default function LoginPage() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include", // 🟢
           body: JSON.stringify({
             email: resetEmail,
             otp: resetOtp.join(""),
             new_password: newPassword,
           }),
-        },
+        }
       );
       if (res.ok) {
         setShowForgotModal(false);
