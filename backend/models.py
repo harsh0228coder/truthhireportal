@@ -63,7 +63,7 @@ class Recruiter(Base):
     verification_status = Column(String, default="pending")
     linkedin_url = Column(String, nullable=True)
     signup_method = Column(String, default='email') 
-    
+    token_version = Column(Integer, default=1, nullable=False)
     verification_docs = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     company_website = Column(String, nullable=True)
@@ -136,7 +136,7 @@ class User(Base):
     employability_score = Column(Integer, default=0)
     verified_jobs_applied = Column(Integer, default=0)
     scams_avoided = Column(Integer, default=0)
-    
+    token_version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 # Note: You can now technically remove 'Application' table if you migrate everything to JobApplication
@@ -168,6 +168,7 @@ class Admin(Base):
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
+    token_version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class Project(Base):
@@ -267,7 +268,34 @@ class TailoredResume(Base):
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
+class UserSession(Base):
+    __tablename__ = "user_sessions"
 
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    recruiter_id = Column(Integer, ForeignKey("recruiters.id", ondelete="CASCADE"), nullable=True)
+    role = Column(String, nullable=False)  # 'student', 'recruiter', or 'admin'
+    
+    # Refresh Token Hashing (Security)
+    refresh_token_hash = Column(String, nullable=False, index=True)
+    
+    # Device & Metadata Tracking
+    device_name = Column(String, nullable=True)
+    browser = Column(String, nullable=True)
+    os = Column(String, nullable=True)
+    ip_address = Column(String, nullable=True)
+    
+    # State & Timestamps
+    is_active = Column(Boolean, default=True, nullable=False)
+    remember_me = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    last_activity = Column(DateTime, default=datetime.utcnow, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+
+    # Optional Relationships
+    user = relationship("User", backref="sessions")
+    recruiter = relationship("Recruiter", backref="sessions")
+    
 # Run this block to create tables
 if __name__ == "__main__":
     Base.metadata.create_all(bind=engine)
