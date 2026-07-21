@@ -94,23 +94,60 @@ def create_access_token(data: dict):
 
 security = HTTPBearer()
 
+def cleanup_inactive_jobs():
+    """Runs daily to automatically delete inactive jobs."""
+    db = SessionLocal()
+    try:
+        # Definition of inactive: older than 14 days
+        cutoff_date = datetime.utcnow() - timedelta(days=14)
+        old_jobs = db.query(Job).filter(Job.created_at < cutoff_date).all()
+        
+        deleted_count = 0
+        for job in old_jobs:
+            # Check if it has any recruiter interaction
+            interaction_count = db.query(JobApplication).filter(
+                JobApplication.job_id == job.id, 
+                JobApplication.status != 'applied'
+            ).count()
+            
+            # If no interaction, or status is explicitly not active, delete it
+            if interaction_count == 0 or job.status != 'active':
+                # Delete dependencies first to prevent Database crashing
+                db.query(JobApplication).filter(JobApplication.job_id == job.id).delete()
+                db.query(SavedJob).filter(SavedJob.job_id == job.id).delete()
+                
+                db.delete(job)
+                deleted_count += 1
+                
+        db.commit()
+        if deleted_count > 0:
+            print(f"🧹 Auto-Cleanup: Deleted {deleted_count} inactive/old jobs.")
+    except Exception as e:
+        print(f"❌ Auto-Cleanup Error: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # ✅ AUTO-MIGRATE: create any tables that don't exist yet.
-    # SQLAlchemy's create_all() is idempotent and only creates missing tables
-    # (it will NOT drop or alter existing ones). This fixes the "relation X
-    # does not exist" error that occurs when a new model is added but the DB
-    # hasn't been manually migrated yet.
     try:
         from backend.database import engine as _engine
         from backend.models import Base as _Base
         _Base.metadata.create_all(bind=_engine)
-        print("✅ Database schema check complete (any missing tables were created)")
+        print("✅ Database schema check complete")
     except Exception as e:
-        # We don't crash the app — the endpoint that needs the table will
-        # surface a clear error to the caller.
         print(f"⚠️ Startup schema check failed (non-fatal): {e}")
+        
+    # Start Background Scheduler for Auto-deleting jobs
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(cleanup_inactive_jobs, 'interval', days=1) # Runs automatically every 24 hours
+    scheduler.start()
+    print("⏳ Background Scheduler Started (Job Cleanup active)")
+    
     yield
+    
+    scheduler.shutdown()
 
 # 🛡️ SECURITY FIX: Hide docs if in Production
 # Add ENVIRONMENT=production to your Render Environment Variables
@@ -3986,6 +4023,31 @@ def delete_job_admin(job_id: int, db: Session = Depends(get_db)):
     db.delete(job)
     db.commit()
     return {"message": "Job deleted successfully"}
+
+@app.delete("/admin/wipe-all-jobs")
+def wipe_all_jobs(
+    x_admin_secret: str = Header(..., alias="x-admin-secret"), 
+    db: Session = Depends(get_db)
+):
+    """Emergency endpoint to wipe ALL existing jobs from the database."""
+    required_secret = os.getenv("ADMIN_CREATION_SECRET")
+    
+    if not required_secret or x_admin_secret != required_secret:
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid Admin Secret")
+
+    try:
+        # 1. Delete all applications and saved records first (Foreign Key constraints)
+        db.query(JobApplication).delete()
+        db.query(SavedJob).delete()
+        
+        # 2. Delete all jobs
+        deleted_count = db.query(Job).delete()
+        db.commit()
+        
+        return {"message": f"Successfully deleted ALL {deleted_count} jobs from the database."}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete jobs: {str(e)}")
 
 @app.get("/admin/users")
 def get_all_users_admin(db: Session = Depends(get_db)):
