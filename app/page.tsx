@@ -362,7 +362,7 @@ export default function Home() {
           {/* Added style={{ animationDuration: '60s' }} to slow it down and hover:[animation-play-state:paused] to stop it when reading */}
           <div 
             className="flex animate-scroll hover:[animation-play-state:paused] w-max gap-4 md:gap-5 px-6" 
-            style={{ animationDuration: '60s' }}
+            style={{ animationDuration: '80s' }}
           >
               {tickerData.map((job, i) => (
                 <Link 
