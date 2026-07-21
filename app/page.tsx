@@ -11,7 +11,7 @@ import {
   Lock, ArrowUpRight, FileText, Search, Briefcase, X,
   Code2, PenTool, BarChart3, Megaphone, 
   Wallet, Users2, TrendingUp, Layers, ChevronRight, Globe2,
-  Sparkles, Zap, Check, Bell, Loader2, Mail
+  Sparkles, Zap, Check, Bell, Loader2, Mail, Brain, Target
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast'; 
 
@@ -193,45 +193,40 @@ export default function Home() {
           
           {/* LEFT: Content */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 md:space-y-8 w-full">
-            <div className="animate-fade-in-up inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm shadow-xl hover:border-blue-500/30 transition-all cursor-default group">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              <span className="text-[10px] md:text-xs font-semibold text-gray-300 tracking-wide uppercase">AI-Powered Verification Engine v2.0</span>
+            <div className="animate-fade-in-up inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm shadow-[0_0_20px_rgba(59,130,246,0.15)] transition-all cursor-default group">
+              <Sparkles size={14} className="text-blue-400" />
+              <span className="text-[10px] md:text-xs font-bold text-blue-300 tracking-wider uppercase">Truth Engine™ v2.0 is Live</span>
             </div>
 
-            <h1 className="animate-fade-in-up delay-100 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] md:leading-[1.1]">
-              <span className="block text-white">Verified Jobs.</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-200 to-blue-500">
-                  Real Offers.
-              </span><br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-200 to-blue-500">
-                  No Ghosts.
+            <h1 className="animate-fade-in-up delay-100 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] md:leading-[1.1]">
+              <span className="block text-white mb-2">Beat the ATS.</span>
+              <span className="block text-gray-400 mb-2">Apply with confidence.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">
+                  Get hired faster.
               </span>
             </h1>
 
             <p className="animate-fade-in-up delay-200 text-base sm:text-lg md:text-xl text-gray-400 max-w-lg lg:max-w-xl leading-relaxed">
-              The only platform that audits every listing. We filter out <span className="text-red-400 font-medium">ghost jobs</span>, <span className="text-yellow-400 font-medium">scams</span>, and <span className="text-white font-medium">unverified recruiters</span> so you can build a career, not just hope for one.
+              Check your resume score, tailor it for any job in seconds, and only apply to 100% verified companies. Say goodbye to ghost jobs and automated rejections.
             </p>
 
             <div className="animate-fade-in-up delay-300 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
               {isSignedIn ? (
-                <Link href="/jobs" className="w-full sm:w-auto relative group overflow-hidden rounded-xl bg-white px-8 py-3.5 md:py-4 font-bold text-black shadow-xl transition-all hover:scale-[1.02] hover:bg-gray-200">
+                <Link href="/jobs" className="w-full sm:w-auto relative group overflow-hidden rounded-xl bg-white px-8 py-3.5 md:py-4 font-bold text-black shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all hover:scale-[1.02] hover:bg-gray-200 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]">
                   <span className="relative flex items-center justify-center gap-2">
-                    Find Verified Jobs <ArrowRight size={18} />
+                    Find Verified Jobs <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Link>
               ) : (
-                <Link href="/signup" className="w-full sm:w-auto relative group overflow-hidden rounded-xl bg-white px-8 py-3.5 md:py-4 font-bold text-black shadow-xl transition-all hover:scale-[1.02] hover:bg-gray-100">
+                <Link href="/signup" className="w-full sm:w-auto relative group overflow-hidden rounded-xl bg-white px-8 py-3.5 md:py-4 font-bold text-black shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all hover:scale-[1.02] hover:bg-gray-100 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]">
                   <span className="relative flex items-center justify-center gap-2">
-                    Start for Free <ArrowRight size={18} />
+                    Start for Free <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Link>
               )}
               
-              <Link href="/about-us" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-xl font-semibold text-gray-300 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all flex items-center justify-center gap-2">
-                <Shield size={18} /> How it works
+              <Link href="/tools/check-chances" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-xl font-bold text-gray-300 hover:text-white hover:bg-white/5 border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2">
+                <Target size={18} /> Test Your Resume
               </Link>
             </div>
 
@@ -245,7 +240,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* RIGHT: Visuals */}
+          {/* RIGHT: Visuals (Upgraded to show AI features) */}
           <div className="relative hidden lg:block animate-fade-in-up delay-200 perspective-1000 w-full max-w-lg mx-auto lg:max-w-none">
             <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
             <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -260,42 +255,47 @@ export default function Home() {
                     <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
                   </div>
                   <div className="bg-black/30 px-3 py-1 rounded-md text-[10px] font-mono text-gray-500 flex items-center gap-2">
-                    <Lock size={10} /> truthhire-secure.com
+                    <Lock size={10} /> app.truthhire.in
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="bg-white/5 p-4 rounded-xl border border-blue-500/30 flex items-center justify-between group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                  {/* Card 1: Truth Score */}
+                  <div className="bg-white/5 p-4 rounded-xl border border-green-500/30 flex items-center justify-between group relative overflow-hidden">
+                    <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="flex items-center gap-4 relative z-10">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-green-500/20">
                         <CheckCircle2 size={20} className="text-white" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-white text-sm">Senior Frontend Engineer</h4>
-                        <p className="text-xs text-blue-400">Verified • Salary Transparent</p>
+                        <h4 className="font-bold text-white text-sm">Truth Score Analysis</h4>
+                        <p className="text-xs text-gray-400">Software Engineer @ Razorpay</p>
                       </div>
                     </div>
-                    <div className="px-3 py-1 bg-blue-500/10 text-blue-400 text-xs font-bold rounded-lg border border-blue-500/20">
-                      98% Match
+                    <div className="px-3 py-1 bg-green-500/10 text-green-400 text-xs font-black rounded-lg border border-green-500/20 relative z-10">
+                      94% MATCH
                     </div>
                   </div>
 
-                  <div className="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center justify-between opacity-50">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
-                        <span className="font-bold text-gray-500">A</span>
+                  {/* Card 2: AI Tailor */}
+                  <div className="bg-white/5 p-4 rounded-xl border border-blue-500/30 flex items-center justify-between group relative overflow-hidden">
+                    <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="flex items-center gap-4 relative z-10">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <FileText size={18} className="text-white" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-gray-300 text-sm">Product Designer</h4>
-                        <p className="text-xs text-gray-500">Pending Verification</p>
+                        <h4 className="font-bold text-white text-sm">AI Resume Tailor</h4>
+                        <p className="text-xs text-blue-400 font-medium flex items-center gap-1"><Sparkles size={10}/> Overleaf PDF Generated</p>
                       </div>
                     </div>
                   </div>
 
+                  {/* Card 3: Scam Blocker */}
                   <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/20 flex items-center justify-between relative overflow-hidden">
                     <div className="absolute inset-0 bg-red-500/5 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                      <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-                        <Shield size={12} /> BLOCKED BY AI
+                      <span className="bg-red-500 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase tracking-wider">
+                        <Shield size={12} /> Blocked: Telegram Scam
                       </span>
                     </div>
                     <div className="flex items-center gap-4 opacity-40">
@@ -311,26 +311,27 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Floating Badges */}
               <div className="absolute -right-8 -top-8 bg-[#1a1a1a] p-4 rounded-xl border border-white/10 shadow-xl animate-float z-30">
                 <div className="flex items-center gap-3">
-                  <div className="bg-green-500/20 p-2 rounded-lg text-green-400">
-                    <Zap size={20} />
+                  <div className="bg-blue-500/20 p-2.5 rounded-lg text-blue-400">
+                    <Brain size={20} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Response Rate</p>
-                    <p className="text-lg font-bold text-white">High</p>
+                    <p className="text-xs text-gray-400 font-medium mb-0.5">ATS Parse Rate</p>
+                    <p className="text-lg font-black text-white leading-none">100%</p>
                   </div>
                 </div>
               </div>
 
               <div className="absolute -left-8 bottom-12 bg-[#1a1a1a] p-4 rounded-xl border border-white/10 shadow-xl animate-float-delayed z-30">
                 <div className="flex items-center gap-3">
-                  <div className="bg-blue-500/20 p-2 rounded-lg text-blue-400">
-                    <Search size={20} />
+                  <div className="bg-green-500/20 p-2.5 rounded-lg text-green-400">
+                    <Shield size={20} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Resume Audit</p>
-                    <p className="text-lg font-bold text-white">Passed</p>
+                    <p className="text-xs text-gray-400 font-medium mb-0.5">Ghost Jobs</p>
+                    <p className="text-lg font-black text-white leading-none">0 Detected</p>
                   </div>
                 </div>
               </div>
