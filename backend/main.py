@@ -141,67 +141,6 @@ def create_and_set_session(db: Session, response: Response, request: Request, us
 
 security = HTTPBearer()
 
-@app.post("/auth/refresh")
-def refresh_session(request: Request, response: Response, db: Session = Depends(get_db)):
-    """Validates the HttpOnly cookie and issues a fresh Access Token."""
-    refresh_token = request.cookies.get("refresh_token")
-    if not refresh_token:
-        raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
-        
-    token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
-    session = db.query(UserSession).filter(UserSession.refresh_token_hash == token_hash).first()
-    
-    # Check if session exists, is active, and not expired
-    if not session or not session.is_active or session.expires_at < datetime.utcnow():
-        response.delete_cookie("refresh_token")
-        raise HTTPException(status_code=401, detail="Session revoked or expired.")
-        
-    # Find the corresponding User or Recruiter
-    if session.role == "student":
-        user = db.query(User).filter(User.id == session.user_id).first()
-    else:
-        user = db.query(Recruiter).filter(Recruiter.id == session.recruiter_id).first()
-        
-    if not user:
-        raise HTTPException(status_code=401, detail="User account not found.")
-        
-    # Refresh Token Rotation (Generate a brand new refresh token for security)
-    new_refresh_token = secrets.token_urlsafe(64)
-    session.refresh_token_hash = hashlib.sha256(new_refresh_token.encode()).hexdigest()
-    session.last_activity = datetime.utcnow()
-    db.commit()
-    
-    # Generate new Access Token
-    access_token = create_access_token(data={
-        "sub": str(user.id), 
-        "role": session.role, 
-        "session_id": session.id,
-        "version": user.token_version
-    })
-    
-    # Set new cookie
-    is_prod = os.getenv("ENVIRONMENT") == "production"
-    response.set_cookie(
-        key="refresh_token", value=new_refresh_token, httponly=True,
-        secure=is_prod, samesite="lax", max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
-    )
-    
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@app.post("/auth/logout")
-def logout(request: Request, response: Response, db: Session = Depends(get_db)):
-    """Kills the current session and clears the cookie."""
-    refresh_token = request.cookies.get("refresh_token")
-    if refresh_token:
-        token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
-        session = db.query(UserSession).filter(UserSession.refresh_token_hash == token_hash).first()
-        if session:
-            session.is_active = False
-            db.commit()
-            
-    response.delete_cookie("refresh_token")
-    return {"message": "Logged out successfully"}
-
 def cleanup_inactive_jobs():
     """Runs daily to automatically delete inactive jobs."""
     db = SessionLocal()
@@ -307,6 +246,68 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# --- AUTH SESSION ENDPOINTS ---
+@app.post("/auth/refresh")
+def refresh_session(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Validates the HttpOnly cookie and issues a fresh Access Token."""
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Session expired. Please log in again.")
+        
+    token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+    session = db.query(UserSession).filter(UserSession.refresh_token_hash == token_hash).first()
+    
+    # Check if session exists, is active, and not expired
+    if not session or not session.is_active or session.expires_at < datetime.utcnow():
+        response.delete_cookie("refresh_token")
+        raise HTTPException(status_code=401, detail="Session revoked or expired.")
+        
+    # Find the corresponding User or Recruiter
+    if session.role == "student":
+        user = db.query(User).filter(User.id == session.user_id).first()
+    else:
+        user = db.query(Recruiter).filter(Recruiter.id == session.recruiter_id).first()
+        
+    if not user:
+        raise HTTPException(status_code=401, detail="User account not found.")
+        
+    # Refresh Token Rotation (Generate a brand new refresh token for security)
+    new_refresh_token = secrets.token_urlsafe(64)
+    session.refresh_token_hash = hashlib.sha256(new_refresh_token.encode()).hexdigest()
+    session.last_activity = datetime.utcnow()
+    db.commit()
+    
+    # Generate new Access Token
+    access_token = create_access_token(data={
+        "sub": str(user.id), 
+        "role": session.role, 
+        "session_id": session.id,
+        "version": user.token_version
+    })
+    
+    # Set new cookie
+    is_prod = os.getenv("ENVIRONMENT") == "production"
+    response.set_cookie(
+        key="refresh_token", value=new_refresh_token, httponly=True,
+        secure=is_prod, samesite="lax", max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.post("/auth/logout")
+def logout(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Kills the current session and clears the cookie."""
+    refresh_token = request.cookies.get("refresh_token")
+    if refresh_token:
+        token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+        session = db.query(UserSession).filter(UserSession.refresh_token_hash == token_hash).first()
+        if session:
+            session.is_active = False
+            db.commit()
+            
+    response.delete_cookie("refresh_token")
+    return {"message": "Logged out successfully"}
 
 # --- ADD THIS PYDANTIC MODEL ---
 class GoogleAuthRequest(BaseModel):
@@ -1500,22 +1501,36 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
         role = payload.get("role")
+        session_id = payload.get("session_id") # 🟢 Extract Session ID
+        token_version = payload.get("version") # 🟢 Extract Token Version
         
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
+            
+        # 🟢 VERIFY SESSION IS STILL ACTIVE
+        if session_id:
+            session = db.query(UserSession).filter(UserSession.id == session_id).first()
+            if not session or not session.is_active:
+                raise HTTPException(status_code=401, detail="Session revoked. Please log in again.")
         
+        # Check Role and Version
         if role == "student":
             user = db.query(User).filter(User.id == int(user_id)).first()
-            if not user:
-                raise HTTPException(status_code=401, detail="User not found")
+            if not user: raise HTTPException(status_code=401, detail="User not found")
+            if user.token_version != token_version: # 🟢 Enforce Version
+                raise HTTPException(status_code=401, detail="Token revoked due to password change.")
             return user
+            
         elif role == "recruiter":
             recruiter = db.query(Recruiter).filter(Recruiter.id == int(user_id)).first()
-            if not recruiter:
-                raise HTTPException(status_code=401, detail="Recruiter not found")
+            if not recruiter: raise HTTPException(status_code=401, detail="Recruiter not found")
+            if recruiter.token_version != token_version: # 🟢 Enforce Version
+                raise HTTPException(status_code=401, detail="Token revoked due to password change.")
             return recruiter
+            
         else:
             raise HTTPException(status_code=401, detail="Invalid role")
+            
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.JWTError:
@@ -1781,6 +1796,22 @@ def get_my_applications(
         print(f"Error fetching apps: {e}")
         raise HTTPException(status_code=500, detail="Server Error")
     
+@app.post("/auth/logout-all")
+def logout_all_devices(current_user = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Kills ALL sessions for this user and increments token version to invalidate active JWTs."""
+    
+    # 1. Invalidate all database sessions
+    if isinstance(current_user, User):
+        db.query(UserSession).filter(UserSession.user_id == current_user.id).update({"is_active": False})
+    elif isinstance(current_user, Recruiter):
+        db.query(UserSession).filter(UserSession.recruiter_id == current_user.id).update({"is_active": False})
+        
+    # 2. Increment Token Version (Instantly kills any 15-minute access tokens out in the wild)
+    current_user.token_version += 1
+    db.commit()
+    
+    return {"message": "Successfully logged out of all devices."}
+
 class RecruiterRegister(BaseModel):
     name: str
     company_name: str
