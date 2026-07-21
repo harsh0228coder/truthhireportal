@@ -132,8 +132,8 @@ def create_and_set_session(db: Session, response: Response, request: Request, us
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=is_prod, # Must be True in Production
-        samesite="lax",
+        secure=True, # Must be True in Production
+        samesite="none",
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
     )
     
@@ -290,7 +290,7 @@ def refresh_session(request: Request, response: Response, db: Session = Depends(
     is_prod = os.getenv("ENVIRONMENT") == "production"
     response.set_cookie(
         key="refresh_token", value=new_refresh_token, httponly=True,
-        secure=is_prod, samesite="lax", max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+        secure=True, samesite="none", max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
     )
     
     return {"access_token": access_token, "token_type": "bearer"}
