@@ -39,6 +39,9 @@ export default function Home() {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [query, setQuery] = useState('');
   
+  // --- REAL USER DATA STATE ---
+  const [totalUsers, setTotalUsers] = useState<number>(10000); // 10k fallback while loading
+  
   // --- WAITLIST MODAL STATE ---
   const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
   const [waitlistCategory, setWaitlistCategory] = useState('');
@@ -53,6 +56,7 @@ export default function Home() {
     const token = localStorage.getItem('token');
     setIsSignedIn(!!token);
 
+    // Fetch Jobs
     fetchJobs()
       .then(data => {
         setJobs(data); 
@@ -62,6 +66,18 @@ export default function Home() {
         console.error("Failed to fetch jobs", err);
         setLoading(false);
       });
+
+    // Fetch Real User Analytics
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/stats`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+          if (data && typeof data.total_users === 'number') {
+              // Ensure we show at least 1 if the DB is brand new, otherwise show real count
+              setTotalUsers(Math.max(data.total_users, 1));
+          }
+      })
+      .catch(err => console.error("Failed to fetch stats", err));
+
   }, []);
 
   // --- 2. SEARCH HANDLER ---
@@ -236,7 +252,7 @@ export default function Home() {
                   <div key={i} className="w-6 h-6 md:w-8 md:h-8 rounded-full border-2 border-[#050505] bg-gradient-to-br from-gray-700 to-gray-900"></div>
                 ))}
               </div>
-              <p>Trusted by 10,000+ Candidates</p>
+              <p>Trusted by {totalUsers.toLocaleString()}+ Candidates</p>
             </div>
           </div>
 
@@ -360,10 +376,9 @@ export default function Home() {
           <div className="absolute left-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none"></div>
           <div className="absolute right-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none"></div>
 
-          {/* Added style={{ animationDuration: '60s' }} to slow it down and hover:[animation-play-state:paused] to stop it when reading */}
           <div 
             className="flex animate-scroll hover:[animation-play-state:paused] w-max gap-4 md:gap-5 px-6" 
-            style={{ animationDuration: '80s' }}
+            style={{ animationDuration: '60s' }}
           >
               {tickerData.map((job, i) => (
                 <Link 
