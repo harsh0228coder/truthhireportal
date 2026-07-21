@@ -364,7 +364,7 @@ export default function Home() {
                 <Link 
                   href={`/jobs/${job.id}`}
                   key={i} 
-                  className="w-[280px] md:w-[340px] bg-[#121212] border border-white/5 rounded-xl p-4 md:p-5 flex items-center gap-4 group transition-all duration-100 hover:scale-105 hover:border-blue-500/30 hover:bg-[#151515] hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] relative cursor-pointer"
+                  className="w-[280px] md:w-[340px] bg-[#121212] border border-white/5 rounded-xl p-4 md:p-5 flex items-center gap-4 group transition-all duration-400 hover:scale-105 hover:border-blue-500/30 hover:bg-[#151515] hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] relative cursor-pointer"
                 >
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white flex items-center justify-center text-black font-bold text-lg md:text-xl shadow-sm flex-shrink-0">
                     {job.company_name ? job.company_name.charAt(0).toUpperCase() : 'C'}
