@@ -9,6 +9,7 @@ import {
   XCircle, Briefcase, Search, ChevronDown, ChevronRight, Building2
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import { apiFetch } from '@/lib/api'; // 🟢 Import the secure interceptor
 
 interface JobDetails {
   id: string | number; // Unified ID type
@@ -49,10 +50,11 @@ export default function StudentDashboard() {
   const [showAllSkills, setShowAllSkills] = useState(false);
 
   const fetchDashboard = async () => {
-    const token = localStorage.getItem('token');
+    // We only need to check the ID to prevent flash of content. 
+    // apiFetch handles checking the token automatically.
     const id = localStorage.getItem('user_id');
     
-    if (!token || !id) {
+    if (!id) {
       router.push('/login');
       return;
     }
@@ -60,14 +62,10 @@ export default function StudentDashboard() {
     setRefreshing(true);
 
     try {
-      // ✅ FIX: Fetch both Dashboard Stats AND User Profile (for the name) in parallel
+      // 🟢 Use apiFetch instead of fetch to route through the Interceptor
       const [dashboardRes, profileRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}/dashboard`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        apiFetch(`/users/${id}/dashboard`),
+        apiFetch(`/candidate/me`)
       ]);
 
       // 1. Handle Dashboard Stats
@@ -91,7 +89,8 @@ export default function StudentDashboard() {
       }
 
     } catch (error) {
-      console.error("Connection error");
+      // 🟢 If apiFetch throws an error, it means the session expired entirely
+      console.error("Connection error or session expired", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -104,12 +103,6 @@ export default function StudentDashboard() {
     const name = localStorage.getItem('user_name');
     if (name) setUserName(name);
     
-    fetchDashboard();
-  }, []);
-
-  useEffect(() => {
-    const name = localStorage.getItem('user_name');
-    if (name) setUserName(name);
     fetchDashboard();
   }, []);
 
