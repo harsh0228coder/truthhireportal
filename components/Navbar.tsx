@@ -39,9 +39,6 @@ function SearchBar({ mobile = false, onSearch }: { mobile?: boolean, onSearch?: 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Note: We REMOVED the useEffect that syncs 'query' with 'searchParams'
-  // This ensures the search bar stays empty after navigation.
-
   // Handle Outside Click to Close Suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -113,7 +110,6 @@ function SearchBar({ mobile = false, onSearch }: { mobile?: boolean, onSearch?: 
                     <button
                         key={index}
                         onClick={() => {
-                            // Don't setQuery here, passing directly to handleSubmit handles the clear logic better
                             handleSubmit(suggestion);
                         }}
                         className="w-full text-left px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-white flex items-center gap-3 transition-colors group"
@@ -214,9 +210,14 @@ export default function Navbar() {
     >
       <div className="w-full h-full px-6 lg:px-10 flex items-center justify-between gap-4">
         
-        {/* 1. LOGO */}
+        {/* 1. LOGO (Responsive Sizing) */}
         <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center shrink-0 z-[102] transition-transform duration-300 hover:scale-105" aria-label="TruthHire home">
-          <Logo variant="stacked" size={44} href={null} priority={true} />
+          <div className="block lg:hidden flex items-center">
+            <Logo variant="stacked" size={32} href={null} priority={true} />
+          </div>
+          <div className="hidden lg:block flex items-center">
+            <Logo variant="stacked" size={44} href={null} priority={true} />
+          </div>
         </Link>
 
         {/* 2. CENTER: SEARCH & NAV (Desktop) */}
