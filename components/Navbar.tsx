@@ -7,7 +7,7 @@ import {
   Shield, Menu, X, User, LogOut, LayoutDashboard, 
   Sparkles, Search, ChevronDown, TrendingUp
 } from 'lucide-react';
-import { LogoMark } from '@/components/Logo';
+import Logo from '@/components/Logo';
 
 // --- ⚡ 50+ MOCK POPULAR SEARCHES (INSTANT) ---
 const POPULAR_SEARCHES = [
@@ -215,11 +215,8 @@ export default function Navbar() {
       <div className="w-full h-full px-6 lg:px-10 flex items-center justify-between gap-4">
         
         {/* 1. LOGO */}
-        <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center gap-2.5 group shrink-0 z-[102]" aria-label="TruthHire home">
-          <LogoMark size={30} className="transition-transform duration-300 group-hover:rotate-[-6deg]" />
-          <span className="text-[19px] font-semibold text-white tracking-tight leading-none">
-            truthhire<span className="text-white/60">.in</span>
-          </span>
+        <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center shrink-0 z-[102] transition-transform duration-300 hover:scale-105" aria-label="TruthHire home">
+          <Logo variant="stacked" size={44} href={null} priority={true} />
         </Link>
 
         {/* 2. CENTER: SEARCH & NAV (Desktop) */}
@@ -441,4 +438,4 @@ function MobileLink({ href, onClick, icon, children }: any) {
             {children}
         </Link>
     )
-}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+}
