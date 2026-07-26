@@ -201,13 +201,12 @@ export default function Home() {
       `}</style>
 
       {/* ================= HERO SECTION ================= */}
-      {/* 🟢 FIX: Increased top padding to correctly sit below the floating pill navbar */}
+      {/* 🟢 FIX: Perfected Top Spacing (pt-32 on mobile, pt-40 on desktop) to sit exactly below the floating navbar without any weird backgrounds. */}
       <section className="relative pt-32 pb-16 md:pt-40 md:pb-32 overflow-hidden w-full">
         
-        {/* 🟢 FIX: Placed an ambient glowing light directly behind the Navbar so the liquid glass has color to blur! */}
-        <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[800px] md:w-[1200px] h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/40 via-purple-900/20 to-transparent blur-[100px] pointer-events-none z-0"></div>
-
+        {/* Restored the simple, clean original background gradients */}
         <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_70%)] pointer-events-none"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[300px] md:h-[500px] bg-gradient-to-b from-blue-900/20 via-transparent to-transparent blur-3xl pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 xl:gap-12 items-center">
           
