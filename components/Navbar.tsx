@@ -123,7 +123,7 @@ export default function Navbar() {
         }}
       >
         {/* 1. LOGO */}
-        <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center shrink-0 transition-transform duration-300 hover:scale-105" aria-label="TruthHire home">
+        <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center shrink-0 transition-transform duration-300 hover:scale-105 mt-2" aria-label="TruthHire home">
           <div className="block lg:hidden flex items-center">
             <Logo variant="stacked" size={28} href={null} priority={true} />
           </div>
@@ -134,7 +134,7 @@ export default function Navbar() {
 
         {/* 2. CENTER: NAV LINKS (Desktop) */}
         <div className="hidden lg:flex items-center justify-center absolute left-1/2 -translate-x-1/2">
-          <div className="flex items-center gap-8 text-[14px] font-medium text-gray-400">
+          <div className="flex items-center gap-8 text-[16px] font-medium text-gray-200">
             {userRole !== 'recruiter' && (
                 <NavLink href="/jobs" active={pathname === '/jobs'}>Jobs</NavLink>
             )}
