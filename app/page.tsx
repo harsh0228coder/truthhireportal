@@ -200,163 +200,69 @@ export default function Home() {
         }
       `}</style>
 
-      {/* ================= HERO SECTION ================= */}
-      {/* 🟢 FIX: Perfected Top Spacing (pt-28 on mobile, pt-34 on desktop) to sit exactly below the floating navbar without any weird backgrounds. */}
-      <section className="relative pt-28 pb-16 md:pt-34 md:pb-32 overflow-hidden w-full">
+      {/* ================= HERO SECTION (UseSprout Inspired Minimalism) ================= */}
+      <section className="relative pt-36 pb-20 md:pt-48 md:pb-32 overflow-hidden w-full flex flex-col items-center justify-center min-h-[80vh]">
         
-        {/* Restored the simple, clean original background gradients */}
-        <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_70%)] pointer-events-none"></div>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[300px] md:h-[500px] bg-gradient-to-b from-blue-900/20 via-transparent to-transparent blur-3xl pointer-events-none"></div>
+        {/* Background Gradients flowing completely to the top edge */}
+        <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none z-0"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[400px] md:h-[600px] bg-gradient-to-b from-blue-900/10 via-transparent to-transparent blur-3xl pointer-events-none z-0"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 xl:gap-12 items-center">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center w-full">
           
-          {/* LEFT: Content */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 md:space-y-8 w-full">
-            <div className="animate-fade-in-up inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm shadow-[0_0_20px_rgba(59,130,246,0.15)] transition-all cursor-default group">
-              <Sparkles size={14} className="text-blue-400" />
-              <span className="text-[10px] md:text-xs font-bold text-blue-300 tracking-wider uppercase">Truth Engine™ v2.0 is Live</span>
-            </div>
+          {/* Subtle Top Badge */}
+          <div className="animate-fade-in-up inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-default mb-8 md:mb-10 backdrop-blur-md">
+            <span className="text-[11px] md:text-[13px] font-medium text-gray-300">Truth Engine™ for Web is here</span>
+            <ArrowRight size={14} className="text-gray-500"/>
+          </div>
 
-            <h1 className="animate-fade-in-up delay-100 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] md:leading-[1.1]">
-              <span className="block text-white mb-2">Beat the ATS.</span>
-              <span className="block text-gray-400 mb-2">Apply with confidence.</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">
-                  Get hired faster.
-              </span>
-            </h1>
+          {/* Massive Typographic Headline */}
+          <h1 className="animate-fade-in-up delay-100 text-[42px] sm:text-6xl md:text-7xl lg:text-[84px] font-bold tracking-tight leading-[1.05] mb-6 md:mb-8">
+            <span className="text-gray-400 font-medium block md:inline">Stop applying blindly.</span><br className="hidden md:block"/>
+            <span className="text-white font-extrabold block md:inline mt-2 md:mt-0">
+              Start <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">getting hired.</span>
+            </span>
+          </h1>
 
-            <p className="animate-fade-in-up delay-200 text-base sm:text-lg md:text-xl text-gray-400 max-w-lg lg:max-w-xl leading-relaxed">
-              Check your resume score, tailor it for any job in seconds, and only apply to 100% verified companies. Say goodbye to ghost jobs and automated rejections.
-            </p>
+          {/* Simple Descriptive Subheadline */}
+          <p className="animate-fade-in-up delay-200 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-10 md:mb-14 px-2">
+            From finding verified roles to ATS optimization — TruthHire analyzes your resume, highlights missing skills, and connects you directly with top recruiters.
+          </p>
 
-            <div className="animate-fade-in-up delay-300 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-              {isSignedIn ? (
-                <Link href="/jobs" className="w-full sm:w-auto relative group overflow-hidden rounded-xl bg-white px-8 py-3.5 md:py-4 font-bold text-black shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all hover:scale-[1.02] hover:bg-gray-200 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-                  <span className="relative flex items-center justify-center gap-2">
-                    Find Verified Jobs <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </Link>
-              ) : (
-                <Link href="/signup" className="w-full sm:w-auto relative group overflow-hidden rounded-xl bg-white px-8 py-3.5 md:py-4 font-bold text-black shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all hover:scale-[1.02] hover:bg-gray-100 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-                  <span className="relative flex items-center justify-center gap-2">
-                    Start for Free <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </Link>
-              )}
-              
-              <Link href="/tools/check-chances" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-xl font-bold text-gray-300 hover:text-white hover:bg-white/5 border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2">
-                <Target size={18} /> Test Your Resume
+          {/* Centered CTA Buttons */}
+          <div className="animate-fade-in-up delay-300 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-16 md:mb-24">
+            {isSignedIn ? (
+              <Link href="/jobs" className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#185e50] hover:bg-[#124d41] text-white text-base md:text-lg font-semibold transition-all flex items-center justify-center gap-2 shadow-lg">
+                Find Verified Jobs <ChevronRight size={18} />
               </Link>
-            </div>
+            ) : (
+              <Link href="/signup" className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#185e50] hover:bg-[#124d41] text-white text-base md:text-lg font-semibold transition-all flex items-center justify-center gap-2 shadow-lg">
+                Start for Free <ChevronRight size={18} />
+              </Link>
+            )}
+            
+            <Link href="/tools/check-chances" className="w-full sm:w-auto px-8 py-4 rounded-full font-semibold text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center justify-center gap-2 text-base md:text-lg">
+               Test Your Resume
+            </Link>
+          </div>
 
-            <div className="animate-fade-in-up delay-300 pt-2 md:pt-4 flex items-center gap-4 md:gap-6 text-xs md:text-sm text-gray-500 font-medium">
-              <div className="flex -space-x-2 md:-space-x-3">
-                {[1,2,3].map(i => (
-                  <div key={i} className="w-6 h-6 md:w-8 md:h-8 rounded-full border-2 border-[#050505] bg-gradient-to-br from-gray-700 to-gray-900"></div>
-                ))}
-              </div>
-              <p>Trusted by {totalUsers.toLocaleString()}+ Candidates</p>
+          {/* Trust Badges Row (Replaces the stacked avatars) */}
+          <div className="animate-fade-in-up delay-300 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-12 text-[13px] md:text-sm text-gray-400">
+            <div className="flex items-center gap-2">
+              <Users2 size={18} className="text-gray-500" />
+              <span>Used by {totalUsers.toLocaleString()}+ job seekers</span>
+            </div>
+            <div className="hidden md:block w-1 h-1 rounded-full bg-gray-700"></div>
+            <div className="flex items-center gap-2">
+              <Shield size={18} className="text-gray-500" />
+              <span>100% verified active companies</span>
+            </div>
+            <div className="hidden md:block w-1 h-1 rounded-full bg-gray-700"></div>
+            <div className="flex items-center gap-2">
+              <Sparkles size={18} className="text-gray-500" />
+              <span>AI-powered gap analysis</span>
             </div>
           </div>
 
-          {/* RIGHT: Visuals (Upgraded to show AI features) */}
-          <div className="relative hidden lg:block animate-fade-in-up delay-200 perspective-1000 w-full max-w-lg mx-auto lg:max-w-none">
-            <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-            <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-
-            <div className="relative transform rotate-y-12 hover:rotate-y-0 transition-transform duration-700 ease-out preserve-3d">
-              <div className="bg-[#0f0f0f]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl relative z-20">
-                <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
-                  </div>
-                  <div className="bg-black/30 px-3 py-1 rounded-md text-[10px] font-mono text-gray-500 flex items-center gap-2">
-                    <Lock size={10} /> app.truthhire.in
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  {/* Card 1: Truth Score */}
-                  <div className="bg-white/5 p-4 rounded-xl border border-green-500/30 flex items-center justify-between group relative overflow-hidden">
-                    <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="flex items-center gap-4 relative z-10">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-green-500/20">
-                        <CheckCircle2 size={20} className="text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-white text-sm">Truth Score Analysis</h4>
-                        <p className="text-xs text-gray-400">Software Engineer @ Razorpay</p>
-                      </div>
-                    </div>
-                    <div className="px-3 py-1 bg-green-500/10 text-green-400 text-xs font-black rounded-lg border border-green-500/20 relative z-10">
-                      94% MATCH
-                    </div>
-                  </div>
-
-                  {/* Card 2: AI Tailor */}
-                  <div className="bg-white/5 p-4 rounded-xl border border-blue-500/30 flex items-center justify-between group relative overflow-hidden">
-                    <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="flex items-center gap-4 relative z-10">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <FileText size={18} className="text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-white text-sm">AI Resume Tailor</h4>
-                        <p className="text-xs text-blue-400 font-medium flex items-center gap-1"><Sparkles size={10}/> Overleaf PDF Generated</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 3: Scam Blocker */}
-                  <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/20 flex items-center justify-between relative overflow-hidden">
-                    <div className="absolute inset-0 bg-red-500/5 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                      <span className="bg-red-500 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase tracking-wider">
-                        <Shield size={12} /> Blocked: Telegram Scam
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 opacity-40">
-                      <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
-                        <span className="font-bold text-gray-500">X</span>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-300 text-sm">Data Entry (Instant Hire)</h4>
-                        <p className="text-xs text-red-400">Suspicious Activity</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Badges */}
-              <div className="absolute -right-8 -top-8 bg-[#1a1a1a] p-4 rounded-xl border border-white/10 shadow-xl animate-float z-30">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-500/20 p-2.5 rounded-lg text-blue-400">
-                    <Brain size={20} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-medium mb-0.5">ATS Parse Rate</p>
-                    <p className="text-lg font-black text-white leading-none">100%</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute -left-8 bottom-12 bg-[#1a1a1a] p-4 rounded-xl border border-white/10 shadow-xl animate-float-delayed z-30">
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-500/20 p-2.5 rounded-lg text-green-400">
-                    <Shield size={20} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-medium mb-0.5">Ghost Jobs</p>
-                    <p className="text-lg font-black text-white leading-none">0 Detected</p>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
         </div>
       </section>
 
