@@ -201,7 +201,7 @@ export default function Home() {
       `}</style>
 
       {/* ================= HERO SECTION (Clean, Minimal & On-Brand) ================= */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden w-full flex flex-col items-center justify-center min-h-[70vh]">
+      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden w-full flex flex-col items-center justify-center min-h-[70vh]">
         
         {/* Background Gradients flowing completely to the top edge */}
         <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none z-0"></div>
@@ -267,63 +267,66 @@ export default function Home() {
       </section>
 
       {/* ================= REAL-TIME JOBS TICKER ================= */}
-      <section className="py-8 bg-[#050505] border-b border-white/5 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 mb-8 flex flex-col sm:flex-row justify-between items-center sm:items-end gap-4 text-center sm:text-left">
-           <h3 className="text-xl font-bold text-white flex items-center gap-3">
-             <span className="relative flex h-3 w-3">
-               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-               <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-             </span>
-             Latest Verified Jobs
-           </h3>
-           <Link href="/jobs" className="text-base font-medium text-blue-400 hover:text-white transition-colors flex items-center gap-1">
-             View All Active Jobs <ArrowRight size={14} />
-           </Link>
-        </div>
-
-        <div className="relative w-full ticker-container">
-          <div className="absolute left-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none"></div>
-
-          <div 
-            className="flex animate-scroll hover:[animation-play-state:paused] w-max gap-4 md:gap-5 px-6" 
-            style={{ animationDuration: '80s' }}
-          >
-              {tickerData.map((job, i) => (
-                <Link 
-                  href={`/jobs/${job.id}`}
-                  key={i} 
-                  className="w-[280px] md:w-[340px] bg-[#121212] border border-white/5 rounded-xl p-4 md:p-5 flex items-center gap-4 group transition-all duration-100 hover:scale-105 hover:border-blue-500/30 hover:bg-[#151515] hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] relative cursor-pointer"
-                >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white flex items-center justify-center text-black font-bold text-lg md:text-xl shadow-sm flex-shrink-0">
-                    {job.company_name ? job.company_name.charAt(0).toUpperCase() : 'C'}
-                  </div>
-
-                  <div className="flex-1 min-w-0 pr-6">
-                    <h4 className="font-medium text-white text-sm truncate group-hover:text-blue-400 transition-colors">
-                      {job.title}
-                    </h4>
-                    <div className="text-gray-400 text-xs mt-1 mb-1.5 flex items-center gap-1.5">
-                      <span className="truncate max-w-[80px] md:max-w-[100px]">{job.company_name}</span>
-                      <span className="w-1 h-1 bg-gray-600 rounded-full flex-shrink-0"></span>
-                      <span className="truncate max-w-[60px] md:max-w-[80px]">{job.location}</span>
-                    </div>
-                    <div className="text-[10px] md:text-xs font-bold text-green-400 bg-white/5 px-2 py-1 rounded inline-block group-hover:bg-white/10 transition-colors">
-                        {job.salary_min && job.salary_max ? (
-                            <>{job.currency === 'INR' ? '₹' : '$'} {formatSalary(job.salary_min)} - {formatSalary(job.salary_max)}</>
-                        ) : "Salary not disclosed"}
-                    </div>
-                  </div>
-                  <div className="absolute top-4 right-4">
-                      <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white transform group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform shadow-lg shadow-blue-500/20">
-                          <ArrowUpRight className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
-                      </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+      {/* 🟢 FIX: Section only renders if there are active jobs. Header is perfectly centered. */}
+      {jobs.length > 0 && (
+        <section className="py-8 md:py-10 bg-[#050505] border-b border-white/5 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6 mb-8 flex flex-col items-center justify-center gap-3 text-center">
+             <h3 className="text-xl md:text-2xl font-bold text-white flex items-center justify-center gap-3">
+               <span className="relative flex h-3 w-3">
+                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                 <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+               </span>
+               Latest Verified Jobs
+             </h3>
+             <Link href="/jobs" className="text-sm md:text-base font-medium text-blue-400 hover:text-white transition-colors flex items-center justify-center gap-1">
+               View All Active Jobs <ArrowRight size={14} />
+             </Link>
           </div>
-      </section>
+
+          <div className="relative w-full ticker-container">
+            <div className="absolute left-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-8 md:w-24 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none"></div>
+
+            <div 
+              className="flex animate-scroll hover:[animation-play-state:paused] w-max gap-4 md:gap-5 px-6" 
+              style={{ animationDuration: '80s' }}
+            >
+                {tickerData.map((job, i) => (
+                  <Link 
+                    href={`/jobs/${job.id}`}
+                    key={i} 
+                    className="w-[280px] md:w-[340px] bg-[#121212] border border-white/5 rounded-xl p-4 md:p-5 flex items-center gap-4 group transition-all duration-100 hover:scale-105 hover:border-blue-500/30 hover:bg-[#151515] hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] relative cursor-pointer"
+                  >
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white flex items-center justify-center text-black font-bold text-lg md:text-xl shadow-sm flex-shrink-0">
+                      {job.company_name ? job.company_name.charAt(0).toUpperCase() : 'C'}
+                    </div>
+
+                    <div className="flex-1 min-w-0 pr-6">
+                      <h4 className="font-medium text-white text-sm truncate group-hover:text-blue-400 transition-colors">
+                        {job.title}
+                      </h4>
+                      <div className="text-gray-400 text-xs mt-1 mb-1.5 flex items-center gap-1.5">
+                        <span className="truncate max-w-[80px] md:max-w-[100px]">{job.company_name}</span>
+                        <span className="w-1 h-1 bg-gray-600 rounded-full flex-shrink-0"></span>
+                        <span className="truncate max-w-[60px] md:max-w-[80px]">{job.location}</span>
+                      </div>
+                      <div className="text-[10px] md:text-xs font-bold text-green-400 bg-white/5 px-2 py-1 rounded inline-block group-hover:bg-white/10 transition-colors">
+                          {job.salary_min && job.salary_max ? (
+                              <>{job.currency === 'INR' ? '₹' : '$'} {formatSalary(job.salary_min)} - {formatSalary(job.salary_max)}</>
+                          ) : "Salary not disclosed"}
+                      </div>
+                    </div>
+                    <div className="absolute top-4 right-4">
+                        <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white transform group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform shadow-lg shadow-blue-500/20">
+                            <ArrowUpRight className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
+                        </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+        </section>
+      )}
 
       {/* ================= EXPLORE CATEGORIES (WITH WAITLIST LOGIC) ================= */}
       <section className="py-20 border-b border-white/5 bg-[#050505] relative overflow-hidden">
