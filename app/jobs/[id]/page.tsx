@@ -705,7 +705,7 @@ export default function JobDetailPage() {
       
       {/* --- HERO SECTION (Redesigned Professional Card Layout) --- */}
       {/* 🟢 FIX: Refined top padding and mobile spacing */}
-      <div className="relative pt-24 md:pt-32 pb-8 md:pb-12">
+      <div className="relative pt-20 md:pt-28 pb-8 md:pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
           <Link href="/jobs" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-xs md:text-sm font-medium mb-4 md:mb-6">
