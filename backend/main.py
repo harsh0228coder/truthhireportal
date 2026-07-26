@@ -671,12 +671,30 @@ def send_email_via_resend(to_email: str, subject: str, html_content: str, attach
             "html": html_content,
         }
 
-        # Handle Attachment (for Resend)
-        if attachment_path and os.path.exists(attachment_path):
-            with open(attachment_path, "rb") as f:
-                file_bytes = list(f.read()) # Convert bytes to list of integers for Resend
+        # 🟢 FIX: Handle both Cloud URLs (Supabase) and Local file paths for the attachment
+        if attachment_path:
+            file_bytes = None
+            filename = "resume.pdf"
+            
+            if attachment_path.startswith("http"):
+                # Download file from Cloud Storage into memory
+                try:
+                    resp = requests.get(attachment_path, timeout=10)
+                    if resp.status_code == 200:
+                        file_bytes = list(resp.content)
+                        # Extract clean filename from URL (remove query params)
+                        filename = attachment_path.split("/")[-1].split("?")[0]
+                except Exception as e:
+                    print(f"❌ Failed to download cloud attachment: {e}")
+            elif os.path.exists(attachment_path):
+                # Fallback for old local files
+                with open(attachment_path, "rb") as f:
+                    file_bytes = list(f.read())
+                filename = os.path.basename(attachment_path)
+
+            if file_bytes:
                 params["attachments"] = [{
-                    "filename": os.path.basename(attachment_path),
+                    "filename": filename,
                     "content": file_bytes
                 }]
 
@@ -2653,11 +2671,13 @@ async def apply_to_job(
         else:
             recruiter_email = os.getenv("ADMIN_EMAIL", "hrtruthhire@gmail.com")
     
-    # 🟢 FIX: Construct Resume Path
+    # 🟢 FIX: Safely route Supabase URLs directly, and only prefix local paths
     resume_path = None
     if student.resume_filename:
-        # Assumes resumes are stored in 'static/resumes/' folder
-        resume_path = f"static/resumes/{student.resume_filename}"
+        if student.resume_filename.startswith("http"):
+            resume_path = student.resume_filename
+        else:
+            resume_path = f"static/resumes/{student.resume_filename}"
 
     if recruiter_email:
         candidate_data = {
@@ -2671,7 +2691,7 @@ async def apply_to_job(
             job.title, 
             candidate_data, 
             data.cover_note or "",
-            resume_path,  # <--- 🟢 PASSED HERE (Was missing before)
+            resume_path, 
             False,        # is_cold_outreach
             new_app.id    # app_id
         )

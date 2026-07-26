@@ -20,7 +20,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 // 1. GAP ANALYSIS SECTION (Fixed Rating Logic)
 const GapAnalysisSection = ({ analyzing, result, onAnalyze, jobId, jobDescription, jobTitle, companyName, userId }: any) => {
-  const router = useRouter(); // 🟢 ADDED: Initialized router for the button
+  const router = useRouter(); 
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [showFeedbackTags, setShowFeedbackTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -690,7 +690,8 @@ export default function JobDetailPage() {
       <Toaster position="top-right" />
       
       {/* --- HERO SECTION --- */}
-      <div className="relative border-b border-white/10 bg-[#0a0a0a] pt-8 pb-12">
+      {/* 🟢 FIX: Added pt-28 md:pt-36 to correctly sit below the new floating navbar */}
+      <div className="relative border-b border-white/10 bg-[#0a0a0a] pt-28 md:pt-36 pb-12">
         <div className="absolute inset-0 bg-gradient-to-b from-electric/5 to-transparent pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <Link href="/jobs" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium mb-8">
@@ -800,7 +801,8 @@ export default function JobDetailPage() {
             <CompanyCard job={job} />
 
             {/* JOB OVERVIEW */}
-            <div className="bg-[#111] border border-white/10 rounded-xl p-6 sticky top-24">
+            {/* 🟢 FIX: Changed sticky top-24 to top-28 md:top-32 so it clears the frosted glass navbar when scrolling */}
+            <div className="bg-[#111] border border-white/10 rounded-xl p-6 sticky top-28 md:top-32">
               <h3 className="text-lg font-bold text-white mb-5 flex items-center gap-2"><BriefcaseIcon size={20} className="text-gray-500" /> Job Overview</h3>
               <div className="space-y-4">
                   

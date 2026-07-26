@@ -142,22 +142,22 @@ class TailoredResumeData(BaseModel):
         return v
 
 
-_SYSTEM_PROMPT = """You are TruthHire's ATS Resume Tailor. Your job is to reframe a candidate's EXISTING resume for a specific job description to maximize ATS parseability and keyword matching.
+_SYSTEM_PROMPT = """You are TruthHire's Elite ATS Resume Optimization AI. Your objective is to reframe a candidate's baseline resume to maximize ATS parseability and alignment with a target Job Description (JD).
 
-STRICT LAWS (breaking any of these produces a bad answer):
-1. NO TECHNICAL HALLUCINATIONS: NEVER invent hard skills, tools, frameworks, or degrees the candidate does not have.
-2. CATEGORIZE SKILLS: Segregate the candidate's existing skills into exactly three categories: Technical Skills (languages, frameworks), Tools & Software (e.g., AWS, Git, Jira), and Soft Skills/Methodologies (e.g., Agile, Leadership).
-3. RETAIN ALL PROJECTS AND EXPERIENCE: You MUST extract and include ALL projects and work experiences present in the baseline resume. Do not drop any project just to save space.
-4. BRIDGE THE VOCABULARY GAP: Rewrite bullet points and skill names to match the EXACT terminology used in the JD without lying.
-5. Output ONLY valid JSON matching the exact schema. No prose, no markdown formatting outside the JSON.
+STRICT LAWS OF OPERATION:
+1. ZERO HALLUCINATIONS: NEVER invent experience, companies, job titles, metrics, or degrees. You may only use facts present in the candidate's baseline resume.
+2. KEYWORD INTEGRATION: Analyze the JD for critical keywords (hard skills, tools, methodologies). If the candidate's experience supports these keywords, seamlessly integrate them into their bullet points. 
+3. PROFESSIONAL REFRAMING (STAR METHOD): Rewrite weak bullet points into strong, action-oriented, results-driven statements (e.g., "Spearheaded X using Y resulting in Z"). Remove all fluff.
+4. SKILL SEGREGATION: Classify the candidate's existing skills exactly into: 'technical_skills' (languages/frameworks), 'tools_and_software' (platforms/databases), and 'soft_skills'.
+5. JSON FORMAT ONLY: Output absolutely nothing but the valid JSON object requested. No conversational text.
 """
 
 
 def _build_user_prompt(resume_text: str, jd_text: str, contact: dict) -> str:
-    return f"""### Candidate's baseline resume (source of truth — you may only use facts from here)
+    return f"""### BASELINE RESUME (Source of Truth - Do not invent anything outside this)
 {resume_text[:6000]}
 
-### Candidate contact info (use exactly as provided, do not modify)
+### CANDIDATE CONTACT INFO (Do not alter)
 name: {contact.get('name', '')}
 email: {contact.get('email', '')}
 phone: {contact.get('phone', '')}
@@ -165,11 +165,11 @@ location: {contact.get('location', '')}
 linkedin: {contact.get('linkedin', '')}
 github: {contact.get('github', '')}
 
-### Target job description
+### TARGET JOB DESCRIPTION (Optimize for these keywords)
 {jd_text[:4000]}
 
 ### TASK
-Return a single JSON object with this exact schema:
+Generate a JSON object matching this exact schema:
 {{
   "full_name": "string",
   "email": "string",
@@ -177,20 +177,34 @@ Return a single JSON object with this exact schema:
   "location": "string",
   "linkedin": "string",
   "github": "string",
-  "summary": "2-3 sentence professional summary tailored to this JD",
-  "technical_skills": ["Languages, libraries, and frameworks from baseline"],
-  "tools_and_software": ["Software, platforms, and tools from baseline"],
-  "soft_skills": ["Interpersonal and methodology skills from baseline"],
+  "summary": "3-4 highly impactful sentences positioning the candidate perfectly for this specific role without lying.",
+  "technical_skills": ["List of languages, libraries, frameworks the candidate knows that align with the JD"],
+  "tools_and_software": ["List of software, databases, tools from baseline"],
+  "soft_skills": ["List of interpersonal/methodology skills relevant to the JD"],
   "experience": [
-    {{"title": "role", "company": "company", "dates": "MMM YYYY - MMM YYYY", "bullets": ["4-5 bullets, action-verb first, JD-aligned language"]}}
+    {{
+        "title": "Exact Role from baseline", 
+        "company": "Exact Company from baseline", 
+        "dates": "Exact Dates", 
+        "bullets": ["Strongly rewritten bullet 1 integrating JD keywords", "Rewritten bullet 2", "Rewritten bullet 3"]
+    }}
   ],
   "projects": [
-    {{"title": "name", "tech_stack": "comma separated", "bullets": ["2-3 bullets"]}}
+    {{
+        "title": "Project Name", 
+        "tech_stack": "Technologies used", 
+        "bullets": ["Action-oriented bullet 1", "Action-oriented bullet 2"]
+    }}
   ],
   "education": [
-    {{"degree": "e.g. B.Tech Computer Science", "institution": "University", "dates": "2020-2024", "details": "CGPA / honors if in baseline"}}
+    {{
+        "degree": "Degree Name", 
+        "institution": "University Name", 
+        "dates": "Dates", 
+        "details": "Grades/Honors"
+    }}
   ],
-  "certifications": ["Cert name — Issuer — Year"]
+  "certifications": ["Cert 1", "Cert 2"]
 }}
 """
 
@@ -209,7 +223,7 @@ def call_groq_tailor(
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": _build_user_prompt(resume_text, jd_text, contact)},
         ],
-        temperature=0.2,
+        temperature=0.1, # 🟢 FIX: Lowered from 0.2 to 0.1 to strictly prevent hallucinations
         response_format={"type": "json_object"},
     )
 
