@@ -200,8 +200,8 @@ export default function Home() {
         }
       `}</style>
 
-      {/* ================= HERO SECTION (UseSprout Inspired Minimalism) ================= */}
-      <section className="relative pt-36 pb-20 md:pt-48 md:pb-32 overflow-hidden w-full flex flex-col items-center justify-center min-h-[80vh]">
+      {/* ================= HERO SECTION (Clean, Minimal & On-Brand) ================= */}
+      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden w-full flex flex-col items-center justify-center min-h-[70vh]">
         
         {/* Background Gradients flowing completely to the top edge */}
         <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none z-0"></div>
@@ -215,37 +215,37 @@ export default function Home() {
             <ArrowRight size={14} className="text-gray-500"/>
           </div>
 
-          {/* Massive Typographic Headline */}
-          <h1 className="animate-fade-in-up delay-100 text-[42px] sm:text-6xl md:text-7xl lg:text-[84px] font-bold tracking-tight leading-[1.05] mb-6 md:mb-8">
+          {/* Professional Typographic Headline (Toned Down Weight & Size) */}
+          <h1 className="animate-fade-in-up delay-100 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 md:mb-8">
             <span className="text-gray-400 font-medium block md:inline">Stop applying blindly.</span><br className="hidden md:block"/>
-            <span className="text-white font-extrabold block md:inline mt-2 md:mt-0">
+            <span className="text-white font-bold block md:inline mt-2 md:mt-0">
               Start <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">getting hired.</span>
             </span>
           </h1>
 
           {/* Simple Descriptive Subheadline */}
-          <p className="animate-fade-in-up delay-200 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-10 md:mb-14 px-2">
+          <p className="animate-fade-in-up delay-200 text-base md:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed mb-10 md:mb-14 px-2">
             From finding verified roles to ATS optimization — TruthHire analyzes your resume, highlights missing skills, and connects you directly with top recruiters.
           </p>
 
-          {/* Centered CTA Buttons */}
+          {/* Centered CTA Buttons (Restored TruthHire Brand Colors) */}
           <div className="animate-fade-in-up delay-300 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-16 md:mb-24">
             {isSignedIn ? (
-              <Link href="/jobs" className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#185e50] hover:bg-[#124d41] text-white text-base md:text-lg font-semibold transition-all flex items-center justify-center gap-2 shadow-lg">
+              <Link href="/jobs" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-base font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25">
                 Find Verified Jobs <ChevronRight size={18} />
               </Link>
             ) : (
-              <Link href="/signup" className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#185e50] hover:bg-[#124d41] text-white text-base md:text-lg font-semibold transition-all flex items-center justify-center gap-2 shadow-lg">
+              <Link href="/signup" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-base font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25">
                 Start for Free <ChevronRight size={18} />
               </Link>
             )}
             
-            <Link href="/tools/check-chances" className="w-full sm:w-auto px-8 py-4 rounded-full font-semibold text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center justify-center gap-2 text-base md:text-lg">
+            <Link href="/tools/check-chances" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full font-medium text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center justify-center gap-2 text-base">
                Test Your Resume
             </Link>
           </div>
 
-          {/* Trust Badges Row (Replaces the stacked avatars) */}
+          {/* Trust Badges Row */}
           <div className="animate-fade-in-up delay-300 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-12 text-[13px] md:text-sm text-gray-400">
             <div className="flex items-center gap-2">
               <Users2 size={18} className="text-gray-500" />
