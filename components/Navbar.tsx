@@ -109,17 +109,17 @@ export default function Navbar() {
         </defs>
       </svg>
 
-      {/* 🟢 FLOATING, ROUNDED NAVBAR (Updated Widths & Mobile Pill Design) */}
+      {/* 🟢 FLOATING, ROUNDED NAVBAR (Updated Theme Colors) */}
       <nav 
         className={`fixed z-[100] transition-all duration-500 ease-out flex items-center justify-between px-5 lg:px-8 h-16 left-1/2 -translate-x-1/2
           ${isScrolled 
-            ? 'top-4 w-[calc(100%-2rem)] max-w-6xl rounded-full bg-[#131316]/70 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]' 
-            : 'top-4 md:top-6 w-[calc(100%-2rem)] max-w-7xl rounded-full bg-[#09090b]/50 border border-white/5'
+            ? 'top-4 w-[calc(100%-2rem)] max-w-6xl rounded-full bg-[#131316]/70 border border-blue-500/30 shadow-[0_8px_32px_rgba(0,0,0,0.5)] shadow-[inset_0_1px_1px_rgba(59,130,246,0.15)]' 
+            : 'top-4 md:top-6 w-[calc(100%-2rem)] max-w-7xl rounded-full bg-[#09090b]/50 border border-blue-500/10'
           }
         `}
         style={{
           backdropFilter: 'url(#truthhire-liquid-glass) blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)', // 🟢 FIX: Ensures blur works perfectly on Mobile Safari/iOS
+          WebkitBackdropFilter: 'blur(20px)',
         }}
       >
         {/* 1. LOGO */}
@@ -149,7 +149,7 @@ export default function Navbar() {
                 </button>
                 
                 {isToolsOpen && (
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-56 bg-[#131316]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-1.5 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-56 bg-[#131316]/95 backdrop-blur-xl border border-blue-500/20 rounded-2xl shadow-2xl overflow-hidden p-1.5 animate-in fade-in zoom-in-95 duration-200">
                       <DropdownItem href="/tools/check-chances" icon={<Sparkles className="w-4 h-4 text-purple-400" />}>
                           Check My Chances
                           <span className="block text-[11px] text-gray-500 font-normal mt-0.5">AI Resume Gap Analysis</span>
@@ -193,7 +193,7 @@ export default function Navbar() {
               <div className="relative" ref={dropdownRef}>
                 <button 
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-full border border-white/10 bg-[#1a1a1a]/50 hover:bg-[#27272a]/50 transition-all"
+                  className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-full border border-blue-500/20 bg-[#1a1a1a]/50 hover:bg-[#27272a]/50 transition-all"
                 >
                   <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
                     {userName.charAt(0).toUpperCase()}
@@ -202,7 +202,7 @@ export default function Navbar() {
                 </button>
 
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-4 w-64 bg-[#131316]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-1.5 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="absolute right-0 mt-4 w-64 bg-[#131316]/95 backdrop-blur-xl border border-blue-500/20 rounded-2xl shadow-2xl overflow-hidden p-1.5 animate-in fade-in zoom-in-95 duration-200">
                     <div className="px-3 py-3 border-b border-white/5 mb-1.5">
                       <p className="text-white font-medium text-sm truncate">{userName}</p>
                       <p className="text-xs text-gray-500 capitalize mt-0.5">{userRole}</p>
@@ -245,7 +245,7 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* 🟢 REDESIGNED PROFESSIONAL MOBILE MENU OVERLAY */}
+      {/* 🟢 REDESIGNED MOBILE MENU OVERLAY (Updated Theme Colors) */}
       <div 
         className={`lg:hidden fixed inset-0 z-[90] transition-all duration-500 ease-in-out ${
             isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -255,7 +255,7 @@ export default function Navbar() {
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileOpen(false)}></div>
         
         {/* Sleek Slide-Down Glass Panel */}
-        <div className={`absolute top-2 inset-x-2 bg-[#131316]/90 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-5 pt-24 pb-8 transition-transform duration-500 ease-[0.32,0.72,0,1] shadow-2xl ${
+        <div className={`absolute top-2 inset-x-2 bg-[#131316]/90 backdrop-blur-3xl border border-blue-500/20 rounded-[2rem] p-5 pt-24 pb-8 transition-transform duration-500 ease-[0.32,0.72,0,1] shadow-2xl ${
             isMobileOpen ? 'translate-y-0' : '-translate-y-[120%]'
         }`}>
             <div className="space-y-2">
