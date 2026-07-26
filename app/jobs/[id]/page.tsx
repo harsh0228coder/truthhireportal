@@ -704,75 +704,80 @@ export default function JobDetailPage() {
       <Toaster position="top-right" />
       
       {/* --- HERO SECTION (Redesigned Professional Card Layout) --- */}
-      <div className="relative pt-28 md:pt-36 pb-12">
+      {/* 🟢 FIX: Refined top padding and mobile spacing */}
+      <div className="relative pt-24 md:pt-32 pb-8 md:pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
-          <Link href="/jobs" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium mb-6">
-            <ArrowLeft className="h-4 w-4" /> Back to Search
+          <Link href="/jobs" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-xs md:text-sm font-medium mb-4 md:mb-6">
+            <ArrowLeft className="h-3.5 w-3.5 md:h-4 w-4" /> Back to Search
           </Link>
 
           {/* Elevated Professional Hero Card */}
-          <div className="bg-[#111] border border-white/10 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
+          <div className="bg-[#111] border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-2xl relative overflow-hidden">
             
             {/* Subtle glow effect behind the card content */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
 
-            <div className="flex flex-col lg:flex-row gap-8 lg:items-center justify-between relative z-10">
+            <div className="flex flex-col lg:flex-row gap-6 lg:items-center justify-between relative z-10">
               
               {/* Left Side: Logo & Details */}
-              <div className="flex flex-col md:flex-row gap-6 w-full lg:w-auto items-start md:items-center">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[1.5rem] bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-4xl font-bold text-white shadow-xl flex-shrink-0">
+              <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full lg:w-auto items-start md:items-center">
+                {/* 🟢 FIX: Scaled down logo box for mobile */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl md:rounded-[1.5rem] bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-2xl md:text-4xl font-bold text-white shadow-xl flex-shrink-0">
                   {job.company_name ? job.company_name.charAt(0) : 'C'}
                 </div>
                 
                 <div className="flex-1">
-                  <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">{job.title}</h1>
+                  {/* 🟢 FIX: Scaled down job title for mobile */}
+                  <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-3 tracking-tight leading-tight">{job.title}</h1>
                   
                   {/* Structured Metadata Row */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm md:text-base text-gray-400 mb-5">
-                    <span className="flex items-center gap-1.5 text-white font-medium"><Building2 className="h-4 w-4 text-gray-500" /> {job.company_name}</span>
+                  <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm text-gray-400 mb-4 md:mb-5">
+                    <span className="flex items-center gap-1.5 text-white font-medium"><Building2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-500" /> {job.company_name}</span>
                     <span className="hidden md:block w-1.5 h-1.5 rounded-full bg-white/20"></span>
-                    <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-gray-500" /> {job.location}</span>
+                    <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-500" /> {job.location}</span>
                     <span className="hidden md:block w-1.5 h-1.5 rounded-full bg-white/20"></span>
-                    <span className="flex items-center gap-1.5"><Briefcase className="h-4 w-4 text-gray-500" /> {job.employment_type}</span>
+                    <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-500" /> {job.employment_type}</span>
                   </div>
                   
                   {/* Badges Row */}
-                  <div className="flex flex-wrap gap-2.5">
+                  <div className="flex flex-wrap gap-2 md:gap-2.5">
                     {job.is_verified && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-                        <Shield className="h-3.5 w-3.5" /> Verified
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 md:px-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                        <Shield className="h-3 w-3 md:h-3.5 md:w-3.5" /> Verified
                       </span>
                     )}
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg ${activityConfig.bg} border ${activityConfig.border} ${activityConfig.color} text-xs font-bold uppercase tracking-wider`}>
-                        <activityConfig.icon className="h-3.5 w-3.5" /> {activityStatus}
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 md:px-3 rounded-lg ${activityConfig.bg} border ${activityConfig.border} ${activityConfig.color} text-[10px] md:text-xs font-bold uppercase tracking-wider`}>
+                        <activityConfig.icon className="h-3 w-3 md:h-3.5 md:w-3.5" /> {activityStatus}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-xs font-bold uppercase tracking-wider">
-                        <Clock className="h-3.5 w-3.5 text-gray-500" /> {postedString}
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 md:px-3 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                        <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-500" /> {postedString}
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* Right Side: Salary & Actions */}
-              <div className="flex flex-col items-start lg:items-end w-full lg:w-auto gap-5 mt-4 lg:mt-0 border-t lg:border-t-0 lg:border-l border-white/10 pt-6 lg:pt-0 lg:pl-8">
+              <div className="flex flex-col items-start lg:items-end w-full lg:w-auto gap-4 md:gap-5 mt-5 md:mt-0 border-t lg:border-t-0 lg:border-l border-white/10 pt-5 md:pt-0 lg:pl-8">
                 
                 <div className="text-left lg:text-right">
-                  <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Offered Salary</p>
-                  <p className="text-2xl md:text-3xl font-bold text-green-400">
+                  <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Offered Salary</p>
+                  {/* 🟢 FIX: Scaled down salary text for mobile */}
+                  <p className="text-xl md:text-3xl font-bold text-green-400">
                     {formatSalary(job.salary_min, job.salary_max, job.currency, job.salary_frequency)}
                   </p>
-                  {job.equity && <p className="text-xs text-yellow-400 mt-1 font-medium">+ Equity options available</p>}
+                  {job.equity && <p className="text-[10px] md:text-xs text-yellow-400 mt-1 font-medium">+ Equity options available</p>}
                 </div>
 
-                <div className="flex w-full sm:w-auto items-center gap-3">
-                  <button onClick={() => setSaved(!saved)} className={`w-14 h-14 rounded-xl border transition-all flex items-center justify-center flex-shrink-0 ${saved ? 'bg-blue-600/10 border-blue-600 text-blue-500' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20'}`}>
-                    <Bookmark className="h-5 w-5" fill={saved ? 'currentColor' : 'none'} />
+                <div className="flex w-full sm:w-auto items-center gap-2.5 md:gap-3">
+                  {/* 🟢 FIX: Scaled down button heights for mobile */}
+                  <button onClick={() => setSaved(!saved)} className={`w-12 h-12 md:w-14 md:h-14 rounded-xl border transition-all flex items-center justify-center flex-shrink-0 ${saved ? 'bg-blue-600/10 border-blue-600 text-blue-500' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20'}`}>
+                    <Bookmark className="h-4 w-4 md:h-5 md:w-5" fill={saved ? 'currentColor' : 'none'} />
                   </button>
                   
                   {isExternalLink ? (
                     <a href={job.apply_link} target="_blank" rel="noopener noreferrer" className="flex-1 sm:w-auto">
-                      <button className="w-full h-14 px-8 rounded-xl font-bold flex items-center justify-center gap-2 transition-all bg-white text-black hover:bg-gray-200 hover:scale-[1.02] active:scale-95 shadow-lg shadow-white/10">
+                      <button className="w-full h-12 md:h-14 px-6 md:px-8 rounded-xl font-bold text-sm md:text-base flex items-center justify-center gap-2 transition-all bg-white text-black hover:bg-gray-200 hover:scale-[1.02] active:scale-95 shadow-lg shadow-white/10">
                         Apply External <ExternalLink className="h-4 w-4" />
                       </button>
                     </a>
@@ -780,9 +785,9 @@ export default function JobDetailPage() {
                     <button 
                       onClick={handleHeroApply}
                       disabled={hasApplied}
-                      className={`flex-1 sm:w-auto h-14 px-8 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${hasApplied ? 'bg-green-600 cursor-not-allowed text-white' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 hover:scale-[1.02] active:scale-95'}`}
+                      className={`flex-1 sm:w-auto h-12 md:h-14 px-6 md:px-8 rounded-xl font-bold text-sm md:text-base flex items-center justify-center gap-2 transition-all ${hasApplied ? 'bg-green-600 cursor-not-allowed text-white' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 hover:scale-[1.02] active:scale-95'}`}
                     >
-                      {hasApplied ? <><CheckCircle className="h-5 w-5" /> Applied</> : <><Zap className="h-5 w-5" /> Easy Apply</>}
+                      {hasApplied ? <><CheckCircle className="h-4 w-4 md:h-5 md:w-5" /> Applied</> : <><Zap className="h-4 w-4 md:h-5 md:w-5" /> Easy Apply</>}
                     </button>
                   )}
                 </div>
@@ -794,7 +799,7 @@ export default function JobDetailPage() {
       </div>
 
       {/* --- MAIN CONTENT GRID --- */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10">
           
           {/* LEFT COLUMN (Content) */}
@@ -835,8 +840,8 @@ export default function JobDetailPage() {
             <CompanyCard job={job} />
 
             {/* JOB OVERVIEW */}
-            {/* 🟢 FIX: Changed sticky top-24 to top-28 md:top-32 so it clears the frosted glass navbar when scrolling */}
-            <div className="bg-[#111] border border-white/10 rounded-xl p-6 sticky top-28 md:top-32">
+            {/* 🟢 FIX: Changed sticky top-28 to top-24 to match the reduced padding at the top */}
+            <div className="bg-[#111] border border-white/10 rounded-xl p-6 sticky top-24 md:top-28">
               <h3 className="text-lg font-bold text-white mb-5 flex items-center gap-2"><BriefcaseIcon size={20} className="text-gray-500" /> Job Overview</h3>
               <div className="space-y-4">
                   
