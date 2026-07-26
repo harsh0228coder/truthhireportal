@@ -95,7 +95,7 @@ function SearchBar({ mobile = false, onSearch }: { mobile?: boolean, onSearch?: 
         <input 
             type="text"
             placeholder="Search jobs, skills, companies..."
-            className="w-full bg-[#111] border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+            className="w-full bg-[#111]/80 border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => query.trim().length > 0 && setShowSuggestions(true)}
@@ -105,7 +105,7 @@ function SearchBar({ mobile = false, onSearch }: { mobile?: boolean, onSearch?: 
 
       {/* SUGGESTIONS DROPDOWN */}
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100 ring-1 ring-white/5">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100 ring-1 ring-white/5">
             <div className="py-1">
                 {suggestions.map((suggestion, index) => (
                     <button
@@ -217,208 +217,226 @@ export default function Navbar() {
   if (pathname?.includes('/recruiter/dashboard') || pathname?.startsWith('/secure-portal-0228')) return null;
 
   return (
-    <nav 
-      className={`fixed top-0 w-full z-[100] transition-all duration-300 border-b h-20 ${
-        isScrolled || isMobileOpen
-          ? 'bg-[#09090b] border-white/10 shadow-lg' 
-          : 'bg-transparent border-transparent'
-      }`}
-    >
-      <div className="w-full h-full px-6 lg:px-10 flex items-center justify-between gap-4">
-        
-        {/* 1. LOGO (Responsive Sizing) */}
-        <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center shrink-0 z-[102] transition-transform duration-300 hover:scale-105 mt-1" aria-label="TruthHire home">
-          <div className="block lg:hidden flex items-center">
-            <Logo variant="stacked" size={32} href={null} priority={true} />
-          </div>
-          <div className="hidden lg:block flex items-center">
-            <Logo variant="stacked" size={44} href={null} priority={true} />
-          </div>
-        </Link>
+    <>
+      {/* 🟢 HIDDEN SVG LIQUID GLASS FILTER */}
+      <svg className="hidden absolute w-0 h-0 pointer-events-none" aria-hidden="true">
+        <defs>
+          <filter id="truthhire-liquid-glass" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012 0.012" numOctaves="2" seed="5" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" result="displacement" />
+            <feGaussianBlur in="displacement" stdDeviation="6" result="blur" />
+            <feBlend mode="normal" in="SourceGraphic" in2="blur" result="blend" />
+          </filter>
+        </defs>
+      </svg>
 
-        {/* 2. CENTER: SEARCH & NAV (Desktop) */}
-        <div className="hidden lg:flex items-center flex-1 justify-center max-w-4xl gap-8">
-          
-          {/* Desktop Search */}
-          {userRole !== 'recruiter' && (
-             <Suspense fallback={<div className="w-full max-w-sm h-10 bg-[#111] rounded-full" />}>
-                <SearchBar />
-             </Suspense>
-          )}
-
-          {/* Core Links */}
-          <div className="flex items-center gap-6 text-sm font-medium text-gray-400">
-            {userRole !== 'recruiter' && (
-                <NavLink href="/jobs" active={pathname === '/jobs'}>Jobs</NavLink>
-            )}
-            
-            {userRole !== 'recruiter' && (
-                <div className="relative" ref={toolsRef}>
-                <button 
-                    onClick={() => setIsToolsOpen(!isToolsOpen)}
-                    className={`flex items-center gap-1 hover:text-white transition-colors ${pathname?.includes('/tools') ? 'text-white' : ''}`}
-                >
-                    Tools <ChevronDown className={`w-3 h-3 transition-transform ${isToolsOpen ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {isToolsOpen && (
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden p-1 animate-in fade-in zoom-in-95 duration-200">
-                    <DropdownItem href="/tools/check-chances" icon={<Sparkles className="w-4 h-4 text-purple-400" />}>
-                        Check My Chances
-                        <span className="block text-[10px] text-gray-500 font-normal">AI Resume Gap Analysis</span>
-                    </DropdownItem>
-                    </div>
-                )}
-                </div>
-            )}
-
-            {isLoggedIn && userRole !== 'recruiter' && (
-                <NavLink href="/career-guide" active={pathname === '/career-guide'}>Career Guide</NavLink>
-            )}
-            
-            {userRole !== 'recruiter' && (
-                <NavLink href="/about-us" active={pathname === '/about-us'}>About Us</NavLink>
-            )}
-          </div>
-        </div>
-
-        {/* 3. RIGHT SIDE: AUTH & ACTIONS */}
-        <div className="hidden lg:flex items-center gap-4 shrink-0 text-sm font-normal">
-          {!isLoggedIn ? (
-            <>
-              <NavLink href="/employers" active={pathname === '/employers'}>For Recruiters</NavLink>
-              <div className="h-4 w-px bg-white/10"></div>
-              <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-all">
-                Sign In
-              </Link>
-              <Link 
-                href="/signup" 
-                className="bg-white text-black hover:bg-gray-200 px-6 py-2.5 rounded-full text-sm font-bold transition-all hover:scale-105 shadow-lg hover:shadow-blue-500/30 flex items-center gap-2"
-              >
-                Get Started
-              </Link>
-            </>
-          ) : (
-            <>
-              {/* Profile Dropdown */}
-              <div className="relative" ref={dropdownRef}>
-                <button 
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full border border-white/10 bg-[#111] hover:bg-[#1a1a1a] transition-all"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
-                    {userName.charAt(0).toUpperCase()}
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-gray-500" />
-                </button>
-
-                {isProfileOpen && (
-                  <div className="absolute right-0 mt-3 w-64 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden p-1 animate-in fade-in zoom-in-95 duration-200">
-                    <div className="px-3 py-2 border-b border-white/5 mb-1">
-                      <p className="text-white font-medium text-sm truncate">{userName}</p>
-                      <p className="text-xs text-gray-500 capitalize">{userRole}</p>
-                    </div>
-                    
-                    {userRole === 'recruiter' ? (
-                        <DropdownItem href="/recruiter/dashboard" icon={<LayoutDashboard className="w-4 h-4" />}>Dashboard</DropdownItem>
-                    ) : (
-                        <>
-                            <DropdownItem href="/dashboard" icon={<LayoutDashboard className="w-4 h-4" />}>Dashboard</DropdownItem>
-                            <DropdownItem href="/profile" icon={<User className="w-4 h-4" />}>My Profile</DropdownItem>
-                        </>
-                    )}
-                    
-                    <div className="h-px bg-white/5 my-1"></div>
-                    <button 
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* 4. MOBILE HAMBURGER (Animated) */}
-        <button 
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="lg:hidden text-gray-300 hover:text-white p-2 relative z-[102]"
-        >
-          <div className="w-6 h-6 flex flex-col justify-center gap-1.5">
-            <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${isMobileOpen ? 'rotate-45 translate-y-2' : ''}`} />
-            <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${isMobileOpen ? 'opacity-0' : ''}`} />
-            <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${isMobileOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-          </div>
-        </button>
-      </div>
-
-      {/* 5. MOBILE MENU OVERLAY */}
-      <div 
-        className={`lg:hidden fixed inset-0 top-0 z-[100] transition-transform duration-300 ease-in-out ${
-            isMobileOpen ? 'translate-x-0' : 'translate-x-full'
+      <nav 
+        className={`fixed top-0 w-full z-[100] transition-all duration-300 border-b h-20 ${
+          isScrolled || isMobileOpen
+            ? 'bg-[#09090b]/60 border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' 
+            : 'bg-[#09090b]/30 border-white/5'
         }`}
+        style={{
+          backdropFilter: 'url(#truthhire-liquid-glass) blur(16px)',
+          WebkitBackdropFilter: 'url(#truthhire-liquid-glass) blur(16px)',
+        }}
       >
-        <div className="absolute inset-0 bg-[#09090b]"></div>
-        <div className="h-20 w-full relative z-10"></div>
+        <div className="w-full h-full px-6 lg:px-10 flex items-center justify-between gap-4">
+          
+          {/* 1. LOGO (Responsive Sizing) */}
+          <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center shrink-0 z-[102] transition-transform duration-300 hover:scale-105 mt-1" aria-label="TruthHire home">
+            <div className="block lg:hidden flex items-center">
+              <Logo variant="stacked" size={32} href={null} priority={true} />
+            </div>
+            <div className="hidden lg:block flex items-center">
+              <Logo variant="stacked" size={44} href={null} priority={true} />
+            </div>
+          </Link>
 
-        <div className="relative z-10 h-[calc(100dvh-80px)] overflow-y-auto px-6 pb-10">
+          {/* 2. CENTER: SEARCH & NAV (Desktop) */}
+          <div className="hidden lg:flex items-center flex-1 justify-center max-w-4xl gap-8">
             
-            {/* Mobile Search */}
+            {/* Desktop Search */}
             {userRole !== 'recruiter' && (
-                <div className="pt-4">
-                    <Suspense fallback={<div className="h-10 w-full bg-[#111] rounded-lg" />}>
-                        <SearchBar mobile onSearch={() => setIsMobileOpen(false)} />
-                    </Suspense>
-                </div>
+               <Suspense fallback={<div className="w-full max-w-sm h-10 bg-[#111] rounded-full" />}>
+                  <SearchBar />
+               </Suspense>
             )}
 
-            <div className="space-y-1">
-                {userRole !== 'recruiter' && (
-                    <>
-                        <MobileLink href="/jobs" onClick={() => setIsMobileOpen(false)}>Jobs</MobileLink>
-                        
-                        {isLoggedIn && (
-                            <MobileLink href="/career-guide" onClick={() => setIsMobileOpen(false)}>Career Guide</MobileLink>
-                        )}
+            {/* Core Links */}
+            <div className="flex items-center gap-6 text-sm font-medium text-gray-400">
+              {userRole !== 'recruiter' && (
+                  <NavLink href="/jobs" active={pathname === '/jobs'}>Jobs</NavLink>
+              )}
+              
+              {userRole !== 'recruiter' && (
+                  <div className="relative" ref={toolsRef}>
+                  <button 
+                      onClick={() => setIsToolsOpen(!isToolsOpen)}
+                      className={`flex items-center gap-1 hover:text-white transition-colors ${pathname?.includes('/tools') ? 'text-white' : ''}`}
+                  >
+                      Tools <ChevronDown className={`w-3 h-3 transition-transform ${isToolsOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isToolsOpen && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden p-1 animate-in fade-in zoom-in-95 duration-200">
+                      <DropdownItem href="/tools/check-chances" icon={<Sparkles className="w-4 h-4 text-purple-400" />}>
+                          Check My Chances
+                          <span className="block text-[10px] text-gray-500 font-normal">AI Resume Gap Analysis</span>
+                      </DropdownItem>
+                      </div>
+                  )}
+                  </div>
+              )}
 
-                        <MobileLink href="/about-us" onClick={() => setIsMobileOpen(false)}>About Us</MobileLink>
-                        
-                        <div className="pt-4 pb-2">
-                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">Tools</p>
-                            <MobileLink href="/tools/check-chances" onClick={() => setIsMobileOpen(false)} icon={<Sparkles className="w-4 h-4 text-electric"/>}>
-                                Check My Chances
-                            </MobileLink>
-                        </div>
-                    </>
-                )}
+              {isLoggedIn && userRole !== 'recruiter' && (
+                  <NavLink href="/career-guide" active={pathname === '/career-guide'}>Career Guide</NavLink>
+              )}
+              
+              {userRole !== 'recruiter' && (
+                  <NavLink href="/about-us" active={pathname === '/about-us'}>About Us</NavLink>
+              )}
             </div>
+          </div>
 
-            <div className="border-t border-white/10 mt-6 pt-6">
-                {!isLoggedIn ? (
-                    <div className="flex flex-col gap-3">
-                        <Link href="/login" onClick={() => setIsMobileOpen(false)} className="w-full py-3 text-center rounded-lg border border-white/10 text-white font-medium">Sign In</Link>
-                        <Link href="/signup" onClick={() => setIsMobileOpen(false)} className="w-full py-3 text-center rounded-lg bg-white text-black font-bold shadow-lg">Get Started</Link>
-                        <Link href="/employers" onClick={() => setIsMobileOpen(false)} className="w-full py-3 text-center text-sm text-gray-500">For Employers</Link>
+          {/* 3. RIGHT SIDE: AUTH & ACTIONS */}
+          <div className="hidden lg:flex items-center gap-4 shrink-0 text-sm font-normal">
+            {!isLoggedIn ? (
+              <>
+                <NavLink href="/employers" active={pathname === '/employers'}>For Recruiters</NavLink>
+                <div className="h-4 w-px bg-white/10"></div>
+                <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-all">
+                  Sign In
+                </Link>
+                <Link 
+                  href="/signup" 
+                  className="bg-white text-black hover:bg-gray-200 px-6 py-2.5 rounded-full text-sm font-bold transition-all hover:scale-105 shadow-lg hover:shadow-blue-500/30 flex items-center gap-2"
+                >
+                  Get Started
+                </Link>
+              </>
+            ) : (
+              <>
+                {/* Profile Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                  <button 
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full border border-white/10 bg-[#111]/80 hover:bg-[#1a1a1a] transition-all"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                      {userName.charAt(0).toUpperCase()}
                     </div>
-                ) : (
-                    <div className="space-y-2">
-                        <MobileLink href={userRole === 'recruiter' ? "/recruiter/dashboard" : "/dashboard"} onClick={() => setIsMobileOpen(false)} icon={<LayoutDashboard className="w-4 h-4"/>}>Dashboard</MobileLink>
-                        {userRole !== 'recruiter' && (
-                            <MobileLink href="/profile" onClick={() => setIsMobileOpen(false)} icon={<User className="w-4 h-4"/>}>My Profile</MobileLink>
-                        )}
-                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 bg-red-500/5 rounded-lg font-medium mt-2">
-                            <LogOut className="w-5 h-5" /> Sign Out
-                        </button>
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  </button>
+
+                  {isProfileOpen && (
+                    <div className="absolute right-0 mt-3 w-64 bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden p-1 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="px-3 py-2 border-b border-white/5 mb-1">
+                        <p className="text-white font-medium text-sm truncate">{userName}</p>
+                        <p className="text-xs text-gray-500 capitalize">{userRole}</p>
+                      </div>
+                      
+                      {userRole === 'recruiter' ? (
+                          <DropdownItem href="/recruiter/dashboard" icon={<LayoutDashboard className="w-4 h-4" />}>Dashboard</DropdownItem>
+                      ) : (
+                          <>
+                              <DropdownItem href="/dashboard" icon={<LayoutDashboard className="w-4 h-4" />}>Dashboard</DropdownItem>
+                              <DropdownItem href="/profile" icon={<User className="w-4 h-4" />}>My Profile</DropdownItem>
+                          </>
+                      )}
+                      
+                      <div className="h-px bg-white/5 my-1"></div>
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
                     </div>
-                )}
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* 4. MOBILE HAMBURGER (Animated) */}
+          <button 
+            onClick={() => setIsMobileOpen(!isMobileOpen)}
+            className="lg:hidden text-gray-300 hover:text-white p-2 relative z-[102]"
+          >
+            <div className="w-6 h-6 flex flex-col justify-center gap-1.5">
+              <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${isMobileOpen ? 'rotate-45 translate-y-2' : ''}`} />
+              <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${isMobileOpen ? 'opacity-0' : ''}`} />
+              <span className={`block w-6 h-0.5 bg-current transition-all duration-300 ${isMobileOpen ? '-rotate-45 -translate-y-2' : ''}`} />
             </div>
+          </button>
         </div>
-      </div>
-    </nav>
+
+        {/* 5. MOBILE MENU OVERLAY */}
+        <div 
+          className={`lg:hidden fixed inset-0 top-0 z-[100] transition-transform duration-300 ease-in-out ${
+              isMobileOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          <div className="absolute inset-0 bg-[#09090b]/95 backdrop-blur-2xl"></div>
+          <div className="h-20 w-full relative z-10"></div>
+
+          <div className="relative z-10 h-[calc(100dvh-80px)] overflow-y-auto px-6 pb-10">
+              
+              {/* Mobile Search */}
+              {userRole !== 'recruiter' && (
+                  <div className="pt-4">
+                      <Suspense fallback={<div className="h-10 w-full bg-[#111] rounded-lg" />}>
+                          <SearchBar mobile onSearch={() => setIsMobileOpen(false)} />
+                      </Suspense>
+                  </div>
+              )}
+
+              <div className="space-y-1">
+                  {userRole !== 'recruiter' && (
+                      <>
+                          <MobileLink href="/jobs" onClick={() => setIsMobileOpen(false)}>Jobs</MobileLink>
+                          
+                          {isLoggedIn && (
+                              <MobileLink href="/career-guide" onClick={() => setIsMobileOpen(false)}>Career Guide</MobileLink>
+                          )}
+
+                          <MobileLink href="/about-us" onClick={() => setIsMobileOpen(false)}>About Us</MobileLink>
+                          
+                          <div className="pt-4 pb-2">
+                              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">Tools</p>
+                              <MobileLink href="/tools/check-chances" onClick={() => setIsMobileOpen(false)} icon={<Sparkles className="w-4 h-4 text-electric"/>}>
+                                  Check My Chances
+                              </MobileLink>
+                          </div>
+                      </>
+                  )}
+              </div>
+
+              <div className="border-t border-white/10 mt-6 pt-6">
+                  {!isLoggedIn ? (
+                      <div className="flex flex-col gap-3">
+                          <Link href="/login" onClick={() => setIsMobileOpen(false)} className="w-full py-3 text-center rounded-lg border border-white/10 text-white font-medium">Sign In</Link>
+                          <Link href="/signup" onClick={() => setIsMobileOpen(false)} className="w-full py-3 text-center rounded-lg bg-white text-black font-bold shadow-lg">Get Started</Link>
+                          <Link href="/employers" onClick={() => setIsMobileOpen(false)} className="w-full py-3 text-center text-sm text-gray-500">For Employers</Link>
+                      </div>
+                  ) : (
+                      <div className="space-y-2">
+                          <MobileLink href={userRole === 'recruiter' ? "/recruiter/dashboard" : "/dashboard"} onClick={() => setIsMobileOpen(false)} icon={<LayoutDashboard className="w-4 h-4"/>}>Dashboard</MobileLink>
+                          {userRole !== 'recruiter' && (
+                              <MobileLink href="/profile" onClick={() => setIsMobileOpen(false)} icon={<User className="w-4 h-4"/>}>My Profile</MobileLink>
+                          )}
+                          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 bg-red-500/5 rounded-lg font-medium mt-2">
+                              <LogOut className="w-5 h-5" /> Sign Out
+                          </button>
+                      </div>
+                  )}
+              </div>
+          </div>
+        </div>
+      </nav>
+    </>
   );
 }
 
