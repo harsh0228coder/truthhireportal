@@ -201,8 +201,8 @@ export default function Home() {
       `}</style>
 
       {/* ================= HERO SECTION ================= */}
-      {/* 🟢 FIX: Perfected Top Spacing (pt-32 on mobile, pt-40 on desktop) to sit exactly below the floating navbar without any weird backgrounds. */}
-      <section className="relative pt-32 pb-16 md:pt-40 md:pb-32 overflow-hidden w-full">
+      {/* 🟢 FIX: Perfected Top Spacing (pt-28 on mobile, pt-34 on desktop) to sit exactly below the floating navbar without any weird backgrounds. */}
+      <section className="relative pt-28 pb-16 md:pt-34 md:pb-32 overflow-hidden w-full">
         
         {/* Restored the simple, clean original background gradients */}
         <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_70%)] pointer-events-none"></div>
