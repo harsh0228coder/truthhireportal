@@ -201,9 +201,15 @@ export default function Home() {
       `}</style>
 
       {/* ================= HERO SECTION ================= */}
-      <section className="relative pt-16 pb-16 md:pt-20 md:pb-32 overflow-hidden w-full">
+      {/* 🟢 FIX: Increased pt-32 and md:pt-40 so the Hero text drops cleanly below your new floating Navbar */}
+      <section className="relative pt-32 pb-16 md:pt-40 md:pb-32 overflow-hidden w-full">
+        
+        {/* 🟢 FIX: Added a massive, vibrant glowing orb at the absolute top of the page. 
+            This sits exactly behind where the Navbar floats, giving the liquid glass effect 
+            light to blur instead of blurring the solid black background! */}
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] md:w-[1200px] h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/50 via-purple-900/30 to-transparent blur-[100px] pointer-events-none"></div>
+
         <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_70%)] pointer-events-none"></div>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[300px] md:h-[500px] bg-gradient-to-b from-blue-900/20 via-transparent to-transparent blur-3xl pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-8 xl:gap-12 items-center">
           

@@ -100,7 +100,7 @@ export default function Navbar() {
       {/* 🟢 HIDDEN SVG LIQUID GLASS FILTER */}
       <svg className="hidden absolute w-0 h-0 pointer-events-none" aria-hidden="true">
         <defs>
-          <filter id="truthhire-liquid-glass" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+          <filter id="truthhire-liquid-glass" x="-20%" y="-20%" width="160%" height="140%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
             <feTurbulence type="fractalNoise" baseFrequency="0.015 0.015" numOctaves="3" seed="5" result="noise" />
             <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G" result="displacement" />
             <feGaussianBlur in="displacement" stdDeviation="8" result="blur" />
@@ -109,17 +109,17 @@ export default function Navbar() {
         </defs>
       </svg>
 
-      {/* 🟢 FLOATING, ROUNDED NAVBAR */}
+      {/* 🟢 FLOATING, ROUNDED NAVBAR (Updated Widths & Mobile Pill Design) */}
       <nav 
-        className={`fixed z-[100] transition-all duration-500 ease-out flex items-center justify-between px-5 lg:px-8 h-16
+        className={`fixed z-[100] transition-all duration-500 ease-out flex items-center justify-between px-5 lg:px-8 h-16 left-1/2 -translate-x-1/2
           ${isScrolled 
-            ? 'top-4 inset-x-4 max-w-5xl mx-auto rounded-full bg-[#131316]/60 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]' 
-            : 'top-6 inset-x-4 max-w-6xl mx-auto rounded-full bg-[#09090b]/40 border border-white/5'
+            ? 'top-4 w-[calc(100%-2rem)] max-w-6xl rounded-full bg-[#131316]/70 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]' 
+            : 'top-4 md:top-6 w-[calc(100%-2rem)] max-w-7xl rounded-full bg-[#09090b]/50 border border-white/5'
           }
         `}
         style={{
           backdropFilter: 'url(#truthhire-liquid-glass) blur(20px)',
-          WebkitBackdropFilter: 'url(#truthhire-liquid-glass) blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)', // 🟢 FIX: Ensures blur works perfectly on Mobile Safari/iOS
         }}
       >
         {/* 1. LOGO */}
@@ -245,13 +245,19 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* 🟢 SOLID MOBILE MENU OVERLAY (Fixes Transparency Issue) */}
+      {/* 🟢 REDESIGNED PROFESSIONAL MOBILE MENU OVERLAY */}
       <div 
-        className={`lg:hidden fixed inset-0 z-[90] bg-[#09090b] transition-opacity duration-300 ease-in-out ${
+        className={`lg:hidden fixed inset-0 z-[90] transition-all duration-500 ease-in-out ${
             isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="h-full w-full overflow-y-auto px-6 pt-28 pb-10">
+        {/* Dark blurred background drop */}
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileOpen(false)}></div>
+        
+        {/* Sleek Slide-Down Glass Panel */}
+        <div className={`absolute top-2 inset-x-2 bg-[#131316]/90 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-5 pt-24 pb-8 transition-transform duration-500 ease-[0.32,0.72,0,1] shadow-2xl ${
+            isMobileOpen ? 'translate-y-0' : '-translate-y-[120%]'
+        }`}>
             <div className="space-y-2">
                 {userRole !== 'recruiter' && (
                     <>
@@ -263,9 +269,9 @@ export default function Navbar() {
 
                         <MobileLink href="/about-us" onClick={() => setIsMobileOpen(false)}>About Us</MobileLink>
                         
-                        <div className="pt-6 pb-2">
-                            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest px-4 mb-3">Tools</p>
-                            <MobileLink href="/tools/check-chances" onClick={() => setIsMobileOpen(false)} icon={<Sparkles className="w-5 h-5 text-purple-400"/>}>
+                        <div className="pt-4 pb-2">
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">Tools</p>
+                            <MobileLink href="/tools/check-chances" onClick={() => setIsMobileOpen(false)} icon={<Sparkles className="w-4 h-4 text-purple-400"/>}>
                                 Check My Chances
                             </MobileLink>
                         </div>
@@ -273,20 +279,22 @@ export default function Navbar() {
                 )}
             </div>
 
-            <div className="border-t border-white/10 mt-8 pt-8">
+            <div className="border-t border-white/10 mt-6 pt-6">
                 {!isLoggedIn ? (
-                    <div className="flex flex-col gap-3">
-                        <Link href="/login" onClick={() => setIsMobileOpen(false)} className="w-full py-3.5 text-center rounded-xl border border-white/10 text-white font-medium hover:bg-white/5 transition-colors">Sign In</Link>
-                        <Link href="/signup" onClick={() => setIsMobileOpen(false)} className="w-full py-3.5 text-center rounded-xl bg-white text-black font-bold shadow-lg hover:bg-gray-200 transition-colors">Get Started</Link>
-                        <Link href="/employers" onClick={() => setIsMobileOpen(false)} className="w-full pt-4 text-center text-[13px] text-gray-500 hover:text-white transition-colors">For Employers</Link>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex gap-3">
+                            <Link href="/login" onClick={() => setIsMobileOpen(false)} className="flex-1 py-3.5 text-center rounded-2xl border border-white/10 text-white font-medium hover:bg-white/5 transition-colors text-sm">Sign In</Link>
+                            <Link href="/signup" onClick={() => setIsMobileOpen(false)} className="flex-1 py-3.5 text-center rounded-2xl bg-white text-black font-bold shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all text-sm">Get Started</Link>
+                        </div>
+                        <Link href="/employers" onClick={() => setIsMobileOpen(false)} className="w-full text-center text-[13px] text-gray-500 hover:text-white transition-colors">For Employers</Link>
                     </div>
                 ) : (
                     <div className="space-y-2">
-                        <MobileLink href={userRole === 'recruiter' ? "/recruiter/dashboard" : "/dashboard"} onClick={() => setIsMobileOpen(false)} icon={<LayoutDashboard className="w-5 h-5"/>}>Dashboard</MobileLink>
+                        <MobileLink href={userRole === 'recruiter' ? "/recruiter/dashboard" : "/dashboard"} onClick={() => setIsMobileOpen(false)} icon={<LayoutDashboard className="w-4 h-4"/>}>Dashboard</MobileLink>
                         {userRole !== 'recruiter' && (
-                            <MobileLink href="/profile" onClick={() => setIsMobileOpen(false)} icon={<User className="w-5 h-5"/>}>My Profile</MobileLink>
+                            <MobileLink href="/profile" onClick={() => setIsMobileOpen(false)} icon={<User className="w-4 h-4"/>}>My Profile</MobileLink>
                         )}
-                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3.5 text-red-400 hover:bg-red-500/10 rounded-xl font-medium mt-4 transition-colors">
+                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-5 py-4 text-red-400 bg-red-500/5 border border-red-500/10 rounded-2xl font-medium mt-4 transition-colors">
                             <LogOut className="w-5 h-5" /> Sign Out
                         </button>
                     </div>
@@ -320,14 +328,15 @@ function DropdownItem({ href, icon, children }: { href: string; icon: any; child
   );
 }
 
+// 🟢 REDESIGNED MOBILE LINK CARDS
 function MobileLink({ href, onClick, icon, children }: any) {
     return (
         <Link 
             href={href} 
             onClick={onClick} 
-            className="flex items-center gap-3 w-full px-4 py-3.5 text-lg font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
+            className="flex items-center gap-3.5 w-full px-5 py-4 text-[15px] font-semibold text-gray-300 hover:text-white bg-white/[0.02] hover:bg-white/[0.06] border border-white/5 hover:border-white/10 rounded-2xl transition-all active:scale-[0.98]"
         >
-            {icon && icon}
+            {icon && <span className="text-gray-400">{icon}</span>}
             {children}
         </Link>
     )
