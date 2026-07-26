@@ -201,7 +201,7 @@ export default function Home() {
       `}</style>
 
       {/* ================= HERO SECTION (Clean, Minimal & On-Brand) ================= */}
-      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden w-full flex flex-col items-center justify-center min-h-[70vh]">
+      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden w-full flex flex-col items-center justify-center min-h-[70vh]">
         
         {/* Background Gradients flowing completely to the top edge */}
         <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none z-0"></div>
@@ -228,19 +228,19 @@ export default function Home() {
             From finding verified roles to ATS optimization — TruthHire analyzes your resume, highlights missing skills, and connects you directly with top recruiters.
           </p>
 
-          {/* Centered CTA Buttons (Restored TruthHire Brand Colors) */}
-          <div className="animate-fade-in-up delay-300 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-16 md:mb-24">
+          {/* 🟢 Centered Liquid Glass CTA Buttons (Mobile Responsive) */}
+          <div className="animate-fade-in-up delay-300 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full mb-16 md:mb-24 px-4">
             {isSignedIn ? (
-              <Link href="/jobs" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-base font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25">
+              <Link href="/jobs" className="w-[280px] sm:w-auto sm:min-w-[220px] px-8 py-3.5 md:py-4 rounded-full bg-gradient-to-b from-blue-500/20 to-transparent backdrop-blur-xl border border-blue-500/30 text-white text-base font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_8px_32px_rgba(59,130,246,0.2)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] hover:bg-blue-500/20 hover:border-blue-400/50 hover:shadow-[0_8px_40px_rgba(59,130,246,0.4)] hover:-translate-y-0.5">
                 Find Verified Jobs <ChevronRight size={18} />
               </Link>
             ) : (
-              <Link href="/signup" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-base font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25">
+              <Link href="/signup" className="w-[280px] sm:w-auto sm:min-w-[220px] px-8 py-3.5 md:py-4 rounded-full bg-gradient-to-b from-blue-500/20 to-transparent backdrop-blur-xl border border-blue-500/30 text-white text-base font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_8px_32px_rgba(59,130,246,0.2)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] hover:bg-blue-500/20 hover:border-blue-400/50 hover:shadow-[0_8px_40px_rgba(59,130,246,0.4)] hover:-translate-y-0.5">
                 Start for Free <ChevronRight size={18} />
               </Link>
             )}
             
-            <Link href="/tools/check-chances" className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full font-medium text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center justify-center gap-2 text-base">
+            <Link href="/tools/check-chances" className="w-[280px] sm:w-auto sm:min-w-[220px] px-8 py-3.5 md:py-4 rounded-full bg-gradient-to-b from-white/10 to-transparent backdrop-blur-xl border border-white/10 text-gray-200 hover:text-white text-base font-medium transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_8px_32px_rgba(0,0,0,0.2)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white/10 hover:border-white/20 hover:shadow-[0_8px_32px_rgba(255,255,255,0.05)] hover:-translate-y-0.5">
                Test Your Resume
             </Link>
           </div>
