@@ -453,17 +453,31 @@ export default function JobDetailPage() {
         if (id) setUserId(Number(id));
       } catch { /* ignore */ }
 
+      // 🟢 FIX: Added proper 401 handling to prevent console spam
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/me`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(res => res.ok ? res.json() : null)
+        .then(res => {
+            if (res.status === 401) {
+                localStorage.removeItem('token');
+                setIsSignedIn(false);
+                setToken(null);
+                return null;
+            }
+            return res.ok ? res.json() : null;
+        })
         .then(data => {
           if (data?.resume_filename) setUserResume(data.resume_filename);
           if (data?.id) setUserId(Number(data.id)); 
-        });
+        })
+        .catch(err => console.error("Error fetching user:", err));
       
       const jobId = String(params.id);
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/check-applied`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(res => res.ok ? res.json() : null)
-        .then(data => { if (data?.has_applied) setHasApplied(true); });
+        .then(res => {
+            if (res.status === 401) return null;
+            return res.ok ? res.json() : null;
+        })
+        .then(data => { if (data?.has_applied) setHasApplied(true); })
+        .catch(err => console.error("Error checking applied status:", err));
       
       const savedResult = localStorage.getItem(`job_analysis_${params.id}`);
       if (savedResult) setResult(JSON.parse(savedResult));

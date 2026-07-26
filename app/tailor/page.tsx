@@ -69,9 +69,17 @@ function TailorContent() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/candidate/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) setUser(await res.json());
+      
+      if (res.ok) {
+          setUser(await res.json());
+      } else if (res.status === 401) {
+          // 🟢 FIX: If token is expired/invalid, clear it and redirect to login
+          localStorage.removeItem("token");
+          toast.error("Session expired. Please log in again.");
+          router.push("/login");
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Profile Fetch Error:", e);
     }
   };
 
