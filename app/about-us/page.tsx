@@ -104,7 +104,6 @@ export default function AboutUs() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none z-0"></div>
 
       {/* ================= HERO SECTION ================= */}
-      {/* 🟢 Mobile Optimized: pt-28 md:pt-40 */}
       <section className="relative pt-28 pb-16 md:pt-40 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center z-10">
         
         {/* Glow Effect */}
@@ -115,7 +114,6 @@ export default function AboutUs() {
           <span className="text-[10px] md:text-[13px] font-medium text-gray-300">Our Mission</span>
         </div>
         
-        {/* 🟢 Mobile Optimized: Scaled down text size */}
         <h1 className="animate-fade-in-up delay-100 text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-5 md:mb-8 relative z-10">
           <span className="text-gray-400 font-medium block md:inline">We are rewriting the</span><br className="hidden md:block"/>
           <span className="text-white font-bold block md:inline mt-1 md:mt-0">
@@ -130,7 +128,6 @@ export default function AboutUs() {
       </section>
 
       {/* ================= STATS BANNER (LIQUID GLASS) ================= */}
-      {/* 🟢 Mobile Optimized: Increased max-width and scaled down text */}
       <section className="relative z-20 -mt-10 md:-mt-20 mb-16 md:mb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto animate-fade-in-up delay-300">
         <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-12 shadow-[0_8px_32px_rgba(59,130,246,0.1)] relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none"></div>
@@ -159,8 +156,8 @@ export default function AboutUs() {
       <section className="py-16 md:py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           
-          {/* Text Side */}
-          <div className="order-2 lg:order-1 text-center lg:text-left">
+          {/* 🟢 Mobile Optimized: Text Side first (order-1), Left Aligned */}
+          <div className="order-1 text-left">
             <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 md:mb-8 tracking-tight leading-tight">
               From Broken to <br className="hidden sm:block"/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">
@@ -180,8 +177,8 @@ export default function AboutUs() {
             </div>
           </div>
 
-          {/* Visual Side (Glass Terminal) */}
-          <div className="relative order-1 lg:order-2 w-full max-w-md mx-auto lg:mx-0 lg:ml-auto">
+          {/* 🟢 Mobile Optimized: Visual Side second (order-2) */}
+          <div className="relative order-2 w-full max-w-md mx-auto lg:mx-0 lg:ml-auto">
             <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 to-purple-600/20 blur-[80px] md:blur-[100px] rounded-full pointer-events-none"></div>
             
             <div className="relative bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-2xl animate-float">
@@ -321,7 +318,7 @@ export default function AboutUs() {
           <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-[24px] md:rounded-[32px] group hover:border-yellow-500/30 transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
             <Zap className="text-yellow-400 mb-4 md:mb-5 w-7 h-7 md:w-8 md:h-8" />
             <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">Speed & Efficiency</h3>
-            <p className="text-xs md:text-sm text-gray-400 leading-relaxed">
+            <p className="text-sm md:text-base text-gray-400 leading-relaxed">
               We optimize for the fastest route to an interview, stripping away unnecessary forms and redundant steps.
             </p>
           </div>
@@ -330,7 +327,7 @@ export default function AboutUs() {
           <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-[24px] md:rounded-[32px] group hover:border-green-500/30 transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
             <Award className="text-green-400 mb-4 md:mb-5 w-7 h-7 md:w-8 md:h-8" />
             <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">Meritocracy</h3>
-            <p className="text-xs md:text-sm text-gray-400 leading-relaxed">
+            <p className="text-sm md:text-base text-gray-400 leading-relaxed">
               Verified skills over pedigree. Our algorithms are designed to highlight exactly what you can build.
             </p>
           </div>
@@ -338,7 +335,7 @@ export default function AboutUs() {
       </section>
 
       {/* ================= FINAL CTA (LIQUID GLASS) ================= */}
-      <section className="py-16 md:py-32 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto relative z-10 mb-12">
+      <section className="py-16 md:py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative z-10 mb-12">
         <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] border border-white/10 rounded-[32px] md:rounded-[40px] p-8 md:p-16 text-center relative overflow-hidden shadow-2xl">
             
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-full h-[250px] md:h-[300px] bg-blue-600/10 blur-[100px] md:blur-[120px] rounded-full pointer-events-none"></div>
@@ -347,11 +344,11 @@ export default function AboutUs() {
                 <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-4 md:mb-6 tracking-tight text-white">
                     Ready to stop searching <br className="hidden sm:block"/> and start <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">finding?</span>
                 </h2>
-                <p className="text-gray-400 text-sm sm:text-base md:text-lg mb-8 md:mb-10 max-w-2xl mx-auto px-2">
+                <p className="text-gray-400 text-sm sm:text-base md:text-lg mb-8 md:mb-10 max-w-2xl mx-auto">
                     Join thousands of verified candidates who have already bypassed the noise and connected directly with top companies.
                 </p>
                 
-                <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-5 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-5 w-full sm:w-auto px-4 sm:px-0">
                     <Link
                         href="/jobs"
                         className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full bg-gradient-to-b from-blue-500/20 to-transparent backdrop-blur-xl border border-blue-500/30 text-white text-sm md:text-base font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_8px_32px_rgba(59,130,246,0.2)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] hover:bg-blue-500/20 hover:border-blue-400/50 hover:shadow-[0_8px_40px_rgba(59,130,246,0.4)] hover:-translate-y-0.5"
