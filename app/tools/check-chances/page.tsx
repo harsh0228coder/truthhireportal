@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // <-- Added Router
+import { useRouter } from 'next/navigation';
 import { 
   UploadCloud, Search, AlertCircle, CheckCircle2, 
   ArrowLeft, Loader2, FileText, X, Sparkles, Link as LinkIcon, Type,
-  Zap, Brain, Target, AlertTriangle, RefreshCw, ArrowRight, Lock, ChevronRight
+  Zap, Brain, Target, AlertTriangle, RefreshCw, ArrowRight, Lock, ChevronRight, BarChart3, ShieldCheck
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -53,7 +53,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
 };
 
 export default function CheckMyChances() {
-  const router = useRouter(); // <-- Initialized Router
+  const router = useRouter(); 
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userId, setUserId] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -61,7 +61,6 @@ export default function CheckMyChances() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsSignedIn(!!token);
-    // Extract user id from JWT (base64 payload) — safe read-only
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1] || ''));
@@ -111,7 +110,7 @@ export default function CheckMyChances() {
       const data = await res.json();
       setResumeText(data.text);
       toast.success("Resume parsed successfully");
-      setActiveTab('job'); // Auto-switch to next step
+      setActiveTab('job');
     } catch (err) {
       toast.error("Failed to parse resume");
       setFileName("");
@@ -158,7 +157,6 @@ export default function CheckMyChances() {
     }
 
     setLoading(true);
-    // Scroll to visualization area
     setTimeout(() => {
         scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
@@ -204,69 +202,105 @@ export default function CheckMyChances() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none z-0"></div>
       <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-full h-[400px] md:h-[600px] bg-gradient-to-b from-blue-900/10 via-transparent to-transparent blur-3xl pointer-events-none z-0"></div>
 
-      {/* --- HERO SECTION (Minimalist Sprout Style) --- */}
+      {/* --- MARKETING LANDING SECTION (Multi-Section Layout) --- */}
       {!hasStarted && (
-        <div className="relative pt-32 pb-20 md:pt-44 md:pb-32 px-4 sm:px-6 lg:px-8 min-h-[85vh] flex flex-col items-center text-center z-10">
-            
-            {/* Subtle Top Badge */}
-            <div className="animate-fade-in-up inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-default mb-8 md:mb-10 backdrop-blur-md">
-              <Sparkles size={14} className="text-blue-400" />
-              <span className="text-[11px] md:text-[13px] font-medium text-gray-300">Truth Engine™ Analysis</span>
-            </div>
-            
-            {/* Massive Typographic Headline */}
-            <h1 className="animate-fade-in-up delay-100 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 md:mb-8">
-              <span className="text-gray-400 font-medium block md:inline">Will you get the</span><br className="hidden md:block"/>
-              <span className="text-white font-bold block md:inline mt-2 md:mt-0">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">Interview?</span>
-              </span>
-            </h1>
-            
-            {/* Simple Descriptive Subheadline */}
-            <p className="animate-fade-in-up delay-200 text-base md:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed px-2 mb-12 md:mb-16">
-              Stop applying blindly. Our AI simulates the Recruiter's ATS screening process to predict your success rate instantly and highlight critical missing skills.
-            </p>
+        <div className="relative z-10">
+            {/* SECTION 1: HERO */}
+            <div className="pt-24 md:pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
+                <div className="animate-fade-in-up inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-default mb-8 backdrop-blur-md">
+                    <Sparkles size={14} className="text-blue-400" />
+                    <span className="text-[11px] md:text-[13px] font-medium text-gray-300">Profile Analysis Engine</span>
+                </div>
+                
+                <h1 className="animate-fade-in-up delay-100 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
+                    <span className="text-gray-400 font-medium block md:inline">See how you stack up</span><br className="hidden md:block"/>
+                    <span className="text-white font-bold block md:inline mt-2 md:mt-0">
+                        before you <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">apply.</span>
+                    </span>
+                </h1>
+                
+                <p className="animate-fade-in-up delay-200 text-base md:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed mb-10 md:mb-12 px-2">
+                    Stop guessing what recruiters want. Our AI parses your resume against any job description to predict your ATS match score and highlight critical missing skills instantly.
+                </p>
 
-            {/* Liquid Glass CTA Button */}
-            <div className="animate-fade-in-up delay-300 w-full px-4 sm:w-auto">
-              <button 
-                  onClick={() => setHasStarted(true)}
-                  className="w-full sm:w-auto px-10 py-4 rounded-full bg-gradient-to-b from-blue-500/20 to-transparent backdrop-blur-xl border border-blue-500/30 text-white text-base font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_8px_32px_rgba(59,130,246,0.2)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] hover:bg-blue-500/20 hover:border-blue-400/50 hover:shadow-[0_8px_40px_rgba(59,130,246,0.4)] hover:-translate-y-0.5 group"
-              >
-                  Launch Analyzer <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </button>
+                <div className="animate-fade-in-up delay-300 w-full sm:w-auto px-4">
+                    <button 
+                        onClick={() => setHasStarted(true)}
+                        className="w-full sm:w-auto px-10 py-4 rounded-full bg-gradient-to-b from-blue-500/20 to-transparent backdrop-blur-xl border border-blue-500/30 text-white text-base font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_8px_32px_rgba(59,130,246,0.2)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] hover:bg-blue-500/20 hover:border-blue-400/50 hover:shadow-[0_8px_40px_rgba(59,130,246,0.4)] hover:-translate-y-0.5 group"
+                    >
+                        Analyze My Resume <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                </div>
             </div>
 
-            {/* Clean Feature Steps (Horizontal Row) */}
-            <div className="mt-16 md:mt-24 grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-12 text-center animate-fade-in-up delay-300 max-w-4xl mx-auto opacity-70">
-              <div>
-                <div className="w-12 h-12 mx-auto bg-[#1a1a1a] rounded-2xl flex items-center justify-center mb-4 border border-white/5">
-                  <UploadCloud size={20} className="text-gray-400" />
+            {/* SECTION 2: FEATURES GRID */}
+            <div className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto animate-fade-in-up delay-300 border-t border-white/5 bg-[#050505]/50">
+                <div className="text-center mb-12">
+                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Actionable feedback, zero fluff.</h2>
+                    <p className="text-sm md:text-base text-gray-500 max-w-2xl mx-auto">Everything you need to tailor your application and bypass the automated rejection pile.</p>
                 </div>
-                <h3 className="text-sm font-bold text-white mb-1">1. Upload Resume</h3>
-                <p className="text-xs text-gray-500">We extract your raw skills and experience data.</p>
-              </div>
-              <div>
-                <div className="w-12 h-12 mx-auto bg-[#1a1a1a] rounded-2xl flex items-center justify-center mb-4 border border-white/5">
-                  <Search size={20} className="text-gray-400" />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                    {/* Feature 1 */}
+                    <div className="bg-[#111] border border-white/10 rounded-3xl p-8 hover:border-white/20 transition-colors shadow-xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[50px] group-hover:bg-blue-500/20 transition-colors"></div>
+                        <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 border border-blue-500/20">
+                            <BarChart3 size={20} className="text-blue-400" />
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-3">ATS Match Score</h3>
+                        <p className="text-sm text-gray-400 leading-relaxed">
+                            Get a strict 0-100% compatibility score based on exactly how modern Applicant Tracking Systems weigh your experience against the JD requirements.
+                        </p>
+                    </div>
+
+                    {/* Feature 2 */}
+                    <div className="bg-[#111] border border-white/10 rounded-3xl p-8 hover:border-white/20 transition-colors shadow-xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[50px] group-hover:bg-purple-500/20 transition-colors"></div>
+                        <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 border border-purple-500/20">
+                            <ShieldCheck size={20} className="text-purple-400" />
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-3">Missing Skills Gap</h3>
+                        <p className="text-sm text-gray-400 leading-relaxed">
+                            Instantly identify the exact keywords, tools, and methodologies you are missing. Know what the recruiter is looking for before they even ask.
+                        </p>
+                    </div>
+
+                    {/* Feature 3 */}
+                    <div className="bg-[#111] border border-white/10 rounded-3xl p-8 hover:border-white/20 transition-colors shadow-xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-[50px] group-hover:bg-green-500/20 transition-colors"></div>
+                        <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 border border-green-500/20">
+                            <Brain size={20} className="text-green-400" />
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-3">Harsh AI Feedback</h3>
+                        <p className="text-sm text-gray-400 leading-relaxed">
+                            Receive constructive, direct feedback from our AI coach on how to reframe your existing experience to better align with the seniority of the role.
+                        </p>
+                    </div>
                 </div>
-                <h3 className="text-sm font-bold text-white mb-1">2. Target Job</h3>
-                <p className="text-xs text-gray-500">Paste the JD to set the exact screening criteria.</p>
-              </div>
-              <div>
-                <div className="w-12 h-12 mx-auto bg-[#1a1a1a] rounded-2xl flex items-center justify-center mb-4 border border-white/5">
-                  <Zap size={20} className="text-gray-400" />
+            </div>
+
+            {/* SECTION 3: BOTTOM CTA */}
+            <div className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto mb-12">
+                <div className="bg-gradient-to-br from-blue-950/40 via-[#111] to-[#0a0a0a] border border-blue-500/20 rounded-[32px] p-8 md:p-12 text-center relative overflow-hidden shadow-2xl">
+                    <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+                    <div className="relative z-10">
+                        <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">Ready to test your resume?</h2>
+                        <p className="text-sm md:text-base text-gray-400 mb-8 max-w-xl mx-auto">Upload your PDF and paste a job description. It takes exactly 10 seconds.</p>
+                        <button 
+                            onClick={() => setHasStarted(true)}
+                            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:scale-105 active:scale-95"
+                        >
+                            Start Analysis
+                        </button>
+                    </div>
                 </div>
-                <h3 className="text-sm font-bold text-white mb-1">3. AI Analysis</h3>
-                <p className="text-xs text-gray-500">Get a 0-100% score and a specific gap analysis.</p>
-              </div>
             </div>
         </div>
       )}
 
       {/* --- MAIN INTERFACE (Active Tool) --- */}
       {hasStarted && (
-        <div className="relative pt-24 md:pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 animate-in slide-in-from-right-8 duration-500">
+        <div className="relative pt-24 md:pt-28 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 animate-in slide-in-from-right-8 duration-500">
             
             {/* Minimal Tool Header */}
             <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-12">
@@ -529,6 +563,16 @@ export default function CheckMyChances() {
                                     </button>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* CTA */}
+                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                            <button onClick={() => {setResult(null); setActiveTab('job'); setJobDesc("");}} className="w-full sm:flex-1 py-3 bg-[#222] hover:bg-[#333] text-white border border-white/10 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2">
+                                <RefreshCw size={16} /> Analyze Another
+                            </button>
+                            <Link href="/jobs" className="w-full sm:flex-1 py-3 bg-white text-black hover:bg-gray-200 rounded-xl font-bold text-sm text-center transition flex items-center justify-center gap-2">
+                                Find Better Jobs <ArrowRight size={16} />
+                            </Link>
                         </div>
 
                     </div>
