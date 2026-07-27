@@ -6,22 +6,25 @@ import { useRouter } from 'next/navigation';
 import { 
   UploadCloud, Search, AlertCircle, CheckCircle2, 
   ArrowLeft, Loader2, FileText, X, Sparkles, Link as LinkIcon, Type,
-  Zap, Brain, Target, AlertTriangle, RefreshCw, ArrowRight, Lock, ChevronRight, BarChart3, ShieldCheck
+  Zap, Brain, Target, AlertTriangle, RefreshCw, ArrowRight, Lock, ChevronRight, BarChart3, ShieldCheck, PlayCircle, Key, Lightbulb, UserCheck, ArrowDown, Activity
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 // Premium Score Gauge Component
-const ScoreGauge = ({ score }: { score: number }) => {
+const ScoreGauge = ({ score, size = "large" }: { score: number, size?: "small" | "large" }) => {
     let color = "text-red-500";
     if (score >= 50) { color = "text-yellow-500"; }
     if (score >= 75) { color = "text-green-500"; }
+
+    const dims = size === "large" ? "w-32 h-32 md:w-40 md:h-40" : "w-20 h-20 md:w-24 md:h-24";
+    const textClass = size === "large" ? "text-3xl md:text-4xl" : "text-xl md:text-2xl";
 
     return (
         <div className="relative flex items-center justify-center">
             {/* Outer Glow Ring */}
             <div className={`absolute inset-0 rounded-full blur-xl opacity-20 bg-current ${color}`}></div>
             
-            <div className="relative w-32 h-32 md:w-40 md:h-40 flex items-center justify-center bg-[#111] rounded-full border border-white/10 shadow-2xl">
+            <div className={`relative ${dims} flex items-center justify-center bg-[#111] rounded-full border border-white/10 shadow-2xl`}>
                 <svg className="w-full h-full rotate-[-90deg]" viewBox="0 0 100 100">
                     <circle
                         className="text-gray-800 stroke-current"
@@ -44,8 +47,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
                     ></circle>
                 </svg>
                 <div className="absolute flex flex-col items-center">
-                    <span className="text-3xl md:text-4xl font-bold text-white tracking-tighter">{score}%</span>
-                    <span className="text-[8px] md:text-[10px] text-gray-500 uppercase font-bold tracking-widest">Match</span>
+                    <span className={`${textClass} font-bold text-white tracking-tighter`}>{score}%</span>
                 </div>
             </div>
         </div>
@@ -190,117 +192,265 @@ export default function CheckMyChances() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-blue-500/30 overflow-hidden relative">
+    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-blue-500/30 overflow-x-hidden relative">
       <Toaster position="top-center" />
       
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes flow {
+            0% { transform: translateY(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(20px); opacity: 0; }
+        }
+        .animate-flow { animation: flow 2s infinite; }
       `}</style>
       
       {/* Premium Background Elements */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none z-0"></div>
-      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-full h-[400px] md:h-[600px] bg-gradient-to-b from-blue-900/10 via-transparent to-transparent blur-3xl pointer-events-none z-0"></div>
 
-      {/* --- MARKETING LANDING SECTION (Multi-Section Layout) --- */}
+      {/* ========================================================= */}
+      {/* MARKETING LANDING PAGE (!hasStarted)                      */}
+      {/* ========================================================= */}
       {!hasStarted && (
-        <div className="relative z-10">
-            {/* SECTION 1: HERO */}
-            <div className="pt-24 md:pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
-                <div className="animate-fade-in-up inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-default mb-8 backdrop-blur-md">
-                    <Sparkles size={14} className="text-blue-400" />
-                    <span className="text-[11px] md:text-[13px] font-medium text-gray-300">Profile Analysis Engine</span>
+        <div className="relative z-10 w-full">
+            
+            {/* 1. HERO SECTION */}
+            <section className="pt-32 pb-16 md:pt-40 md:pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                    
+                    {/* Left: Content */}
+                    <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+                        <div className="animate-fade-in-up inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md">
+                            <Sparkles size={14} /> Truth Engine™ Active
+                        </div>
+                        
+                        <h1 className="animate-fade-in-up delay-100 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
+                            Know Your Chances <br className="hidden lg:block"/>
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">Before You Apply</span>
+                        </h1>
+                        
+                        <p className="animate-fade-in-up delay-200 text-base md:text-lg text-gray-400 max-w-xl leading-relaxed mb-8">
+                            Upload your resume and let AI compare it with the job description. Get your interview chances, ATS score, missing skills, and personalized improvement suggestions in seconds.
+                        </p>
+
+                        <div className="animate-fade-in-up delay-300 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                            <button 
+                                onClick={() => setHasStarted(true)}
+                                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                Analyze My Resume <ChevronRight size={18} />
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    document.getElementById('live-preview')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold transition-all flex items-center justify-center gap-2"
+                            >
+                                <PlayCircle size={18} /> View Demo
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Right: Animated AI Card */}
+                    <div className="relative animate-in slide-in-from-right-8 duration-700 w-full max-w-md mx-auto lg:mx-0 lg:ml-auto">
+                        <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none"></div>
+                            
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 animate-pulse">
+                                    <Brain className="text-white" size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-white text-lg">AI Engine Processing</h3>
+                                    <p className="text-blue-400 text-xs font-medium">Matching candidate to role...</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-5">
+                                {/* Staggered list items to simulate loading */}
+                                <div className="flex items-center gap-3">
+                                    <CheckCircle2 className="text-green-500" size={20} />
+                                    <span className="text-gray-300 font-medium text-sm">Parsing Resume Details</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <CheckCircle2 className="text-green-500" size={20} />
+                                    <span className="text-gray-300 font-medium text-sm">Extracting Required Skills</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <CheckCircle2 className="text-green-500" size={20} />
+                                    <span className="text-gray-300 font-medium text-sm">Calculating ATS Match Rate</span>
+                                </div>
+                                <div className="flex items-center gap-3 relative">
+                                    <Loader2 className="text-blue-500 animate-spin absolute -left-0.5" size={22} />
+                                    <span className="text-white font-bold text-sm ml-8">Predicting Interview Chances...</span>
+                                </div>
+                            </div>
+
+                            {/* Fake progress bar */}
+                            <div className="w-full h-1.5 bg-white/10 rounded-full mt-8 overflow-hidden">
+                                <div className="h-full bg-blue-500 rounded-full w-3/4 animate-pulse"></div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+            </section>
+
+            {/* 2. HOW IT WORKS */}
+            <section className="py-20 border-t border-white/5 bg-[#050505]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">How It Works</h2>
+                    <p className="text-gray-400 mb-16">Complete analysis in under 30 seconds.</p>
+                    
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-6 lg:gap-8 relative">
+                        
+                        {/* Connecting Line (Desktop) */}
+                        <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-y-1/2 z-0"></div>
+
+                        {[
+                            { icon: UploadCloud, title: "Upload Resume" },
+                            { icon: Brain, title: "AI Analyzes Profile" },
+                            { icon: Target, title: "Compares with Job" },
+                            { icon: BarChart3, title: "Get Action Plan" }
+                        ].map((step, i) => (
+                            <React.Fragment key={i}>
+                                <div className="relative z-10 flex flex-col items-center bg-[#050505] p-2">
+                                    <div className="w-16 h-16 bg-[#111] border border-white/10 rounded-2xl flex items-center justify-center mb-4 shadow-xl">
+                                        <step.icon size={24} className="text-blue-400" />
+                                    </div>
+                                    <h3 className="font-bold text-white text-sm whitespace-nowrap">{step.title}</h3>
+                                </div>
+                                {/* Mobile Arrow */}
+                                {i < 3 && <ArrowDown size={20} className="md:hidden text-white/20 my-2" />}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* 3. WHAT YOU'LL GET (Feature Grid) */}
+            <section className="py-20 border-t border-white/5 bg-[#0a0a0a]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">What You'll Get</h2>
+                        <p className="text-gray-400 max-w-2xl mx-auto">Everything you need to bypass the automated rejection pile and land your dream interview.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[
+                            { icon: Target, title: "Interview Chance Score", desc: "A realistic probability of getting called for an interview." },
+                            { icon: ShieldCheck, title: "ATS Compatibility Score", desc: "See exactly how parsing algorithms rate your resume format." },
+                            { icon: Activity, title: "Skill Gap Analysis", desc: "A side-by-side comparison of your skills vs. the job requirements." },
+                            { icon: Key, title: "Missing Keywords", desc: "Discover the critical terms recruiters are searching for." },
+                            { icon: Lightbulb, title: "AI Improvement Suggestions", desc: "Actionable advice on how to rewrite specific bullet points." },
+                            { icon: UserCheck, title: "Recruiter Match Insights", desc: "Understand how a human recruiter views your seniority level." }
+                        ].map((feat, i) => (
+                            <div key={i} className="bg-[#111] border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-colors group">
+                                <feat.icon size={28} className="text-blue-500 mb-4 group-hover:scale-110 transition-transform" />
+                                <h3 className="font-bold text-white text-lg mb-2">{feat.title}</h3>
+                                <p className="text-gray-400 text-sm leading-relaxed">{feat.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* 4. LIVE ANALYSIS PREVIEW */}
+            <section id="live-preview" className="py-24 border-t border-white/5 relative overflow-hidden bg-[#050505]">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[600px] bg-blue-900/10 blur-[150px] rounded-full pointer-events-none"></div>
                 
-                <h1 className="animate-fade-in-up delay-100 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto">
-                    <span className="text-gray-400 font-medium block md:inline">See how you stack up</span><br className="hidden md:block"/>
-                    <span className="text-white font-bold block md:inline mt-2 md:mt-0">
-                        before you <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">apply.</span>
-                    </span>
-                </h1>
-                
-                <p className="animate-fade-in-up delay-200 text-base md:text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed mb-10 md:mb-12 px-2">
-                    Stop guessing what recruiters want. Our AI parses your resume against any job description to predict your ATS match score and highlight critical missing skills instantly.
-                </p>
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">See It In Action</h2>
+                    <p className="text-gray-400 mb-12">This is what your personalized analysis dashboard looks like.</p>
 
-                <div className="animate-fade-in-up delay-300 w-full sm:w-auto px-4">
-                    <button 
-                        onClick={() => setHasStarted(true)}
-                        className="w-full sm:w-auto px-10 py-4 rounded-full bg-gradient-to-b from-blue-500/20 to-transparent backdrop-blur-xl border border-blue-500/30 text-white text-base font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_8px_32px_rgba(59,130,246,0.2)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] hover:bg-blue-500/20 hover:border-blue-400/50 hover:shadow-[0_8px_40px_rgba(59,130,246,0.4)] hover:-translate-y-0.5 group"
-                    >
-                        Analyze My Resume <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                    </button>
-                </div>
-            </div>
+                    {/* Realistic Mockup Dashboard */}
+                    <div className="bg-[#0a0a0a] border border-white/10 rounded-[32px] p-2 shadow-2xl mx-auto max-w-4xl text-left">
+                        <div className="bg-[#111] rounded-[24px] border border-white/5 p-6 md:p-10 relative overflow-hidden">
+                            {/* Mock Header */}
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-10 pb-8 border-b border-white/5">
+                                <div className="flex items-center gap-6 w-full sm:w-auto">
+                                    <ScoreGauge score={84} size="small" />
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Interview Chance</p>
+                                        <h3 className="text-2xl font-bold text-white">Excellent Fit 🚀</h3>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="text-center px-4 py-2 bg-white/5 rounded-xl border border-white/5">
+                                        <p className="text-xl font-bold text-white">92%</p>
+                                        <p className="text-[10px] text-gray-500 uppercase font-bold">ATS Score</p>
+                                    </div>
+                                    <div className="text-center px-4 py-2 bg-white/5 rounded-xl border border-white/5">
+                                        <p className="text-xl font-bold text-white">88%</p>
+                                        <p className="text-[10px] text-gray-500 uppercase font-bold">Skill Match</p>
+                                    </div>
+                                </div>
+                            </div>
 
-            {/* SECTION 2: FEATURES GRID */}
-            <div className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto animate-fade-in-up delay-300 border-t border-white/5 bg-[#050505]/50">
-                <div className="text-center mb-12">
-                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Actionable feedback, zero fluff.</h2>
-                    <p className="text-sm md:text-base text-gray-500 max-w-2xl mx-auto">Everything you need to tailor your application and bypass the automated rejection pile.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-                    {/* Feature 1 */}
-                    <div className="bg-[#111] border border-white/10 rounded-3xl p-8 hover:border-white/20 transition-colors shadow-xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[50px] group-hover:bg-blue-500/20 transition-colors"></div>
-                        <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 border border-blue-500/20">
-                            <BarChart3 size={20} className="text-blue-400" />
+                            {/* Mock Content */}
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div>
+                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <AlertTriangle size={16} className="text-red-500" /> Missing Skills
+                                    </h4>
+                                    <div className="flex gap-2">
+                                        <span className="px-3 py-1.5 bg-red-500/10 text-red-400 border border-red-500/20 text-xs rounded-lg font-bold">Docker</span>
+                                        <span className="px-3 py-1.5 bg-red-500/10 text-red-400 border border-red-500/20 text-xs rounded-lg font-bold">AWS</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <Sparkles size={16} className="text-blue-500" /> Top Recommendation
+                                    </h4>
+                                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+                                        <p className="text-sm text-blue-200">
+                                            Add measurable achievements to your latest role (e.g., "Improved load time by X%") to increase your chances by 12%.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-3">ATS Match Score</h3>
-                        <p className="text-sm text-gray-400 leading-relaxed">
-                            Get a strict 0-100% compatibility score based on exactly how modern Applicant Tracking Systems weigh your experience against the JD requirements.
-                        </p>
-                    </div>
-
-                    {/* Feature 2 */}
-                    <div className="bg-[#111] border border-white/10 rounded-3xl p-8 hover:border-white/20 transition-colors shadow-xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[50px] group-hover:bg-purple-500/20 transition-colors"></div>
-                        <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 border border-purple-500/20">
-                            <ShieldCheck size={20} className="text-purple-400" />
-                        </div>
-                        <h3 className="text-lg font-bold text-white mb-3">Missing Skills Gap</h3>
-                        <p className="text-sm text-gray-400 leading-relaxed">
-                            Instantly identify the exact keywords, tools, and methodologies you are missing. Know what the recruiter is looking for before they even ask.
-                        </p>
-                    </div>
-
-                    {/* Feature 3 */}
-                    <div className="bg-[#111] border border-white/10 rounded-3xl p-8 hover:border-white/20 transition-colors shadow-xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-[50px] group-hover:bg-green-500/20 transition-colors"></div>
-                        <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 border border-green-500/20">
-                            <Brain size={20} className="text-green-400" />
-                        </div>
-                        <h3 className="text-lg font-bold text-white mb-3">Harsh AI Feedback</h3>
-                        <p className="text-sm text-gray-400 leading-relaxed">
-                            Receive constructive, direct feedback from our AI coach on how to reframe your existing experience to better align with the seniority of the role.
-                        </p>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* SECTION 3: BOTTOM CTA */}
-            <div className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto mb-12">
-                <div className="bg-gradient-to-br from-blue-950/40 via-[#111] to-[#0a0a0a] border border-blue-500/20 rounded-[32px] p-8 md:p-12 text-center relative overflow-hidden shadow-2xl">
-                    <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
-                    <div className="relative z-10">
-                        <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">Ready to test your resume?</h2>
-                        <p className="text-sm md:text-base text-gray-400 mb-8 max-w-xl mx-auto">Upload your PDF and paste a job description. It takes exactly 10 seconds.</p>
+            {/* 5. FINAL CTA */}
+            <section className="py-24 border-t border-white/5 bg-[#0a0a0a] relative overflow-hidden">
+                <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Stop Guessing. Start Applying Smarter.</h2>
+                    <p className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto">
+                        Find out where you stand before you hit Apply and get AI-powered recommendations to improve your chances.
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <button 
                             onClick={() => setHasStarted(true)}
-                            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:scale-105 active:scale-95"
+                            className="w-full sm:w-auto px-10 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:scale-105 active:scale-95"
                         >
-                            Start Analysis
+                            Analyze My Resume
+                        </button>
+                        <button 
+                            onClick={() => {
+                                setHasStarted(true);
+                                setTimeout(() => setActiveTab('upload'), 100);
+                            }}
+                            className="w-full sm:w-auto px-10 py-4 rounded-xl bg-white text-black hover:bg-gray-200 font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <UploadCloud size={18} /> Upload Resume
                         </button>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
       )}
 
-      {/* --- MAIN INTERFACE (Active Tool) --- */}
+      {/* ========================================================= */}
+      {/* ACTIVE TOOL INTERFACE (hasStarted)                        */}
+      {/* ========================================================= */}
       {hasStarted && (
-        <div className="relative pt-24 md:pt-28 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 animate-in slide-in-from-right-8 duration-500">
+        <div className="relative pt-24 md:pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 animate-in slide-in-from-bottom-12 duration-500">
             
             {/* Minimal Tool Header */}
             <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-12">
@@ -563,16 +713,6 @@ export default function CheckMyChances() {
                                     </button>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* CTA */}
-                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                            <button onClick={() => {setResult(null); setActiveTab('job'); setJobDesc("");}} className="w-full sm:flex-1 py-3 bg-[#222] hover:bg-[#333] text-white border border-white/10 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2">
-                                <RefreshCw size={16} /> Analyze Another
-                            </button>
-                            <Link href="/jobs" className="w-full sm:flex-1 py-3 bg-white text-black hover:bg-gray-200 rounded-xl font-bold text-sm text-center transition flex items-center justify-center gap-2">
-                                Find Better Jobs <ArrowRight size={16} />
-                            </Link>
                         </div>
 
                     </div>
