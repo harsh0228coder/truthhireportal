@@ -15,13 +15,13 @@ import {
   Users,
   Search,
   Award,
-  Linkedin, // Added Linkedin icon
+  Sparkles,
+  ChevronRight
 } from "lucide-react";
 
 // --- ANIMATED COUNTER COMPONENT ---
 const AnimatedCounter = ({ end, duration = 2000, suffix = "" }: { end: number, duration?: number, suffix?: string }) => {
   const [count, setCount] = useState(0);
-  const countRef = useRef(null);
 
   useEffect(() => {
     let startTime: number | null = null;
@@ -58,44 +58,11 @@ const AnimatedCounter = ({ end, duration = 2000, suffix = "" }: { end: number, d
 export default function AboutUs() {
   // --- REAL-TIME STATS STATE ---
   const [stats, setStats] = useState({
-    jobsVerified: 100, // Default percentages or values
+    jobsVerified: 100, 
     ghostJobsBlocked: 15000,
     activeCandidates: 50000,
     hiringPartners: 200
   });
-
-  // --- TEAM DATA CONFIGURATION ---
-  // INSTRUCTIONS: 
-  // 1. Put your images in the /public folder (e.g., /public/team/founder.jpg)
-  // 2. Change the 'image' path below to "/team/founder.jpg"
-  const TEAM_MEMBERS = [
-    {
-      name: "Harshawardhan Chavan",
-      role: "Founder Of TruthHire",
-      // Currently using a placeholder. Replace with: "/team/harsh.jpg"
-      image: "https://ui-avatars.com/api/?name=Harsh&background=0B1120&color=3B82F6&size=200", 
-      linkedin: "https://www.linkedin.com/in/harshwardhan-chavan-hs28022002/"
-    },
-    {
-      name: "Sanika Surve",
-      role: "Co-Founder",
-      image: "https://ui-avatars.com/api/?name=Co+Founder&background=0B1120&color=A855F7&size=200",
-      linkedin: "#"
-    },
-    {
-      name: "Sushant Ghadage",
-      role: "Co-Founder",
-      image: "https://ui-avatars.com/api/?name=Co+Founder&background=0B1120&color=A855F7&size=200",
-      linkedin: "#"
-    },
-    {
-      name: "Aditya Tambe",
-      role: "Co-Founder",
-      image: "https://ui-avatars.com/api/?name=Co+Founder&background=0B1120&color=A855F7&size=200",
-      linkedin: "#"
-    },
-    // Add more members here if needed
-  ];
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -104,8 +71,7 @@ export default function AboutUs() {
         if (res.ok) {
           const data = await res.json();
           setStats({
-            jobsVerified: 100, // Always 100% logic
-            // Estimate ghost jobs as a ratio if not provided by DB, or use raw data
+            jobsVerified: 100, 
             ghostJobsBlocked: Math.floor(data.total_jobs * 0.25) + 1200, 
             activeCandidates: data.total_users || 500,
             hiringPartners: data.total_recruiters || 50
@@ -120,390 +86,286 @@ export default function AboutUs() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-blue-500/30 overflow-x-hidden">
-      {/* GLOBAL STYLES */}
+    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-blue-500/30 overflow-x-hidden relative">
+      
+      {/* GLOBAL STYLES & BACKGROUNDS */}
       <style jsx global>{`
-        .bg-grid-pattern {
-          background-image: linear-gradient(
-              to right,
-              #ffffff05 1px,
-              transparent 1px
-            ),
-            linear-gradient(to bottom, #ffffff05 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
         @keyframes float {
-          0% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-          100% {
-            transform: translateY(0px);
-          }
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
         }
         .animate-float {
           animation: float 6s ease-in-out infinite;
         }
       `}</style>
 
+      {/* Subtle Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none z-0"></div>
+
       {/* ================= HERO SECTION ================= */}
-      {/* Reduced mobile padding: pt-32 -> pt-16, pb-20 -> pb-12 */}
-      <section className="relative pt-16 pb-12 md:pt-18 md:pb-18 px-6 border-b border-white/5 overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0 bg-grid-pattern [mask-image:linear-gradient(to_bottom,white,transparent)] opacity-30"></div>
-        <div className="absolute top-0 right-0 w-[300px] md:w-[600px] h-[300px] md:h-[500px] bg-blue-600/10 rounded-full blur-[80px] md:blur-[120px] pointer-events-none"></div>
+      <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center z-10">
+        
+        {/* Glow Effect */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[400px] md:h-[600px] bg-gradient-to-b from-blue-900/10 via-transparent to-transparent blur-3xl pointer-events-none z-0"></div>
 
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/20 border border-blue-500/30 text-blue-400 text-[10px] md:text-xs font-bold tracking-widest uppercase mb-6 md:mb-8">
-            <Shield size={12} /> The TruthHire Promise
-          </div>
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 md:mb-8 leading-[1.1]">
-            We are rewriting the <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-blue-400">
-              Code of Recruitment.
-            </span>
-          </h1>
-          <p className="text-base md:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto mb-8 md:mb-10">
-            In a world of ghost jobs and AI spam, TruthHire is the verification
-            layer the industry desperately needs. We don't just list jobs; we
-            validate them.
-          </p>
+        <div className="animate-fade-in-up inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-default mb-8 md:mb-10 backdrop-blur-md relative z-10">
+          <Sparkles size={14} className="text-blue-400" />
+          <span className="text-[11px] md:text-[13px] font-medium text-gray-300">Our Mission</span>
         </div>
+        
+        <h1 className="animate-fade-in-up delay-100 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 md:mb-8 relative z-10">
+          <span className="text-gray-400 font-medium block md:inline">We are rewriting the</span><br className="hidden md:block"/>
+          <span className="text-white font-bold block md:inline mt-2 md:mt-0">
+             Code of <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">Recruitment.</span>
+          </span>
+        </h1>
+        
+        <p className="animate-fade-in-up delay-200 text-base md:text-lg lg:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed px-2 relative z-10">
+          In a world of ghost jobs and AI spam, TruthHire is the verification layer the industry desperately needs. We don't just list jobs; we validate them.
+        </p>
+
       </section>
 
-      {/* ================= STATS BANNER (DYNAMIC) ================= */}
-      <section className="border-b border-white/5 bg-[#080808]">
-        <div className="max-w-7xl mx-auto px-6 py-8 md:py-12 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center">
-          {[
-            { 
-              label: "Jobs Verified", 
-              value: stats.jobsVerified, 
-              color: "text-green-500",
-              suffix: "%"
-            },
-            {
-              label: "Ghost Jobs Blocked",
-              value: stats.ghostJobsBlocked,
-              color: "text-red-500",
-              suffix: "+"
-            },
-            {
-              label: "Active Candidates",
-              value: stats.activeCandidates,
-              color: "text-blue-500",
-              suffix: "+"
-            },
-            {
-              label: "Hiring Partners",
-              value: stats.hiringPartners,
-              color: "text-purple-500",
-              suffix: "+"
-            },
-          ].map((stat, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <span
-                className={`text-2xl md:text-4xl font-bold mb-1 ${stat.color}`}
-              >
-                <AnimatedCounter end={stat.value} suffix={stat.suffix} />
-              </span>
-              <span className="text-[10px] md:text-sm text-gray-500 uppercase tracking-widest font-bold">
-                {stat.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ================= OUR STORY ================= */}
-      <section className="py-16 md:py-24 px-6 relative">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-10 md:gap-16 items-center">
-          {/* Visual Side */}
-          <div className="relative order-2 md:order-1">
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 blur-3xl rounded-full"></div>
-            <div className="relative bg-[#111] border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl animate-float">
-              <div className="flex items-center gap-4 mb-6 border-b border-white/5 pb-4">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <div className="ml-auto text-xs text-gray-500 font-mono">
-                  origin_story.tsx
-                </div>
-              </div>
-              <div className="space-y-4 font-mono text-xs md:text-sm">
-                <div className="text-gray-500">// The Problem</div>
-                <div className="text-red-400">
-                  <span className="text-purple-400">const</span> jobMarket ={" "}
-                  <span className="text-green-400">"Broken"</span>;
-                </div>
-                <div className="text-gray-400 pl-4">
-                  Ghost jobs. Unresponsive recruiters. Scams.
-                </div>
-                <div className="text-gray-500 mt-4">// The Solution</div>
-                <div className="text-blue-400">
-                  <span className="text-purple-400">const</span> truthHire ={" "}
-                  <span className="text-yellow-400">new</span> Platform();
-                </div>
-                <div className="text-white pl-4">
-                  truthHire.verifyEveryJob();
-                </div>
-                <div className="text-white pl-4">truthHire.banFakes();</div>
-                <div className="text-green-400 pl-4">
-                  return <span className="text-white">"Hired";</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Text Side */}
-          <div className="order-1 md:order-2">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight leading-tight">
-              From Broken to <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-blue-400">
-                Verified.
-              </span>
-            </h2>
-            <div className="space-y-4 md:space-y-6 text-gray-400 text-base md:text-lg leading-relaxed">
-              <p>
-                It started with a simple observation:{" "}
-                <strong>The modern job search is broken.</strong>
-                Candidates apply to hundreds of roles, only to be ghosted by
-                automated systems or lured into scams.
-              </p>
-              <p>
-                We realized the problem wasn't a lack of talent or
-                opportunity—it was a lack of{" "}
-                <span className="text-white font-bold">trust</span>.
-              </p>
-              <p>
-                TruthHire was founded on a radical idea: What if a job board was
-                responsible for the quality of its listings? We built a "Truth
-                Engine" that validates every post before it goes live.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ================= HOW WE VERIFY (Technology) ================= */}
-      <section className="py-16 md:py-24 bg-[#0A0A0A] border-y border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 tracking-tight">
-              Inside the{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-blue-400">
-                Truth Engine™
-              </span>
-            </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto text-base md:text-lg">
-              We combine AI analysis with human auditing to maintain the
-              cleanest job database in the industry.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-            {/* Tech Card 1 */}
-            <div className="bg-[#111] p-6 md:p-8 rounded-2xl border border-white/5 hover:border-blue-500/30 transition-all group">
-              <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-900/20 text-blue-400 rounded-xl flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform">
-                <Search size={24} />
-              </div>
-              <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">
-                AI Analysis
-              </h3>
-              <p className="text-sm md:text-base text-gray-400">
-                Our bots scan thousands of data points—domain age, email
-                validity, and salary ranges—to flag suspicious activity
-                instantly.
-              </p>
-            </div>
-
-            {/* Tech Card 2 */}
-            <div className="bg-[#111] p-6 md:p-8 rounded-2xl border border-white/5 hover:border-purple-500/30 transition-all group">
-              <div className="w-12 h-12 md:w-14 md:h-14 bg-purple-900/20 text-purple-400 rounded-xl flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform">
-                <Users size={24} />
-              </div>
-              <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">
-                Recruiter Verification
-              </h3>
-              <p className="text-sm md:text-base text-gray-400">
-                We require corporate email verification and LinkedIn
-                integration. No anonymous gmail accounts posting "dream jobs."
-              </p>
-            </div>
-
-            {/* Tech Card 3 */}
-            <div className="bg-[#111] p-6 md:p-8 rounded-2xl border border-white/5 hover:border-green-500/30 transition-all group">
-              <div className="w-12 h-12 md:w-14 md:h-14 bg-green-900/20 text-green-400 rounded-xl flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform">
-                <CheckCircle2 size={24} />
-              </div>
-              <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">
-                Active Status Check
-              </h3>
-              <p className="text-sm md:text-base text-gray-400">
-                If a recruiter doesn't interact with an application for 14 days,
-                the job is automatically flagged as "Inactive."
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ================= CORE VALUES ================= */}
-      <section className="py-16 md:py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 tracking-tight">
-              Our Operating <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-blue-400">DNA</span>
-            </h2>
-            <p className="text-gray-400 text-base md:text-lg">
-              The non-negotiable principles that guide every line of code we
-              write.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Large Card */}
-            <div className="md:col-span-2 bg-[#111] border border-white/10 p-6 md:p-8 rounded-3xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] group-hover:bg-blue-600/20 transition-all"></div>
-              <div className="relative z-10">
-                <Shield className="text-blue-500 mb-4" size={32} />
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
-                  Radical Transparency
-                </h3>
-                <p className="text-sm md:text-base text-gray-400 max-w-md">
-                  We believe candidates deserve to know the salary, the tech
-                  stack, and the interview process before they apply. We hide
-                  nothing.
-                </p>
-              </div>
-            </div>
-
-            {/* Tall Card */}
-            <div className="md:row-span-2 bg-[#111] border border-white/10 p-6 md:p-8 rounded-3xl relative overflow-hidden group">
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-              <Heart className="text-purple-500 mb-4" size={32} />
-              <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
-                Empathy First
-              </h3>
-              <p className="text-sm md:text-base text-gray-400">
-                Job hunting is stressful. We design every feature to reduce
-                anxiety, from "Application Viewed" notifications to clear
-                rejection letters. We treat you like a human.
-              </p>
-            </div>
-
-            {/* Standard Card */}
-            <div className="bg-[#111] border border-white/10 p-6 md:p-8 rounded-3xl group hover:bg-[#161616] transition-colors">
-              <Zap className="text-yellow-500 mb-4" size={32} />
-              <h3 className="text-lg md:text-xl font-bold text-white mb-2">
-                Speed & Efficiency
-              </h3>
-              <p className="text-sm md:text-base text-gray-400">
-                We optimize for the fastest route to an interview.
-              </p>
-            </div>
-
-            {/* Standard Card */}
-            <div className="bg-[#111] border border-white/10 p-6 md:p-8 rounded-3xl group hover:bg-[#161616] transition-colors">
-              <Award className="text-green-500 mb-4" size={32} />
-              <h3 className="text-lg md:text-xl font-bold text-white mb-2">
-                Meritocracy
-              </h3>
-              <p className="text-sm md:text-base text-gray-400">
-                Skills over pedigree. We highlight what you can do.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ================= TEAM SECTION (UPDATED) ================= */}
-      <section className="py-16 md:py-24 bg-[#0A0A0A] border-t border-white/5">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 tracking-tight">
-            Built by{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-blue-400">
-              Engineers
-            </span>
-            , for{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-blue-400">
-              Engineers
-            </span>
-          </h2>
-          <p className="text-gray-400 mb-10 md:mb-16 max-w-2xl mx-auto text-base md:text-lg">
-            We are a small, dedicated team of developers, designers, and HR
-            experts based in India, obsessed with fixing recruitment.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-center">
-            {TEAM_MEMBERS.map((member, i) => (
-              <div key={i} className="group flex flex-col items-center">
-                {/* Image Container with Hover Effect */}
-                <div className="w-32 h-32 md:w-40 md:h-40 mx-auto bg-[#1a1a1a] rounded-full border border-white/10 mb-5 flex items-center justify-center overflow-hidden relative transition-all duration-300 group-hover:border-blue-500/50 group-hover:shadow-[0_0_20px_rgba(37,99,235,0.2)]">
-                  {member.image ? (
-                    <img 
-                      src={member.image} 
-                      alt={member.name}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-                    />
-                  ) : (
-                    <Users
-                      size={40}
-                      className="text-gray-600 group-hover:text-white transition-colors"
-                    />
-                  )}
-                </div>
-                
-                {/* Name & Role */}
-                <h3 className="text-white font-bold text-lg mb-1 group-hover:text-blue-400 transition-colors">
-                  {member.name}
-                </h3>
-                <p className="text-blue-500/80 text-xs md:text-sm uppercase font-bold tracking-wider mb-3">
-                  {member.role}
-                </p>
-                
-                {/* LinkedIn Link (Optional) */}
-                {member.linkedin && (
-                  <a 
-                    href={member.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-500 hover:text-white transition-colors p-2"
-                  >
-                    <Linkedin size={20} />
-                  </a>
-                )}
+      {/* ================= STATS BANNER (LIQUID GLASS) ================= */}
+      <section className="relative z-20 -mt-10 md:-mt-16 mb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto animate-fade-in-up delay-300">
+        <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-[0_8px_32px_rgba(59,130,246,0.1)] relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-center relative z-10">
+            {[
+              { label: "Jobs Verified", value: stats.jobsVerified, color: "text-emerald-400", suffix: "%" },
+              { label: "Ghost Jobs Blocked", value: stats.ghostJobsBlocked, color: "text-blue-400", suffix: "+" },
+              { label: "Active Candidates", value: stats.activeCandidates, color: "text-purple-400", suffix: "+" },
+              { label: "Hiring Partners", value: stats.hiringPartners, color: "text-indigo-400", suffix: "+" },
+            ].map((stat, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <span className={`text-3xl md:text-5xl font-bold mb-2 ${stat.color} tracking-tight drop-shadow-lg`}>
+                  <AnimatedCounter end={stat.value} suffix={stat.suffix} />
+                </span>
+                <span className="text-[10px] md:text-xs text-gray-400 uppercase tracking-widest font-semibold">
+                  {stat.label}
+                </span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ================= FINAL CTA ================= */}
-      <section className="py-16 md:py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-blue-600/5"></div>
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="text-3xl md:text-6xl font-bold mb-6 md:mb-8 tracking-tight">
-            Ready to stop searching <br /> and start{" "}
-            <span className="text-blue-500">finding?</span>
-          </h2>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href="/jobs"
-              className="inline-flex h-12 md:h-14 px-8 bg-white text-black hover:bg-gray-200 rounded-full font-bold text-base md:text-lg items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-blue-500/50 hover:scale-105"
-            >
-              Browse Verified Jobs <ArrowRight size={20} />
-            </Link>
-            <Link
-              href="/signup"
-              className="inline-flex h-12 md:h-14 px-8 bg-transparent border border-white/20 text-white hover:bg-white/10 rounded-full font-bold text-base md:text-lg items-center justify-center gap-2 transition-all"
-            >
-              Join the Community
-            </Link>
+      {/* ================= OUR STORY ================= */}
+      <section className="py-20 md:py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          
+          {/* Text Side */}
+          <div className="order-2 lg:order-1">
+            <h2 className="text-3xl md:text-5xl font-bold mb-8 tracking-tight leading-tight">
+              From Broken to <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">
+                Verified.
+              </span>
+            </h2>
+            <div className="space-y-6 text-gray-400 text-base md:text-lg leading-relaxed">
+              <p>
+                It started with a simple observation: <strong className="text-gray-200">The modern job search is broken.</strong> Candidates apply to hundreds of roles, only to be ghosted by automated systems or lured into scams.
+              </p>
+              <p>
+                We realized the problem wasn't a lack of talent or opportunity—it was a massive lack of <span className="text-white font-bold">trust</span>. Platforms were prioritizing volume over validity.
+              </p>
+              <p>
+                TruthHire was founded on a radical, uncompromising idea: What if a job board was entirely responsible for the quality of its listings? We built the Truth Engine™ to ensure that every role you see is real, active, and attainable.
+              </p>
+            </div>
+          </div>
+
+          {/* Visual Side (Glass Terminal) */}
+          <div className="relative order-1 lg:order-2 w-full max-w-md mx-auto lg:mx-0 lg:ml-auto">
+            <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 to-purple-600/20 blur-[100px] rounded-full pointer-events-none"></div>
+            
+            <div className="relative bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-2xl animate-float">
+              {/* Terminal Header */}
+              <div className="flex items-center gap-2 mb-6 border-b border-white/5 pb-4">
+                <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                <div className="ml-auto text-[10px] md:text-xs text-gray-500 font-mono tracking-wider">
+                  origin_story.ts
+                </div>
+              </div>
+              
+              {/* Terminal Body */}
+              <div className="space-y-3 font-mono text-xs md:text-sm">
+                <div className="text-gray-500">// The Problem</div>
+                <div className="text-red-400">
+                  <span className="text-purple-400">const</span> jobMarket = <span className="text-green-400">"Broken"</span>;
+                </div>
+                <div className="text-gray-400 pl-4 mb-4 opacity-80">
+                  Ghost jobs. Unresponsive recruiters. Scams.
+                </div>
+                
+                <div className="text-gray-500">// The Solution</div>
+                <div className="text-blue-400">
+                  <span className="text-purple-400">const</span> truthHire = <span className="text-yellow-400">new</span> Platform();
+                </div>
+                <div className="text-gray-300 pl-4">
+                  truthHire.<span className="text-blue-300">verifyEveryJob</span>();
+                </div>
+                <div className="text-gray-300 pl-4">
+                  truthHire.<span className="text-blue-300">banFakes</span>();
+                </div>
+                <div className="text-purple-400 pl-4 mt-2">
+                  return <span className="text-green-400">"Hired"</span>;
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ================= HOW WE VERIFY (Technology) ================= */}
+      <section className="py-20 md:py-32 bg-[#050505] border-t border-white/5 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 md:mb-20">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">
+              Inside the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">Truth Engine™</span>
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+              We combine advanced AI gap analysis with strict human auditing protocols to maintain the cleanest, most verified job database in the industry.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {[
+              {
+                icon: Search,
+                title: "AI Analysis",
+                desc: "Our bots scan thousands of data points—domain age, email validity, and salary ranges—to flag suspicious activity instantly before it reaches you.",
+                color: "text-blue-400",
+                bg: "bg-blue-500/10",
+                border: "border-blue-500/20"
+              },
+              {
+                icon: Users,
+                title: "Recruiter Verification",
+                desc: "We strictly require corporate email verification and LinkedIn integration. No anonymous free email accounts posting fake 'dream jobs'.",
+                color: "text-purple-400",
+                bg: "bg-purple-500/10",
+                border: "border-purple-500/20"
+              },
+              {
+                icon: CheckCircle2,
+                title: "Active Status Check",
+                desc: "If a recruiter doesn't interact with an application or log into the portal for 14 days, the job is automatically flagged as 'Inactive'.",
+                color: "text-green-400",
+                bg: "bg-green-500/10",
+                border: "border-green-500/20"
+              }
+            ].map((feature, idx) => (
+              <div key={idx} className="bg-[#0a0a0a] p-8 rounded-[24px] border border-white/5 hover:bg-[#111] hover:border-white/10 transition-all duration-300 group shadow-lg">
+                <div className={`w-14 h-14 ${feature.bg} ${feature.color} border ${feature.border} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                  <feature.icon size={24} />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  {feature.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* ================= CORE VALUES (Bento Grid) ================= */}
+      <section className="py-20 md:py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
+        <div className="text-center mb-16 md:mb-20">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">
+            Our Operating <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">DNA</span>
+          </h2>
+          <p className="text-gray-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+            The non-negotiable principles that guide every line of code we write and every feature we launch.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Large Card */}
+          <div className="md:col-span-2 bg-[#111]/80 backdrop-blur-xl border border-white/10 p-8 md:p-10 rounded-[32px] relative overflow-hidden group shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:border-blue-500/30 transition-colors">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] pointer-events-none"></div>
+            <div className="relative z-10">
+              <Shield className="text-blue-400 mb-6" size={36} />
+              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Radical Transparency</h3>
+              <p className="text-base text-gray-400 max-w-xl leading-relaxed">
+                We believe candidates deserve to know the exact salary ranges, the required tech stack, and the ATS match probability before they apply. We hide nothing.
+              </p>
+            </div>
+          </div>
+
+          {/* Tall Card */}
+          <div className="md:row-span-2 bg-[#111]/80 backdrop-blur-xl border border-white/10 p-8 md:p-10 rounded-[32px] relative overflow-hidden group shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:border-purple-500/30 transition-colors flex flex-col justify-center">
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+            <div className="absolute top-0 left-0 w-64 h-64 bg-purple-600/10 rounded-full blur-[80px] pointer-events-none"></div>
+            <div className="relative z-10">
+                <Heart className="text-purple-400 mb-6" size={36} />
+                <h3 className="text-2xl font-bold text-white mb-4">Empathy First</h3>
+                <p className="text-base text-gray-400 leading-relaxed">
+                  Job hunting is universally stressful. We design every feature to reduce anxiety—from precise gap analysis tools to automated resume tailoring. We treat candidates like humans, not data points.
+                </p>
+            </div>
+          </div>
+
+          {/* Standard Card 1 */}
+          <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] group hover:border-yellow-500/30 transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+            <Zap className="text-yellow-400 mb-5" size={32} />
+            <h3 className="text-xl font-bold text-white mb-3">Speed & Efficiency</h3>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              We optimize for the fastest route to an interview, stripping away unnecessary forms and redundant steps.
+            </p>
+          </div>
+
+          {/* Standard Card 2 */}
+          <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] group hover:border-green-500/30 transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+            <Award className="text-green-400 mb-5" size={32} />
+            <h3 className="text-xl font-bold text-white mb-3">Meritocracy</h3>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Verified skills over pedigree. Our algorithms are designed to highlight exactly what you can build.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= FINAL CTA (LIQUID GLASS) ================= */}
+      <section className="py-20 md:py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative z-10 mb-12">
+        <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] border border-white/10 rounded-[40px] p-10 md:p-16 text-center relative overflow-hidden shadow-2xl">
+            
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
+            
+            <div className="relative z-10">
+                <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight text-white">
+                    Ready to stop searching <br className="hidden sm:block"/> and start <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">finding?</span>
+                </h2>
+                <p className="text-gray-400 text-base md:text-lg mb-10 max-w-2xl mx-auto">
+                    Join thousands of verified candidates who have already bypassed the noise and connected directly with top companies.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row justify-center gap-5 w-full sm:w-auto px-4 sm:px-0">
+                    <Link
+                        href="/jobs"
+                        className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-b from-blue-500/20 to-transparent backdrop-blur-xl border border-blue-500/30 text-white text-base font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_8px_32px_rgba(59,130,246,0.2)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] hover:bg-blue-500/20 hover:border-blue-400/50 hover:shadow-[0_8px_40px_rgba(59,130,246,0.4)] hover:-translate-y-0.5"
+                    >
+                        Browse Verified Jobs <ChevronRight size={18} />
+                    </Link>
+                    <Link
+                        href="/signup"
+                        className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-b from-white/10 to-transparent backdrop-blur-xl border border-white/10 text-white text-base font-medium transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_8px_32px_rgba(0,0,0,0.2)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white/10 hover:border-white/20 hover:shadow-[0_8px_32px_rgba(255,255,255,0.05)] hover:-translate-y-0.5"
+                    >
+                        Join the Community
+                    </Link>
+                </div>
+            </div>
+        </div>
+      </section>
+
     </div>
   );
 }
