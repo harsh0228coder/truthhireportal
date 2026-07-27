@@ -134,7 +134,7 @@ export default function Navbar() {
 
         {/* 2. CENTER: NAV LINKS (Desktop) */}
         <div className="hidden lg:flex items-center justify-center absolute left-1/2 -translate-x-1/2">
-          <div className="flex items-center gap-8 text-[16px] font-medium text-gray-200">
+          <div className="flex items-center gap-8 text-[16px] font-medium text-gray-400">
             {userRole !== 'recruiter' && (
                 <NavLink href="/jobs" active={pathname === '/jobs'}>Jobs</NavLink>
             )}
