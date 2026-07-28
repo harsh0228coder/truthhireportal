@@ -201,7 +201,7 @@ export default function Home() {
       `}</style>
 
       {/* ================= HERO SECTION (Clean, Minimal & On-Brand) ================= */}
-      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden w-full flex flex-col items-center justify-center min-h-[70vh]">
+      <section className="relative pt-28 pb-16 md:pt-36 md:pb-26 overflow-hidden w-full flex flex-col items-center justify-center min-h-[70vh]">
         
         {/* Background Gradients flowing completely to the top edge */}
         <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none z-0"></div>
