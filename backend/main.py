@@ -1448,7 +1448,7 @@ def send_profile_completion_reminder(email: str, name: str, missing_fields: list
     <p>Profiles with a resume and skills get <strong>5x more visibility</strong> and higher trust scores.</p>
     """
 
-    final_html = get_base_email_template(headline, content_html, "Complete Profile Now", "https://truthhire.in/dashboard/profile")
+    final_html = get_base_email_template(headline, content_html, "Complete Profile Now", "https://truthhire.in/profile")
     send_email_via_resend(email, subject, final_html)
 
 def send_truth_score_nudge(email: str, name: str):
