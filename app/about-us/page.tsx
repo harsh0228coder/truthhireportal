@@ -133,7 +133,7 @@ export default function AboutUs() {
       </section>
 
       {/* ================= STATS BANNER (LIQUID GLASS) ================= */}
-      <section className="relative z-20 -mt-10 md:-mt-20 mb-14 md:mb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto animate-fade-in-up delay-300">
+      <section className="relative z-20 -mt-10 md:-mt-24 mb-14 md:mb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto animate-fade-in-up delay-300">
         <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-12 shadow-[0_8px_32px_rgba(59,130,246,0.1)] relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none"></div>
           
