@@ -150,7 +150,7 @@ export default function Navbar() {
                 
                 {isToolsOpen && (
                     <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-56 bg-[#131316]/95 backdrop-blur-xl border border-blue-500/20 rounded-2xl shadow-2xl overflow-hidden p-1.5 animate-in fade-in zoom-in-95 duration-200">
-                      <DropdownItem href="/tools/check-chances" icon={<Sparkles className="w-4 h-4 text-purple-400" />}>
+                      <DropdownItem href="/tools/check-chances" onClick={() => setIsToolsOpen(false)} icon={<Sparkles className="w-4 h-4 text-purple-400" />}>
                           Check My Chances
                           <span className="block text-[11px] text-gray-500 font-normal mt-0.5">AI Resume Gap Analysis</span>
                       </DropdownItem>
@@ -210,10 +210,10 @@ export default function Navbar() {
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <Link href="/profile" className="text-white font-bold text-[15px] uppercase tracking-wide underline underline-offset-4 decoration-white/30 hover:decoration-white transition-colors leading-tight line-clamp-2">
+                          <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="text-white font-bold text-[15px] uppercase tracking-wide underline underline-offset-4 decoration-white/30 hover:decoration-white transition-colors leading-tight line-clamp-2">
                             {userName || "USER NAME"}
                           </Link>
-                          <Link href="/profile/edit" className="text-gray-400 hover:text-white shrink-0 mt-0.5">
+                          <Link href="/profile/edit" onClick={() => setIsProfileOpen(false)} className="text-gray-400 hover:text-white shrink-0 mt-0.5">
                             <Pencil className="w-4 h-4" />
                           </Link>
                         </div>
@@ -225,9 +225,9 @@ export default function Navbar() {
                           Pune
                         </p>
                         
-                        <div className="mt-2.5 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 cursor-pointer hover:bg-blue-500/20 transition-colors">
+                        <Link href="/profile/edit" onClick={() => setIsProfileOpen(false)} className="mt-2.5 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 cursor-pointer hover:bg-blue-500/20 transition-colors">
                           Review
-                        </div>
+                        </Link>
                       </div>
                     </div>
 
@@ -236,14 +236,9 @@ export default function Navbar() {
                     {/* Menu Items structured like reference */}
                     <div className="flex flex-col py-2">
                       
-                      <DropdownMenuLink href="/profile/edit" text="CV and experience" tag="Review" />
-                      <DropdownMenuLink href={userRole === 'recruiter' ? "/recruiter/dashboard" : "/dashboard"} text="Job activity" />
+                      <DropdownMenuLink href="/profile/edit" text="CV and experience" tag="Review" onClick={() => setIsProfileOpen(false)} />
+                      <DropdownMenuLink href={userRole === 'recruiter' ? "/recruiter/dashboard" : "/dashboard"} text="Job activity" onClick={() => setIsProfileOpen(false)} />
                       
-                      <div className="h-px bg-white/10 w-full my-2"></div>
-                      
-                      <DropdownMenuLink href="/following" text="Following" />
-                      
-                      <div className="h-px bg-white/10 w-full my-2"></div>
                       
                       <button 
                         onClick={handleLogout}
@@ -349,9 +344,9 @@ function NavLink({ href, active, children }: { href: string; active: boolean; ch
 }
 
 // Retained for Tools Dropdown
-function DropdownItem({ href, icon, children }: { href: string; icon: any; children: React.ReactNode }) {
+function DropdownItem({ href, icon, children, onClick }: { href: string; icon: any; children: React.ReactNode; onClick?: () => void }) {
   return (
-    <Link href={href} className="flex items-center gap-3 px-3 py-2.5 text-[13px] text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors group">
+    <Link href={href} onClick={onClick} className="flex items-center gap-3 px-3 py-2.5 text-[13px] text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors group">
       <div className="text-gray-500 group-hover:text-white transition-colors">{icon}</div>
       <div>{children}</div>
     </Link>
@@ -359,9 +354,9 @@ function DropdownItem({ href, icon, children }: { href: string; icon: any; child
 }
 
 // Component for the layout of the Profile Dropdown
-function DropdownMenuLink({ href, text, tag }: { href: string; text: string; tag?: string }) {
+function DropdownMenuLink({ href, text, tag, onClick }: { href: string; text: string; tag?: string; onClick?: () => void }) {
     return (
-      <Link href={href} className="flex items-center gap-3 px-5 py-2.5 text-[14px] text-gray-300 hover:bg-white/5 hover:text-white transition-colors">
+      <Link href={href} onClick={onClick} className="flex items-center gap-3 px-5 py-2.5 text-[14px] text-gray-300 hover:bg-white/5 hover:text-white transition-colors">
         <span>{text}</span>
         {tag && (
           <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
