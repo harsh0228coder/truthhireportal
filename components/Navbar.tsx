@@ -236,8 +236,7 @@ export default function Navbar() {
                     {/* Menu Items structured like reference */}
                     <div className="flex flex-col py-2">
                       
-                      <DropdownMenuLink href="/profile" text="CV and experience" tag="Review" />
-                      <DropdownMenuLink href="/profile/preferences" text="Job preferences" tag="Review" />
+                      <DropdownMenuLink href="/profile/edit" text="CV and experience" tag="Review" />
                       <DropdownMenuLink href={userRole === 'recruiter' ? "/recruiter/dashboard" : "/dashboard"} text="Job activity" />
                       
                       <div className="h-px bg-white/10 w-full my-2"></div>
@@ -245,14 +244,6 @@ export default function Navbar() {
                       <DropdownMenuLink href="/following" text="Following" />
                       
                       <div className="h-px bg-white/10 w-full my-2"></div>
-                      
-                      <DropdownMenuLink href="/reviews" text="Reviews and contributions" />
-                      
-                      <div className="h-px bg-white/10 w-full my-2"></div>
-                      
-                      <DropdownMenuLink href="/settings" text="Account settings" />
-                      <DropdownMenuLink href="/notifications" text="Notifications" />
-                      <DropdownMenuLink href="/help" text="Help centre" />
                       
                       <button 
                         onClick={handleLogout}
@@ -367,7 +358,7 @@ function DropdownItem({ href, icon, children }: { href: string; icon: any; child
   );
 }
 
-// New component for the layout of the Profile Dropdown
+// Component for the layout of the Profile Dropdown
 function DropdownMenuLink({ href, text, tag }: { href: string; text: string; tag?: string }) {
     return (
       <Link href={href} className="flex items-center gap-3 px-5 py-2.5 text-[14px] text-gray-300 hover:bg-white/5 hover:text-white transition-colors">
