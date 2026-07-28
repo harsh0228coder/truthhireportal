@@ -109,7 +109,7 @@ export default function AboutUs() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none z-0"></div>
 
       {/* ================= HERO SECTION ================= */}
-      <section className="relative pt-28 pb-16 md:pt-40 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center z-10">
+      <section className="relative pt-26 pb-16 md:pt-34 md:pb-26 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center z-10">
         
         {/* Glow Effect */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[300px] md:h-[600px] bg-gradient-to-b from-blue-900/10 via-transparent to-transparent blur-3xl pointer-events-none z-0"></div>
@@ -133,7 +133,7 @@ export default function AboutUs() {
       </section>
 
       {/* ================= STATS BANNER (LIQUID GLASS) ================= */}
-      <section className="relative z-20 -mt-10 md:-mt-20 mb-16 md:mb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto animate-fade-in-up delay-300">
+      <section className="relative z-20 -mt-10 md:-mt-20 mb-14 md:mb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto animate-fade-in-up delay-300">
         <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-12 shadow-[0_8px_32px_rgba(59,130,246,0.1)] relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none"></div>
           
@@ -234,7 +234,7 @@ export default function AboutUs() {
       {/* ================= HOW WE VERIFY (Technology) ================= */}
       <section className="py-16 md:py-32 bg-[#050505] border-t border-white/5 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 md:mb-20">
+          <div className="text-center mb-12 md:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-4 md:mb-6 tracking-tight">
               Inside the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500">Truth Engine™</span>
             </h2>
