@@ -173,16 +173,16 @@ export default function Navbar() {
         <div className="hidden lg:flex items-center gap-4 shrink-0">
           {!isLoggedIn ? (
             <>
-              <Link href="/employers" className="text-[13px] font-medium text-gray-400 hover:text-white transition-colors">
-                For Recruiters
+              <Link href="/employers" className="text-[16px] font-medium text-gray-400 hover:text-white transition-colors">
+                For Employers
               </Link>
               <div className="h-4 w-px bg-white/10 mx-1"></div>
-              <Link href="/login" className="text-[13px] font-medium text-gray-300 hover:text-white transition-colors">
+              <Link href="/login" className="text-[15px] font-medium text-gray-300 hover:text-white transition-colors">
                 Sign In
               </Link>
               <Link 
                 href="/signup" 
-                className="bg-white text-black hover:bg-gray-200 px-5 py-2 rounded-full text-[13px] font-bold transition-all hover:scale-105 shadow-lg shadow-white/10"
+                className="bg-white text-black hover:bg-gray-200 px-5 py-2 rounded-full text-[15px] font-bold transition-all hover:scale-105 shadow-lg shadow-white/10"
               >
                 Get Started
               </Link>
