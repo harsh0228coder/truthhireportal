@@ -63,6 +63,9 @@ export default function AboutUs() {
     activeCandidates: 50000,
     hiringPartners: 200
   });
+  
+  // New state to prevent fake stats animation on initial load
+  const [isStatsLoaded, setIsStatsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -79,6 +82,8 @@ export default function AboutUs() {
         }
       } catch (error) {
         console.error("Stats fetch failed, using defaults");
+      } finally {
+        setIsStatsLoaded(true); // Trigger animation only after fetch completes
       }
     };
 
@@ -141,7 +146,11 @@ export default function AboutUs() {
             ].map((stat, i) => (
               <div key={i} className="flex flex-col items-center">
                 <span className={`text-2xl sm:text-3xl md:text-5xl font-bold mb-1 md:mb-2 ${stat.color} tracking-tight drop-shadow-lg`}>
-                  <AnimatedCounter end={stat.value} suffix={stat.suffix} />
+                  {isStatsLoaded ? (
+                    <AnimatedCounter end={stat.value} suffix={stat.suffix} />
+                  ) : (
+                    <span>0{stat.suffix}</span>
+                  )}
                 </span>
                 <span className="text-[9px] md:text-xs text-gray-400 uppercase tracking-widest font-semibold">
                   {stat.label}
@@ -318,7 +327,7 @@ export default function AboutUs() {
           <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-[24px] md:rounded-[32px] group hover:border-yellow-500/30 transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
             <Zap className="text-yellow-400 mb-4 md:mb-5 w-7 h-7 md:w-8 md:h-8" />
             <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">Speed & Efficiency</h3>
-            <p className="text-sm md:text-base text-gray-400 leading-relaxed">
+            <p className="text-xs md:text-sm text-gray-400 leading-relaxed">
               We optimize for the fastest route to an interview, stripping away unnecessary forms and redundant steps.
             </p>
           </div>
@@ -327,7 +336,7 @@ export default function AboutUs() {
           <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-[24px] md:rounded-[32px] group hover:border-green-500/30 transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
             <Award className="text-green-400 mb-4 md:mb-5 w-7 h-7 md:w-8 md:h-8" />
             <h3 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">Meritocracy</h3>
-            <p className="text-sm md:text-base text-gray-400 leading-relaxed">
+            <p className="text-xs md:text-sm text-gray-400 leading-relaxed">
               Verified skills over pedigree. Our algorithms are designed to highlight exactly what you can build.
             </p>
           </div>
