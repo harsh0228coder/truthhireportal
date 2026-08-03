@@ -44,6 +44,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import logging
+from backend.ats_fetcher import process_ats_import_background
 
 # ✅ FIX: Load .env BEFORE reading any environment variables
 load_dotenv()
@@ -4030,6 +4031,35 @@ def get_all_jobs_admin(db: Session = Depends(get_db)):
             "is_direct": job.recruiter_id is not None
         })
     return results
+
+class ATSFetchRequest(BaseModel):
+    company_name: str
+    ats_type: str  # 'greenhouse', 'lever', or 'workable'
+    board_token: str
+
+@app.post("/admin/jobs/fetch-ats")
+def fetch_ats_jobs(
+    data: ATSFetchRequest,
+    background_tasks: BackgroundTasks,
+    x_admin_secret: str = Header(..., alias="x-admin-secret")
+):
+    required_secret = os.getenv("ADMIN_CREATION_SECRET")
+    if not required_secret or x_admin_secret != required_secret:
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid Admin Secret")
+
+    if data.ats_type.lower() not in ["greenhouse", "lever", "workable"]:
+        raise HTTPException(status_code=400, detail="Unsupported ATS Type")
+
+    background_tasks.add_task(
+        process_ats_import_background,
+        data.company_name,
+        data.ats_type,
+        data.board_token
+    )
+
+    return {
+        "message": f"Fetch worker started for {data.company_name} ({data.ats_type}). Jobs will appear in your database shortly."
+    }
 
 @app.post("/admin/jobs")
 def create_job_admin(data: AdminJobPost, db: Session = Depends(get_db)):

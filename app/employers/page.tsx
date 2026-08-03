@@ -354,7 +354,6 @@ export default function EmployerHome() {
                 Join the platform where candidates are AI-verified against your exact needs. 
                 Post your first job in minutes—no credit card needed.
               </p>
-
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full sm:w-auto px-4 sm:px-0">
                 <Link
                   href="/recruiter/register"
