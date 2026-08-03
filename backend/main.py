@@ -45,6 +45,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import logging
 from backend.ats_fetcher import process_ats_import_background
+from backend.ats_fetcher import fetch_ats_jobs_sync
 
 # ✅ FIX: Load .env BEFORE reading any environment variables
 load_dotenv()
@@ -530,6 +531,28 @@ def get_ai_gap_analysis(resume_text: str, job_description: str, candidate_id: st
             "defense_strategies": {},
             "coach_message": "Analysis failed. Please try again later."
         }
+
+class ATSFetchRequest(BaseModel):
+    company_name: str
+    ats_type: str  # 'greenhouse', 'lever', or 'workable'
+    board_token: str
+
+@app.post("/admin/jobs/fetch-ats-direct")
+def fetch_ats_jobs_direct(
+    data: ATSFetchRequest,
+    x_admin_secret: str = Header(..., alias="x-admin-secret")
+):
+    """
+    Direct synchronous endpoint for Render Free Tier.
+    Returns the exact execution log and count in the HTTP response.
+    """
+    required_secret = os.getenv("ADMIN_CREATION_SECRET")
+    if not required_secret or x_admin_secret != required_secret:
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid Admin Secret")
+
+    # Runs synchronously so you see the exact result in Swagger UI
+    result = fetch_ats_jobs_sync(data.company_name, data.ats_type, data.board_token)
+    return result
 
 # --- 🛡️ TRUTH ENGINE: JOB GUARD AI (Professional Grade) ---
 def analyze_job_trust(title: str, description: str, salary_min: int = None, salary_max: int = None, currency: str = "INR", location_type: str = "On-site") -> dict:

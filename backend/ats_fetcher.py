@@ -376,3 +376,127 @@ def process_ats_import_background(company_name: str, ats_type: str, board_token:
         db.rollback()
     finally:
         db.close()
+
+
+def fetch_ats_jobs_sync(company_name: str, ats_type: str, board_token: str, target_freshers_only: bool = False) -> dict:
+    """
+    Synchronous ATS fetcher that returns exact progress and errors directly to the API response.
+    """
+    db: Session = SessionLocal()
+    logs = []
+    jobs_added = 0
+    
+    try:
+        ats = ats_type.lower()
+        
+        # 1. Determine API Endpoint
+        if ats == "greenhouse":
+            api_url = f"https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs?content=true"
+        elif ats == "lever":
+            api_url = f"https://api.lever.co/v0/postings/{board_token}"
+        elif ats == "workable":
+            api_url = f"https://www.workable.com/api/accounts/{board_token}/jobs"
+        elif ats == "breezyhr":
+            api_url = f"https://{board_token}.breezy.hr/json"
+        elif ats == "smartrecruiters":
+            api_url = f"https://api.smartrecruiters.com/v1/companies/{board_token}/postings"
+        else:
+            return {"status": "error", "message": f"Unsupported ATS type: '{ats_type}'"}
+
+        logs.append(f"Connecting to {api_url}...")
+        res = requests.get(api_url, timeout=15)
+        
+        if res.status_code != 200:
+            return {
+                "status": "error", 
+                "message": f"ATS API returned HTTP {res.status_code}. Verify board_token '{board_token}' exists."
+            }
+
+        raw_data = res.json()
+        job_list = []
+
+        # 2. Extract Jobs
+        if ats == "greenhouse":
+            items = raw_data.get("jobs", [])
+            for item in items:
+                job_list.append({
+                    "title": item.get("title"),
+                    "url": item.get("absolute_url"),
+                    "location": item.get("location", {}).get("name", "India"),
+                    "description": BeautifulSoup(html.unescape(item.get("content", "")), "html.parser").get_text(separator="\n").strip()
+                })
+        elif ats == "lever":
+            for item in raw_data:
+                job_list.append({
+                    "title": item.get("text"),
+                    "url": item.get("hostedUrl"),
+                    "location": item.get("categories", {}).get("location", "India"),
+                    "description": item.get("descriptionPlain", "")
+                })
+        elif ats == "workable":
+            items = raw_data.get("jobs", [])
+            for item in items:
+                job_list.append({
+                    "title": item.get("title"),
+                    "url": item.get("url"),
+                    "location": f"{item.get('city', '')}, {item.get('country', 'India')}",
+                    "description": BeautifulSoup(html.unescape(item.get("description", "")), "html.parser").get_text(separator="\n").strip()
+                })
+
+        logs.append(f"Found {len(job_list)} total jobs on ATS feed.")
+
+        # 3. Process & Filter
+        for job_info in job_list[:10]:  # Limit to 10 per run
+            title = job_info.get("title")
+            apply_link = job_info.get("url")
+            location = job_info.get("location", "India")
+            description = job_info.get("description", "")
+
+            if not apply_link or not title:
+                continue
+
+            # Duplicate Check
+            existing = db.query(Job).filter(Job.apply_link == apply_link).first()
+            if existing:
+                logs.append(f"Skipped duplicate: {title}")
+                continue
+
+            # AI Normalization
+            ai_meta = extract_ats_metadata_ai(title, description)
+
+            # Save to Database
+            new_job = Job(
+                title=title,
+                company_name=company_name,
+                recruiter_id=None,
+                description=description,
+                location=location,
+                location_type=ai_meta["location_type"],
+                employment_type=ai_meta["employment_type"],
+                apply_link=apply_link,
+                experience_level=ai_meta["experience_level"],
+                skills_required=ai_meta["skills_required"],
+                currency="INR",
+                salary_frequency="Monthly",
+                equity=False,
+                is_verified=True,
+                trust_score=100,
+                status="active"
+            )
+            db.add(new_job)
+            db.commit()
+            jobs_added += 1
+            logs.append(f"Added job: {title}")
+
+        return {
+            "status": "success",
+            "company": company_name,
+            "jobs_added": jobs_added,
+            "logs": logs
+        }
+
+    except Exception as e:
+        db.rollback()
+        return {"status": "error", "message": str(e), "logs": logs}
+    finally:
+        db.close()
