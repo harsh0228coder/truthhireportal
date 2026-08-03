@@ -45,7 +45,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import logging
 from backend.ats_fetcher import process_ats_import_background
-from backend.ats_fetcher import fetch_ats_jobs_sync
+from backend.ats_fetcher import fetch_ats_jobs_sync, hunt_for_local_companies
 
 # ✅ FIX: Load .env BEFORE reading any environment variables
 load_dotenv()
@@ -553,6 +553,39 @@ def fetch_ats_jobs_direct(
     # Runs synchronously so you see the exact result in Swagger UI
     result = fetch_ats_jobs_sync(data.company_name, data.ats_type, data.board_token)
     return result
+
+@app.post("/admin/jobs/daily-auto-fetch")
+def daily_auto_fetch(x_admin_secret: str = Header(..., alias="x-admin-secret")):
+    required_secret = os.getenv("ADMIN_CREATION_SECRET")
+    if not required_secret or x_admin_secret != required_secret:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # 1. Run spider once across multiple target cities
+    target_cities = ["Pune", "Bangalore", "Hyderabad", "Noida", "Gurgaon"]
+    found_tokens = hunt_for_local_companies(cities=target_cities, keyword="Fresher")
+    
+    total_added = 0
+    
+    # 2. Fetch jobs from all discovered local companies
+    for ats_type, board_token in found_tokens:
+        try:
+            clean_company_name = board_token.replace("-", " ").title()
+            
+            result = fetch_ats_jobs_sync(
+                company_name=clean_company_name,
+                ats_type=ats_type,
+                board_token=board_token,
+                target_freshers_only=True
+            )
+            total_added += result.get("jobs_added", 0)
+        except Exception as e:
+            print(f"Skipping {board_token}: {e}")
+            continue
+
+    return {
+        "message": f"Spider successfully processed {len(found_tokens)} companies across {len(target_cities)} cities.", 
+        "total_new_jobs_added": total_added
+    }
 
 # --- 🛡️ TRUTH ENGINE: JOB GUARD AI (Professional Grade) ---
 def analyze_job_trust(title: str, description: str, salary_min: int = None, salary_max: int = None, currency: str = "INR", location_type: str = "On-site") -> dict:

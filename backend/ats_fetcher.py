@@ -1,11 +1,13 @@
 import os
 import json
 import html
+import re
+import time
 import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
 from groq import Groq
-
+from googlesearch import search
 from backend.database import SessionLocal
 from backend.models import Job
 
@@ -107,6 +109,57 @@ def extract_ats_metadata_ai(title: str, description: str) -> dict:
             "employment_type": "Full-time",
             "location_type": "On-site"
         }
+
+def hunt_for_local_companies(cities=["Pune", "Bangalore", "Hyderabad"], keyword="Fresher"):
+    """
+    Automated web spider. Accepts a list of cities or a single city string,
+    searches Google for live ATS job postings using boolean OR logic,
+    and returns discovered (ats_type, board_token) pairs.
+    """
+    # 1. Format the cities for Google Search OR syntax
+    if isinstance(cities, list):
+        # Resulting string: '("Pune" OR "Bangalore" OR "Hyderabad")'
+        cities_formatted = f"({' OR '.join([f'\"{c}\"' for c in cities])})"
+    else:
+        cities_formatted = f'"{cities}"'
+
+    # 2. Construct the single Google Dork query
+    query = (
+        f'"{keyword}" {cities_formatted} '
+        'site:boards.greenhouse.io OR site:jobs.lever.co OR site:apply.workable.com OR site:breezy.hr'
+    )
+    
+    discovered_companies = set()
+    print(f"🕷️ Spider crawling for '{keyword}' jobs in {cities}...")
+    
+    try:
+        # Fetch top 25 results
+        for url in search(query, num_results=25, sleep_interval=2):
+            
+            if "greenhouse.io" in url:
+                match = re.search(r'boards\.greenhouse\.io/([^/]+)', url)
+                if match: 
+                    discovered_companies.add(("greenhouse", match.group(1)))
+                
+            elif "lever.co" in url:
+                match = re.search(r'jobs\.lever\.co/([^/]+)', url)
+                if match: 
+                    discovered_companies.add(("lever", match.group(1)))
+                
+            elif "workable.com" in url:
+                match = re.search(r'apply\.workable\.com/([^/]+)', url)
+                if match: 
+                    discovered_companies.add(("workable", match.group(1)))
+                
+            elif "breezy.hr" in url:
+                match = re.search(r'https://([^.]+)\.breezy\.hr', url)
+                if match: 
+                    discovered_companies.add(("breezyhr", match.group(1)))
+                
+    except Exception as e:
+        print(f"⚠️ Spider search notice: {e}")
+        
+    return list(discovered_companies)
 
 def is_indian_hub_job(location_str: str) -> bool:
     """Checks if the job location belongs to major Indian IT parks/hubs or is remote."""
