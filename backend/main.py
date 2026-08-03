@@ -554,23 +554,15 @@ def fetch_ats_jobs_direct(
     result = fetch_ats_jobs_sync(data.company_name, data.ats_type, data.board_token)
     return result
 
-@app.post("/admin/jobs/daily-auto-fetch")
-def daily_auto_fetch(x_admin_secret: str = Header(..., alias="x-admin-secret")):
-    required_secret = os.getenv("ADMIN_CREATION_SECRET")
-    if not required_secret or x_admin_secret != required_secret:
-        raise HTTPException(status_code=403, detail="Forbidden")
-
-    # 1. Run spider once across multiple target cities
-    target_cities = ["Pune", "Bangalore", "Hyderabad", "Noida", "Gurgaon"]
+def run_spider_workflow_background():
+    """Heavy synchronous workflow that runs completely in the background."""
+    target_cities = ["Pune", "Bangalore", "Hyderabad", "Noida", "Gurgaon","Mumbai","Kolhapur"]
     found_tokens = hunt_for_local_companies(cities=target_cities, keyword="Fresher")
     
     total_added = 0
-    
-    # 2. Fetch jobs from all discovered local companies
     for ats_type, board_token in found_tokens:
         try:
             clean_company_name = board_token.replace("-", " ").title()
-            
             result = fetch_ats_jobs_sync(
                 company_name=clean_company_name,
                 ats_type=ats_type,
@@ -581,10 +573,29 @@ def daily_auto_fetch(x_admin_secret: str = Header(..., alias="x-admin-secret")):
         except Exception as e:
             print(f"Skipping {board_token}: {e}")
             continue
+    print(f"✅ Background Spider Complete. Added {total_added} jobs.")
 
+
+@app.post("/admin/jobs/daily-auto-fetch")
+def daily_auto_fetch(
+    background_tasks: BackgroundTasks,
+    x_admin_secret: str = Header(..., alias="x-admin-secret")
+):
+    """
+    Returns an instant 200 OK to cron-job.org within 0.5s to prevent timeouts,
+    then executes the spider in the background.
+    """
+    required_secret = os.getenv("ADMIN_CREATION_SECRET")
+    if not required_secret or x_admin_secret != required_secret:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Offload the heavy task
+    background_tasks.add_task(run_spider_workflow_background)
+
+    # Instant response prevents cron-job.org timeout!
     return {
-        "message": f"Spider successfully processed {len(found_tokens)} companies across {len(target_cities)} cities.", 
-        "total_new_jobs_added": total_added
+        "status": "started",
+        "message": "Daily auto-fetch spider initiated in background."
     }
 
 # --- 🛡️ TRUTH ENGINE: JOB GUARD AI (Professional Grade) ---
