@@ -311,6 +311,14 @@ def logout(request: Request, response: Response, db: Session = Depends(get_db)):
     response.delete_cookie("refresh_token")
     return {"message": "Logged out successfully"}
 
+@app.get("/health")
+def health_check():
+    """
+    Ultra-lightweight ping endpoint for Render keep-alive / uptime monitoring.
+    Returns minimal data to prevent cron-job.org size limit errors.
+    """
+    return {"status": "awake"}
+
 # --- ADD THIS PYDANTIC MODEL ---
 class GoogleAuthRequest(BaseModel):
     access_token: str
