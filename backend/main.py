@@ -736,8 +736,6 @@ def fetch_job_content(data: UrlRequest):
 # --- 📧 MASTER EMAIL FUNCTION (RESEND) ---
 def send_email_via_resend(to_email: str, subject: str, html_content: str, attachment_path: str = None):
     try:
-        # Define the sender. Since you verified 'truthhire.in', you can use ANY name!
-        # Examples: "TruthHire Admin <admin@truthhire.in>", "TruthHire Team <no-reply@truthhire.in>"
         sender_identity = "TruthHire <no-reply@truthhire.in>" 
 
         params = {
@@ -747,41 +745,36 @@ def send_email_via_resend(to_email: str, subject: str, html_content: str, attach
             "html": html_content,
         }
 
-        # 🟢 FIX: Handle both Cloud URLs (Supabase) and Local file paths for the attachment
+        # 🟢 THE FIX: Use Resend's native 'path' property
         if attachment_path:
-            file_bytes = None
-            filename = "resume.pdf"
-            
             if attachment_path.startswith("http"):
-                # Download file from Cloud Storage into memory
-                try:
-                    resp = requests.get(attachment_path, timeout=10)
-                    if resp.status_code == 200:
-                        file_bytes = list(resp.content)
-                        # Extract clean filename from URL (remove query params)
-                        filename = attachment_path.split("/")[-1].split("?")[0]
-                except Exception as e:
-                    print(f"❌ Failed to download cloud attachment: {e}")
-            elif os.path.exists(attachment_path):
-                # Fallback for old local files
-                with open(attachment_path, "rb") as f:
-                    file_bytes = list(f.read())
-                filename = os.path.basename(attachment_path)
-
-            if file_bytes:
+                # For Supabase URLs: Let Resend download it directly!
+                filename = attachment_path.split("/")[-1].split("?")[0]
                 params["attachments"] = [{
                     "filename": filename,
-                    "content": file_bytes
+                    "path": attachment_path  
+                }]
+            elif os.path.exists(attachment_path):
+                # Fallback for older local files
+                import base64
+                with open(attachment_path, "rb") as f:
+                    file_data = f.read()
+                    # Use base64 encoding instead of a massive list of integers
+                    b64_content = base64.b64encode(file_data).decode()
+                    
+                filename = os.path.basename(attachment_path)
+                params["attachments"] = [{
+                    "filename": filename,
+                    "content": b64_content
                 }]
 
         email = resend.Emails.send(params)
-       
         return True
         
     except Exception as e:
         print(f"❌ Failed to send email via Resend: {e}")
         return False
-
+    
 def send_admin_recruiter_alert(recruiter_name: str, recruiter_email: str, linkedin_url: str):
     # Change this to your actual admin email or set ADMIN_EMAIL in your .env file
     admin_email = os.getenv("ADMIN_EMAIL", "hrtruthhire@gmail.com") 
