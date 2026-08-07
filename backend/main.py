@@ -900,20 +900,42 @@ def magic_status_update(
     """
 
 def send_application_email(hr_email: str, job_title: str, candidate_data: dict, cover_note: str, resume_path: str = None, is_cold_outreach: bool = False, app_id: int = None):
-    # 1. Prepare Data
+    # 1. Prepare Data & Dynamic Styling
     score = candidate_data.get('score', 0)
-    score_color = "#16a34a" if score >= 75 else "#d97706"
-    score_bg = "#f0fdf4" if score >= 75 else "#fffbeb"
     
+    # Adaptive color coding based on the AI Match Score
+    if score >= 80:
+        score_color = "#16a34a" # Emerald Green
+        score_bg = "#f0fdf4"
+        badge_text = "🔥 Top Match"
+    elif score >= 60:
+        score_color = "#2563eb" # Royal Blue
+        score_bg = "#eff6ff"
+        badge_text = "✨ Strong Fit"
+    else:
+        score_color = "#d97706" # Amber
+        score_bg = "#fffbeb"
+        badge_text = "Candidate Application"
+        
     matched_list = candidate_data.get('matched', [])
-    matched_str = ", ".join(matched_list) if matched_list else "General profile match."
+    matched_str = " &bull; ".join(matched_list) if matched_list else "General profile match"
     
     missing_list = candidate_data.get('missing', [])
-    missing_str = ", ".join(missing_list) if missing_list else "No critical skills missing."
+    missing_str = ", ".join(missing_list) if missing_list else "None identified by AI"
 
-    headline = "Candidate Match Found" if is_cold_outreach else "New Application Received"
+    # Adaptive Headline & Subject
+    candidate_first_name = candidate_data['name'].split()[0] if candidate_data.get('name') else "A candidate"
     
-    # 2. Generate Magic Links
+    if is_cold_outreach:
+        subject = f"Highly Qualified Candidate for {job_title} (TruthHire Match)"
+        headline = "We found a great fit for your role. 🚀"
+        intro_text = f"We noticed your recent opening for the <strong>{job_title}</strong> position. To help you close this role faster, our TruthHire AI engine scanned our verified talent pool and identified a highly qualified candidate who explicitly requested to apply."
+    else:
+        subject = f"New Application: {candidate_data['name']} for {job_title}"
+        headline = "New Application Received"
+        intro_text = f"A candidate has applied for the <strong>{job_title}</strong> position via TruthHire. Our AI has pre-screened their profile against your job description for your convenience."
+
+    # 2. Generate Magic Links (One-Click Actions)
     base_url = f"{os.getenv('NEXT_PUBLIC_API_URL', 'https://truthhire-api.onrender.com')}"
     dummy_token = "secure_token_123"
     
@@ -923,72 +945,103 @@ def send_application_email(hr_email: str, job_title: str, candidate_data: dict, 
         reject_link = f"{base_url}/public/magic-status?app_id={app_id}&status=rejected&token={dummy_token}"
         
         magic_actions_html = f"""
-        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
-            <p style="margin: 0 0 12px; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">⚡ Quick Actions (No Login Required)</p>
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px dashed #cbd5e1;">
+            <p style="margin: 0 0 16px; font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">⚡ One-Click Review</p>
             <table width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                     <td width="48%" style="padding-right: 2%;">
-                        <a href="{approve_link}" style="display: block; background-color: #16a34a; color: #ffffff; text-align: center; padding: 12px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">✅ Shortlist</a>
+                        <a href="{approve_link}" style="display: block; background-color: #16a34a; color: #ffffff; text-align: center; padding: 14px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 2px 4px rgba(22,163,74,0.2);">✅ Shortlist Candidate</a>
                     </td>
                     <td width="48%" style="padding-left: 2%;">
-                        <a href="{reject_link}" style="display: block; background-color: #ffffff; border: 1px solid #d1d5db; color: #dc2626; text-align: center; padding: 11px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px;">❌ Reject</a>
+                        <a href="{reject_link}" style="display: block; background-color: #ffffff; border: 1px solid #e2e8f0; color: #dc2626; text-align: center; padding: 13px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">❌ Pass</a>
                     </td>
                 </tr>
             </table>
+            <p style="margin: 12px 0 0; font-size: 11px; color: #94a3b8; text-align: center;">(No login required to update status)</p>
         </div>
         """
 
-    # 3. Build the Candidate Card HTML
+    # 3. Build the Executive Candidate Card HTML
     candidate_card = f"""
-    <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; background-color: #ffffff; margin-bottom: 24px;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+    <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; background-color: #ffffff; margin: 24px 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);">
+        
+        <!-- Header Row: Name & Score -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
             <tr>
                 <td valign="middle">
-                    <h3 style="margin: 0 0 4px; font-size: 18px; color: #111827; font-weight: 700;">{candidate_data['name']}</h3>
-                    <p style="margin: 0; color: #6b7280; font-size: 14px;">{candidate_data['email']}</p>
+                    <div style="font-size: 11px; font-weight: 800; color: {score_color}; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">{badge_text}</div>
+                    <h3 style="margin: 0 0 4px; font-size: 22px; color: #0f172a; font-weight: 800;">{candidate_data['name']}</h3>
+                    <p style="margin: 0; color: #64748b; font-size: 14px;">{candidate_data['email']}</p>
                 </td>
-                <td valign="middle" align="right">
-                    <span style="background-color: {score_bg}; color: {score_color}; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 14px; border: 1px solid {score_color}30;">
-                        {score}% Match
-                    </span>
+                <td valign="middle" align="right" width="80">
+                    <div style="background-color: {score_bg}; color: {score_color}; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid #ffffff; box-shadow: 0 0 0 1px {score_color}40; margin-left: auto;">
+                        <span style="font-size: 20px; font-weight: 800; line-height: 64px; display: block; width: 100%; text-align: center;">{score}%</span>
+                    </div>
+                    <div style="text-align: center; font-size: 10px; font-weight: 800; color: #64748b; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px;">AI Match</div>
                 </td>
             </tr>
         </table>
         
-        <div style="border-top: 1px dashed #e5e7eb; padding-top: 16px; margin-bottom: 16px;">
-            <div style="margin-bottom: 12px;">
-                <p style="margin: 0 0 4px; font-size: 11px; font-weight: 700; color: #16a34a; text-transform: uppercase; letter-spacing: 0.5px;">✅ Verified Skills</p>
-                <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.5;">{matched_str}</p>
+        <!-- AI Assessment Section -->
+        <div style="background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+            <div style="margin-bottom: 16px;">
+                <p style="margin: 0 0 6px; font-size: 11px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <span style="color: #10b981; margin-right: 4px;">✓</span> Verified Skills Present
+                </p>
+                <p style="margin: 0; font-size: 14px; color: #0f172a; font-weight: 500; line-height: 1.6;">{matched_str}</p>
             </div>
             
             <div>
-                <p style="margin: 0 0 4px; font-size: 11px; font-weight: 700; color: #dc2626; text-transform: uppercase; letter-spacing: 0.5px;">⚠️ Missing / Unverified</p>
-                <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.5;">{missing_str}</p>
+                <p style="margin: 0 0 6px; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <span style="color: #f59e0b; margin-right: 4px;">⚠️</span> Missing / Not Explicitly Stated
+                </p>
+                <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.5;">{missing_str}</p>
             </div>
         </div>
+        """
         
-        <div style="background-color: #f9fafb; padding: 12px; border-radius: 6px; border-left: 3px solid #e5e7eb;">
-            <p style="margin: 0 0 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase;">MESSAGE FROM CANDIDATE</p>
-            <p style="margin: 0; font-style: italic; color: #4b5563; font-size: 14px; line-height: 1.5;">"{cover_note}"</p>
+    # Inject Cover Note if it exists
+    if cover_note and cover_note.strip():
+        candidate_card += f"""
+        <div style="margin-bottom: 24px;">
+            <p style="margin: 0 0 8px; font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Message from {candidate_first_name}</p>
+            <div style="border-left: 3px solid #cbd5e1; padding-left: 16px;">
+                <p style="margin: 0; font-style: italic; color: #334155; font-size: 14px; line-height: 1.6;">"{cover_note}"</p>
+            </div>
+        </div>
+        """
+
+    candidate_card += f"""
+        <!-- Resume Attachment Notice -->
+        <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 14px 16px; border-radius: 4px;">
+            <p style="margin: 0; font-size: 13px; color: #1e3a8a; font-weight: 500; display: flex; align-items: center;">
+                <span style="font-size: 16px; margin-right: 8px;">📄</span> <strong>Resume Attached:</strong> Please find {candidate_first_name}'s full PDF resume attached to this email.
+            </p>
         </div>
 
         {magic_actions_html}
     </div>
     """
 
+    # 4. Final Body Construction
     body_content = f"""
-    <p>Hello,</p>
-    <p>We found a verified candidate for the <strong>{job_title}</strong> position.</p>
+    <p style="font-size: 16px; color: #334155; line-height: 1.6;">Hello,</p>
+    <p style="font-size: 16px; color: #334155; line-height: 1.6;">{intro_text}</p>
     
     {candidate_card}
     
-    <p style="font-size: 14px; color: #6b7280; margin-top: 24px;">The candidate's resume is attached to this email for your detailed review.</p>
+    <p style="font-size: 14px; color: #64748b; margin-top: 32px; text-align: center;">
+        TruthHire ensures all applicants are rigorously pre-screened to save you time. 
+        Want to post more roles and get AI-matched candidates for free? <br>
+        <a href="https://truthhire.in/recruiter/login" style="color: #2563eb; text-decoration: underline; font-weight: 600;">Claim your employer account</a>.
+    </p>
     """
 
-    final_html = get_base_email_template(headline, body_content, "Login to View Full Profile", "https://truthhire.in/recruiter/login")
+    # We pass None for cta_text because the Magic Links are embedded cleanly inside the card
+    final_html = get_base_email_template(headline, body_content, None, None)
 
-    # ✅ UPDATED: Send via Resend (Handles Attachment)
-    send_email_via_resend(hr_email, f"Action Required: {candidate_data['name']} for {job_title}", final_html, resume_path)
+    # ✅ Send via Resend
+    send_email_via_resend(hr_email, subject, final_html, resume_path)
 
 
 def send_candidate_update_email(candidate_email: str, candidate_name: str, job_title: str, company_name: str, hr_name: str, status: str, feedback: str = None):
