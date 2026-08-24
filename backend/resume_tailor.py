@@ -225,7 +225,6 @@ def call_groq_tailor(
             {"role": "user", "content": _build_user_prompt(resume_text, jd_text, contact)},
         ],
         temperature=0.1, # 🟢 FIX: Lowered from 0.2 to 0.1 to strictly prevent hallucinations
-        response_format={"type": "json_object"},
     )
 
     raw = resp.choices[0].message.content or "{}"

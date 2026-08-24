@@ -483,7 +483,6 @@ def get_ai_gap_analysis(resume_text: str, job_description: str, candidate_id: st
             model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1, 
-            response_format={"type": "json_object"}
         )
 
         content = response.choices[0].message.content
@@ -675,7 +674,6 @@ def analyze_job_trust(title: str, description: str, salary_min: int = None, sala
             model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1, # Low temp for consistent, strict analysis
-            response_format={"type": "json_object"}
         )
 
         content = response.choices[0].message.content
@@ -3792,7 +3790,6 @@ async def analyze_interview_answer(data: AnswerAnalysisRequest):
             model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
-            response_format={"type": "json_object"}
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
@@ -4281,7 +4278,6 @@ async def generate_job_description_ai(data: JDGeneratorRequest):
             model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
-            response_format={"type": "json_object"}
         )
         
         content = response.choices[0].message.content
@@ -4527,8 +4523,7 @@ def generate_interview_prep(
         response = ai_client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.6, 
-            response_format={"type": "json_object"}
+            temperature=0.6,
         )
         
         content = response.choices[0].message.content
