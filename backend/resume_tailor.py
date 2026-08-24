@@ -13,6 +13,7 @@ from __future__ import annotations
 import io
 import json
 import re
+import os
 from typing import Optional, Any
 
 from groq import Groq
@@ -214,7 +215,7 @@ def call_groq_tailor(
     resume_text: str,
     jd_text: str,
     contact: dict,
-    model: str = ("GROQ_MODEL_ID", "llama-3.3-70b-versatile"),
+    model: str = os.getenv("GROQ_MODEL_ID", "qwen-2.5-32b"),
 ) -> tuple[TailoredResumeData, int]:
     
     resp = client.chat.completions.create(
