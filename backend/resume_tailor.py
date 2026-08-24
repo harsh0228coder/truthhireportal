@@ -214,7 +214,7 @@ def call_groq_tailor(
     resume_text: str,
     jd_text: str,
     contact: dict,
-    model: str = "llama-3.3-70b-versatile",
+    model: str = ("GROQ_MODEL_ID", "llama-3.3-70b-versatile"),
 ) -> tuple[TailoredResumeData, int]:
     
     resp = client.chat.completions.create(

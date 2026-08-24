@@ -240,6 +240,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 ai_client = Groq(api_key=GROQ_API_KEY)
 
+GROQ_MODEL = os.getenv("GROQ_MODEL_ID", "llama-3.1-70b-versatile")
+
 ANALYSIS_CACHE = {}
 
 def get_db():
@@ -478,7 +480,7 @@ def get_ai_gap_analysis(resume_text: str, job_description: str, candidate_id: st
 
         # 4. Call AI
         response = ai_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=os.getenv("GROQ_MODEL_ID", "llama-3.3-70b-versatile"),
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1, 
             response_format={"type": "json_object"}
@@ -670,7 +672,7 @@ def analyze_job_trust(title: str, description: str, salary_min: int = None, sala
         """
 
         response = ai_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="GROQ_MODEL",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1, # Low temp for consistent, strict analysis
             response_format={"type": "json_object"}
@@ -3436,7 +3438,7 @@ async def tailor_resume(
         pdf_url=pdf_url,
         score_before=score_before,
         score_after=score_after,
-        model_used="groq/llama-3.3-70b-versatile",
+        model_used=os.getenv("GROQ_MODEL_ID", "unknown"),
         tokens_used=tokens_used,
     )
     db.add(row)
@@ -3787,7 +3789,7 @@ async def analyze_interview_answer(data: AnswerAnalysisRequest):
 
     try:
         response = ai_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="GROQ_MODEL",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             response_format={"type": "json_object"}
@@ -4276,7 +4278,7 @@ async def generate_job_description_ai(data: JDGeneratorRequest):
 
     try:
         response = ai_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="GROQ_MODEL",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             response_format={"type": "json_object"}
@@ -4523,7 +4525,7 @@ def generate_interview_prep(
 
     try:
         response = ai_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="GROQ_MODEL",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.6, 
             response_format={"type": "json_object"}
