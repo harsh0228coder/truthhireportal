@@ -240,7 +240,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 ai_client = Groq(api_key=GROQ_API_KEY)
 
-GROQ_MODEL = os.getenv("GROQ_MODEL_ID", "qwen-2.5-32b")
+GROQ_MODEL = os.getenv("GROQ_MODEL_ID", "qwen3.6-27b")
 
 ANALYSIS_CACHE = {}
 
