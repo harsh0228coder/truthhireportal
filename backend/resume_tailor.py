@@ -215,7 +215,7 @@ def call_groq_tailor(
     resume_text: str,
     jd_text: str,
     contact: dict,
-    model: str = os.getenv("GROQ_MODEL_ID", "llama-3.1-8b-instant"),
+    model: str = os.getenv("GROQ_MODEL_ID", "qwen/qwen3.6-27b"),
 ) -> tuple[TailoredResumeData, int]:
     
     resp = client.chat.completions.create(
@@ -237,7 +237,7 @@ def call_groq_tailor(
     if "```" in raw:
         raw = re.sub(r"```(?:json)?", "", raw).replace("```", "").strip()
 
-        
+
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError:
