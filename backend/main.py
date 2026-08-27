@@ -245,6 +245,12 @@ ANALYSIS_CACHE = {}
 
 def extract_json_from_ai(content: str) -> dict:
     """Safely extracts JSON from AI responses, ignoring Markdown backticks."""
+    # 🟢 Strip reasoning tags if present
+    cleaned = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+    
+    # 🟢 Strip markdown code blocks
+    if "```" in cleaned:
+        cleaned = re.sub(r"```(?:json)?", "", cleaned).replace("```", "").strip()
     try:
         return json.loads(content)
     except json.JSONDecodeError:
@@ -492,7 +498,8 @@ def get_ai_gap_analysis(resume_text: str, job_description: str, candidate_id: st
         response = ai_client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.1, 
+            temperature=0.1,
+            max_tokens=3000, # 🟢 Add this parameter
         )
 
         content = response.choices[0].message.content

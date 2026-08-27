@@ -225,12 +225,19 @@ def call_groq_tailor(
             {"role": "user", "content": _build_user_prompt(resume_text, jd_text, contact)},
         ],
         temperature=0.1, # 🟢 FIX: Lowered from 0.2 to 0.1 to strictly prevent hallucinations
+        max_tokens=4096,
     )
 
     raw = resp.choices[0].message.content or "{}"
     tokens = getattr(resp, "usage", None)
     tokens_used = (tokens.total_tokens if tokens else 0) or 0
 
+    # 🟢 2. Clean out thinking tags and Markdown backticks
+    raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+    if "```" in raw:
+        raw = re.sub(r"```(?:json)?", "", raw).replace("```", "").strip()
+
+        
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError:
