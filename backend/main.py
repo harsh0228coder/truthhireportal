@@ -240,10 +240,20 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 ai_client = Groq(api_key=GROQ_API_KEY)
 
-GROQ_MODEL = os.getenv("GROQ_MODEL_ID", "qwen/qwen3.6-27b")
-
+GROQ_MODEL = os.getenv("GROQ_MODEL_ID", "qwen3.6-27b")
 ANALYSIS_CACHE = {}
 
+def extract_json_from_ai(content: str) -> dict:
+    """Safely extracts JSON from AI responses, ignoring Markdown backticks."""
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        start = content.find("{")
+        end = content.rfind("}") + 1
+        if start != -1 and end != 0:
+            return json.loads(content[start:end])
+        raise ValueError("Could not extract JSON from AI response")
+    
 def get_db():
     db = SessionLocal()
     try:
@@ -488,15 +498,7 @@ def get_ai_gap_analysis(resume_text: str, job_description: str, candidate_id: st
         content = response.choices[0].message.content
         
         # 5. Robust JSON Parsing
-        try:
-            result = json.loads(content)
-        except json.JSONDecodeError:
-            if "{" in content:
-                start = content.find("{")
-                end = content.rfind("}") + 1
-                result = json.loads(content[start:end])
-            else:
-                raise ValueError("No JSON found")
+        result = extract_json_from_ai(content)
 
         # --- SELF-HEALING LOGIC ---
         missing = result.get("missing_skills", [])[:10]
@@ -677,7 +679,7 @@ def analyze_job_trust(title: str, description: str, salary_min: int = None, sala
         )
 
         content = response.choices[0].message.content
-        result = json.loads(content)
+        result = extract_json_from_ai(content)
         
         return {
             "trust_score": int(result.get("trust_score", 60)),
@@ -3791,7 +3793,7 @@ async def analyze_interview_answer(data: AnswerAnalysisRequest):
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
         )
-        return json.loads(response.choices[0].message.content)
+        return extract_json_from_ai(content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -4281,7 +4283,7 @@ async def generate_job_description_ai(data: JDGeneratorRequest):
         )
         
         content = response.choices[0].message.content
-        result = json.loads(content)
+        result = extract_json_from_ai(content)
 
         # 🟢 HELPER: Convert List ["A", "B"] -> String "- A\n- B"
         def to_bullets(items):
@@ -4527,7 +4529,7 @@ def generate_interview_prep(
         )
         
         content = response.choices[0].message.content
-        return json.loads(content)
+        return extract_json_from_ai(content)
 
     except Exception as e:
         print(f"AI Prep Error: {e}")
