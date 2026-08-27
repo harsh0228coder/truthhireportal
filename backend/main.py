@@ -240,7 +240,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 ai_client = Groq(api_key=GROQ_API_KEY)
 
-GROQ_MODEL = os.getenv("GROQ_MODEL_ID", "qwen/qwen3.6-27b")
+GROQ_MODEL = os.getenv("GROQ_MODEL_ID", "llama-3.1-8b-instant")
 ANALYSIS_CACHE = {}
 
 def extract_json_from_ai(content: str) -> dict:
