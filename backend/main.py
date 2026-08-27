@@ -240,7 +240,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 ai_client = Groq(api_key=GROQ_API_KEY)
 
-GROQ_MODEL = os.getenv("GROQ_MODEL_ID", "qwen3.6-27b")
+GROQ_MODEL = os.getenv("GROQ_MODEL_ID", "qwen/qwen3.6-27b")
 ANALYSIS_CACHE = {}
 
 def extract_json_from_ai(content: str) -> dict:
@@ -3793,6 +3793,7 @@ async def analyze_interview_answer(data: AnswerAnalysisRequest):
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
         )
+        content = response.choices[0].message.content
         return extract_json_from_ai(content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

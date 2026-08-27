@@ -215,7 +215,7 @@ def call_groq_tailor(
     resume_text: str,
     jd_text: str,
     contact: dict,
-    model: str = os.getenv("GROQ_MODEL_ID", "qwen3.6-27b"),
+    model: str = os.getenv("GROQ_MODEL_ID", "qwen/qwen3.6-27b"),
 ) -> tuple[TailoredResumeData, int]:
     
     resp = client.chat.completions.create(
